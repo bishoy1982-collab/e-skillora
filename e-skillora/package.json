@@ -1,0 +1,35 @@
+{
+  "name": "e-skillora",
+  "version": "2.0.0",
+  "description": "AI-powered Math & Reading tutor for Grades 1–12 with behavioral data collection engine",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext .js,.jsx"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "eslint": "^8.45.0",
+    "eslint-plugin-react": "^7.33.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "vite": "^4.4.0"
+  },
+  "keywords": [
+    "edtech",
+    "ai-tutor",
+    "math",
+    "reading",
+    "k12",
+    "anthropic",
+    "claude",
+    "react"
+  ],
+  "author": "Bisho",
+  "license": "MIT"
+}
