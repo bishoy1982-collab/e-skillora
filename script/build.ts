@@ -3,7 +3,6 @@ import { build as viteBuild } from "vite";
 import { rm, readFile } from "fs/promises";
 
 const allowlist = [
-  "bcrypt",
   "connect-pg-simple",
   "drizzle-orm",
   "drizzle-zod",
@@ -18,7 +17,7 @@ const allowlist = [
 // Packages not in package.json that esbuild will try to bundle transitively.
 // These are optional/peer deps of native modules and must be forced external.
 const forceExternal = [
-  "./vite",          // dev-only local module, never needed in prod server bundle
+  "./vite",
   "@mapbox/node-pre-gyp",
   "mock-aws-s3",
   "aws-sdk",
@@ -48,7 +47,6 @@ async function buildAll() {
     outfile: "dist/index.cjs",
     minify: true,
     external,
-    // Suppress warnings for .html files inside native module utility dirs
     loader: { ".html": "empty" },
     logLevel: "info",
   });
