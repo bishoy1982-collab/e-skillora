@@ -62,12 +62,26 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--forest);outline
 // ─────────────────────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────────────────────
-const AVATARS = [
-  {e:"🦁",bg:"#C9973A"},{e:"🐯",bg:"#E8604C"},{e:"🐻",bg:"#8B5E3C"},
-  {e:"🦊",bg:"#D4763B"},{e:"🐧",bg:"#2A5AA0"},{e:"🦋",bg:"#7B4BA0"},
-  {e:"🐬",bg:"#2D8C7C"},{e:"🦄",bg:"#B85C8A"},{e:"🚀",bg:"#1C3A2F"},
-  {e:"⭐",bg:"#C9973A"},{e:"🌈",bg:"#3D7A5C"},{e:"🎯",bg:"#E8604C"},
-];
+const AVATAR_SETS = {
+  playful: [
+    { e:"🦁", bg:"#C9973A" }, { e:"🐯", bg:"#E8604C" }, { e:"🐻", bg:"#8B5E3C" },
+    { e:"🦊", bg:"#D4763B" }, { e:"🐧", bg:"#2A5AA0" }, { e:"🦋", bg:"#7B4BA0" },
+    { e:"🐬", bg:"#2D8C7C" }, { e:"🦄", bg:"#B85C8A" }, { e:"🚀", bg:"#1C3A2F" },
+    { e:"⭐", bg:"#C9973A" }, { e:"🌈", bg:"#3D7A5C" }, { e:"🎯", bg:"#E8604C" },
+  ],
+  teen: [
+    { e:"🎧", bg:"#1C3A2F" }, { e:"🎸", bg:"#2A5240" }, { e:"🎮", bg:"#2A5AA0" },
+    { e:"⚽", bg:"#3D7A5C" }, { e:"🏀", bg:"#C9973A" }, { e:"🏐", bg:"#E8604C" },
+    { e:"📚", bg:"#7B4BA0" }, { e:"🧠", bg:"#1C3A2F" }, { e:"🧪", bg:"#2D8C7C" },
+    { e:"🧩", bg:"#D4763B" }, { e:"🛰️", bg:"#2A5AA0" }, { e:"🏆", bg:"#C9973A" },
+  ],
+};
+
+function getAvatarOptions(age) {
+  const a = parseInt(age);
+  if (!Number.isFinite(a)) return AVATAR_SETS.playful;
+  return a >= 11 ? AVATAR_SETS.teen : AVATAR_SETS.playful;
+}
 
 const PLANS = [
   { id:"starter", label:"Starter", price:9,  cap:1, desc:"1 child · All 12 levels", badge:null,         color:"var(--sage)",   dark:"var(--forest)" },
@@ -128,25 +142,36 @@ const s = {
   btn: (v="primary", full=false, disabled=false) => ({
     display:"flex", alignItems:"center", justifyContent:"center", gap:8,
     fontFamily:"'Instrument Sans',sans-serif", fontWeight:600, fontSize:16,
-    borderRadius:"var(--r-lg)", border:"none", cursor: disabled?"not-allowed":"pointer",
-    transition:"all .2s", userSelect:"none", outline:"none",
+    borderRadius:"var(--r-lg)", border:"1px solid transparent", cursor: disabled?"not-allowed":"pointer",
+    transition:"all .18s", userSelect:"none", outline:"none",
     padding:"14px 28px", width: full?"100%":"auto",
     opacity: disabled ? .45 : 1,
-    ...(v==="primary"  && { background:"var(--forest)",  color:"var(--cream)"  }),
-    ...(v==="gold"     && { background:"var(--gold)",    color:"var(--forest)" }),
-    ...(v==="outline"  && { background:"transparent",    color:"var(--forest)", border:"2px solid var(--forest)" }),
+    ...(v==="primary"  && { background:"var(--forest)",  color:"var(--cream)",  boxShadow:"0 10px 26px rgba(28,58,47,0.18)" }),
+    ...(v==="gold"     && { background:"var(--gold)",    color:"var(--forest)", boxShadow:"0 10px 26px rgba(201,151,58,0.22)" }),
+    ...(v==="outline"  && { background:"rgba(255,255,255,0.75)", color:"var(--forest)", border:"1px solid var(--cream-dd)" }),
     ...(v==="ghost"    && { background:"transparent",    color:"var(--ink-l)",  padding:"10px 16px" }),
     ...(v==="danger"   && { background:"var(--coral)",   color:"var(--white)"  }),
     ...(v==="sage"     && { background:"var(--sage-ll)", color:"var(--forest)" }),
   }),
   // Cards
-  card: (p=24) => ({ background:"var(--white)", borderRadius:"var(--r-xl)", boxShadow:"var(--shadow)", padding:p }),
-  cardForest: (p=24) => ({ background:"var(--forest)", borderRadius:"var(--r-xl)", padding:p }),
+  card: (p=24) => ({
+    background:"rgba(255,255,255,0.92)",
+    borderRadius:"var(--r-xl)",
+    padding:p,
+    border:"1px solid rgba(224,217,207,0.9)",
+    boxShadow:"0 10px 40px rgba(28,58,47,0.10)",
+    backdropFilter:"blur(8px)",
+  }),
+  cardForest: (p=24) => ({ background:"var(--forest)", borderRadius:"var(--r-xl)", padding:p, boxShadow:"0 16px 50px rgba(0,0,0,0.22)" }),
   // Inputs
   input: (err=false) => ({
     width:"100%", fontFamily:"'Instrument Sans',sans-serif", fontSize:16, color:"var(--ink)",
-    background:"var(--cream)", border:`2px solid ${err?"var(--coral)":"var(--cream-dd)"}`,
-    borderRadius:"var(--r-md)", padding:"14px 18px", outline:"none", transition:"border-color .2s",
+    background:"rgba(247,243,237,0.72)",
+    border:`1px solid ${err?"rgba(232,96,76,0.75)":"rgba(224,217,207,0.95)"}`,
+    borderRadius:"14px",
+    padding:"14px 16px",
+    outline:"none",
+    transition:"border-color .16s, box-shadow .16s, background .16s",
   }),
   label: { fontSize:13, fontWeight:600, color:"var(--ink-l)", display:"block", marginBottom:6, fontFamily:"'Instrument Sans'" },
 };
@@ -383,7 +408,10 @@ function OB_Payment({ plan, onNext }) {
 // Step 4 — Add Children
 function OB_Children({ plan, onNext }) {
   const maxKids = PLANS.find(p=>p.id===plan)?.cap ?? 1;
-  const blank = () => ({ name:"", age:"", pin:"", avatar:AVATARS[0].e, avatarBg:AVATARS[0].bg });
+  const blank = () => {
+    const first = AVATAR_SETS.playful[0];
+    return { name:"", age:"", pin:"", avatar: first.e, avatarBg: first.bg, avatarSet: "auto" };
+  };
   const [kids, setKids] = useState([blank()]);
   const [active, setActive] = useState(0);
 
@@ -419,17 +447,87 @@ function OB_Children({ plan, onNext }) {
         <div key={idx} className="asi" style={{ display:"flex", flexDirection:"column", gap:20 }}>
           {/* Avatar row */}
           <div>
-            <label style={s.label}>Pick an avatar</label>
-            <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
-              {AVATARS.map(av => (
-                <button key={av.e} onClick={()=>{ upd(idx,"avatar",av.e); upd(idx,"avatarBg",av.bg); }} style={{
-                  width:48, height:48, borderRadius:14, fontSize:24, cursor:"pointer", border:"2.5px solid",
-                  background: kid.avatar===av.e ? av.bg : "var(--cream)",
-                  borderColor: kid.avatar===av.e ? av.bg : "var(--cream-dd)",
-                  transform: kid.avatar===av.e?"scale(1.12)":"scale(1)", transition:"all .15s",
-                }}>{av.e}</button>
-              ))}
+            <label style={s.label}>Avatar</label>
+
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:10, flexWrap:"wrap" }}>
+              <div style={{ display:"flex", gap:6, background:"var(--cream)", border:"1px solid var(--cream-dd)", padding:4, borderRadius:"var(--r-full)" }}>
+                {[
+                  { id:"auto", label:"Auto" },
+                  { id:"playful", label:"Playful" },
+                  { id:"teen", label:"Older kids" },
+                ].map(opt => {
+                  const activeOpt = (kid.avatarSet || "auto") === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      onClick={() => upd(idx, "avatarSet", opt.id)}
+                      style={{
+                        border: "none",
+                        cursor: "pointer",
+                        padding: "8px 12px",
+                        borderRadius: "999px",
+                        fontFamily: "'Instrument Sans'",
+                        fontSize: 13,
+                        fontWeight: 700,
+                        background: activeOpt ? "var(--forest)" : "transparent",
+                        color: activeOpt ? "var(--cream)" : "var(--ink-l)",
+                        transition: "all .15s",
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {kid.age && (
+                <span style={{ fontSize: 12, color: "var(--ink-ll)" }}>
+                  Recommended: <strong style={{ color: "var(--forest)" }}>{parseInt(kid.age) >= 11 ? "Older kids" : "Playful"}</strong>
+                </span>
+              )}
             </div>
+
+            {(() => {
+              const setId = (kid.avatarSet || "auto");
+              const list = setId === "playful"
+                ? AVATAR_SETS.playful
+                : setId === "teen"
+                  ? AVATAR_SETS.teen
+                  : getAvatarOptions(kid.age);
+
+              return (
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(6, 1fr)", gap:8 }}>
+                  {list.map((av, i) => {
+                    const selected = kid.avatar === av.e;
+                    return (
+                      <button
+                        key={`${av.e}-${i}`}
+                        onClick={()=>{ upd(idx,"avatar",av.e); upd(idx,"avatarBg",av.bg); }}
+                        style={{
+                          width: "100%",
+                          aspectRatio: "1 / 1",
+                          borderRadius: 16,
+                          fontSize: 22,
+                          cursor: "pointer",
+                          border: selected ? "2px solid var(--forest)" : "1px solid var(--cream-dd)",
+                          background: selected ? av.bg : "var(--white)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          boxShadow: selected ? "0 10px 30px rgba(28,58,47,0.14)" : "none",
+                          transform: selected ? "translateY(-1px)" : "translateY(0)",
+                          transition: "all .15s",
+                        }}
+                        onMouseEnter={(e)=>{ e.currentTarget.style.borderColor="var(--forest)"; }}
+                        onMouseLeave={(e)=>{ e.currentTarget.style.borderColor=selected ? "var(--forest)" : "var(--cream-dd)"; }}
+                      >
+                        <span style={{ filter: selected ? "drop-shadow(0 6px 10px rgba(0,0,0,0.12))" : "none" }}>{av.e}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
 
           <Field label="Child's first name" value={kid.name} onChange={v=>upd(idx,"name",v)} placeholder="e.g. Emma" autoFocus/>
