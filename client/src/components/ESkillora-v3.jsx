@@ -717,7 +717,7 @@ export function LoginScreen({ onParentLogin, onChildEnter }) {
   const doParentLogin = () => {
     const pin = String(parentPin || "").replace(/\D/g, "").slice(0, 4);
     if (pin.length !== 4) { setParentPinErr("Enter your 4-digit PIN"); return; }
-    if (pin === app?.parent?.pin || pin === "0000") { onParentLogin(); }
+    if (pin === app?.parent?.pin) { onParentLogin(); }
     else {
       setFailedParentPinAttempts((n) => n + 1);
       setParentPinErr("Incorrect PIN");
@@ -737,7 +737,7 @@ export function LoginScreen({ onParentLogin, onChildEnter }) {
     const pin = String(childPin || "").replace(/\D/g, "").slice(0, 4);
     if (pin.length !== 4) { setChildPinErr("Enter your 4-digit PIN"); return; }
     const childRecord = app?.children?.find(c => c.id === selChild.id);
-    if (pin === childRecord?.pin || pin === "0000") { onChildEnter(selChild); }
+    if (pin === childRecord?.pin) { onChildEnter(selChild); }
     else { setChildPinErr("Incorrect PIN"); }
   };
 
