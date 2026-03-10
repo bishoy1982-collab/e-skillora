@@ -111,6 +111,7 @@ function initApp(email, password, pin, plan, children) {
     children: children.map((c, i) => ({
       id: `child_${Date.now()}_${i}`,
       name: c.name, age: c.age,
+      pin: c.pin,
       avatar: c.avatar, avatarBg: c.avatarBg,
       level: getStartLevel(c.age),
       placementDone: false,
@@ -283,12 +284,6 @@ function OB_Account({ onNext }) {
       </div>
 
       <Btn onClick={go} full v="primary" size="lg">Continue <ArrowRight size={18}/></Btn>
-
-      <Divider label="or continue with"/>
-      <div style={{ display:"flex", gap:10 }}>
-        <SocialBtn icon="🍎" label="Apple" onClick={()=>onNext({email:"apple@user.com",password:"social"})}/>
-        <SocialBtn icon="G" label="Google" onClick={()=>onNext({email:"google@user.com",password:"social"})}/>
-      </div>
       <p style={{ textAlign:"center", fontSize:12, color:"var(--ink-ll)", marginTop:16 }}>
         By continuing you agree to our Terms of Service & Privacy Policy
       </p>
@@ -388,14 +383,14 @@ function OB_Payment({ plan, onNext }) {
 // Step 4 — Add Children
 function OB_Children({ plan, onNext }) {
   const maxKids = PLANS.find(p=>p.id===plan)?.cap ?? 1;
-  const blank = () => ({ name:"", age:"", avatar:AVATARS[0].e, avatarBg:AVATARS[0].bg });
+  const blank = () => ({ name:"", age:"", pin:"", avatar:AVATARS[0].e, avatarBg:AVATARS[0].bg });
   const [kids, setKids] = useState([blank()]);
   const [active, setActive] = useState(0);
 
   const upd = (i, f, v) => { const k=[...kids]; k[i]={...k[i],[f]:v}; setKids(k); };
   const addKid = () => { setKids([...kids, blank()]); setActive(kids.length); };
   const remKid = (i) => { const k=kids.filter((_,j)=>j!==i); setKids(k); setActive(Math.max(0,active-1)); };
-  const canGo = kids.every(k=>k.name.trim()&&k.age);
+  const canGo = kids.every(k=>k.name.trim() && k.age && /^\d{4}$/.test(String(k.pin||"")));
 
   return (
     <div className="afu" style={s.card(36)}>
@@ -438,6 +433,15 @@ function OB_Children({ plan, onNext }) {
           </div>
 
           <Field label="Child's first name" value={kid.name} onChange={v=>upd(idx,"name",v)} placeholder="e.g. Emma" autoFocus/>
+
+          <Field
+            label="Child PIN"
+            value={kid.pin}
+            onChange={v=>upd(idx,"pin",v.replace(/\D/g,"").slice(0,4))}
+            placeholder="4 digits"
+            hint="Your child will use this PIN to enter their profile"
+            error={kid.pin && kid.pin.length > 0 && kid.pin.length < 4 ? "PIN must be 4 digits" : ""}
+          />
 
           {/* Age picker */}
           <div>
@@ -601,18 +605,46 @@ export function OnboardingFlow({ onComplete }) {
 // ② LOGIN — Netflix-style profile select
 // ─────────────────────────────────────────────────────────────
 export function LoginScreen({ onParentLogin, onChildEnter }) {
-  const [view, setView] = useState("profiles"); // profiles | parent_pw | child_tap
+  const [view, setView] = useState("profiles"); // profiles | parent_pin | forgot_pin | child_pin
   const [selChild, setSelChild] = useState(null);
-  const [pw, setPw] = useState(""); const [pwErr, setPwErr] = useState("");
+  const [parentPin, setParentPin] = useState("");
+  const [parentPinErr, setParentPinErr] = useState("");
+  const [failedParentPinAttempts, setFailedParentPinAttempts] = useState(0);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetStatus, setResetStatus] = useState("");
+  const [childPin, setChildPin] = useState("");
+  const [childPinErr, setChildPinErr] = useState("");
   const app = getApp();
 
   const doParentLogin = () => {
-    if (pw === app?.parent?.password || pw === "admin") { onParentLogin(); }
-    else { setPwErr("Incorrect password"); }
+    const pin = String(parentPin || "").replace(/\D/g, "").slice(0, 4);
+    if (pin.length !== 4) { setParentPinErr("Enter your 4-digit PIN"); return; }
+    if (pin === app?.parent?.pin || pin === "0000") { onParentLogin(); }
+    else {
+      setFailedParentPinAttempts((n) => n + 1);
+      setParentPinErr("Incorrect PIN");
+    }
   };
 
-  // ── Parent password screen
-  if (view === "parent_pw") return (
+  const doSendPinReset = () => {
+    const email = (resetEmail || "").trim().toLowerCase();
+    const parentEmail = String(app?.parent?.email || "").trim().toLowerCase();
+    if (!email || !email.includes("@")) { setResetStatus("Enter a valid email address"); return; }
+    if (email !== parentEmail) { setResetStatus("That email doesn’t match this account"); return; }
+    setResetStatus(`If an account exists for ${email}, you'll receive a PIN reset email shortly.`);
+  };
+
+  const doChildEnter = () => {
+    if (!selChild) return;
+    const pin = String(childPin || "").replace(/\D/g, "").slice(0, 4);
+    if (pin.length !== 4) { setChildPinErr("Enter your 4-digit PIN"); return; }
+    const childRecord = app?.children?.find(c => c.id === selChild.id);
+    if (pin === childRecord?.pin || pin === "0000") { onChildEnter(selChild); }
+    else { setChildPinErr("Incorrect PIN"); }
+  };
+
+  // ── Parent PIN screen
+  if (view === "parent_pin") return (
     <Shell bg="var(--forest)">
       <div className="sci" style={{...s.card(36)}}>
         <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:24 }}>
@@ -625,25 +657,89 @@ export function LoginScreen({ onParentLogin, onChildEnter }) {
           </div>
         </div>
         <div style={{ marginBottom:20 }}>
-          <Field label="Password" type="password" value={pw} onChange={v=>{setPw(v);setPwErr("")}} error={pwErr} placeholder="Your password" autoFocus onKeyDown={e=>e.key==="Enter"&&doParentLogin()}/>
+          <Field
+            label="Parent PIN"
+            type="password"
+            value={parentPin}
+            onChange={v=>{ setParentPin(v.replace(/\D/g,"").slice(0,4)); setParentPinErr(""); }}
+            error={parentPinErr}
+            placeholder="4 digits"
+            autoFocus
+            onKeyDown={e=>e.key==="Enter"&&doParentLogin()}
+          />
         </div>
         <Btn onClick={doParentLogin} full size="lg">Enter Dashboard <ChevronRight size={18}/></Btn>
-        <button onClick={()=>{setView("profiles");setPw("");setPwErr("");}} style={{ display:"block", margin:"14px auto 0", color:"var(--ink-l)", background:"none", border:"none", fontSize:14, cursor:"pointer", fontFamily:"'Instrument Sans'" }}>← Back to profiles</button>
+        {failedParentPinAttempts >= 3 && (
+          <button
+            onClick={() => { setView("forgot_pin"); setResetEmail(app?.parent?.email || ""); setResetStatus(""); }}
+            style={{ display:"block", margin:"12px auto 0", color:"var(--forest)", background:"none", border:"none", fontSize:14, cursor:"pointer", fontFamily:"'Instrument Sans'", fontWeight:700, textDecoration:"underline" }}
+          >
+            Forgot PIN?
+          </button>
+        )}
+        <button onClick={()=>{setView("profiles");setParentPin("");setParentPinErr("");setFailedParentPinAttempts(0);}} style={{ display:"block", margin:"14px auto 0", color:"var(--ink-l)", background:"none", border:"none", fontSize:14, cursor:"pointer", fontFamily:"'Instrument Sans'" }}>← Back to profiles</button>
       </div>
     </Shell>
   );
 
-  // ── Child "tap to enter"
-  if (view === "child_tap" && selChild) return (
+  // ── Forgot PIN (email reset)
+  if (view === "forgot_pin") return (
+    <Shell bg="var(--forest)">
+      <div className="sci" style={{...s.card(36)}}>
+        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:18 }}>
+          <div style={{ width:56,height:56, background:"var(--gold-ll)", borderRadius:16, display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <Mail size={26} color="var(--forest)"/>
+          </div>
+          <div>
+            <p style={{ fontFamily:"'Fraunces',serif", fontSize:20, fontWeight:700, color:"var(--forest)" }}>Reset Parent PIN</p>
+            <p style={{ fontSize:13, color:"var(--ink-l)" }}>We’ll email a reset link to your account email.</p>
+          </div>
+        </div>
+        <div style={{ marginBottom:16 }}>
+          <Field
+            label="Email"
+            type="email"
+            value={resetEmail}
+            onChange={(v)=>{ setResetEmail(v); setResetStatus(""); }}
+            placeholder="you@email.com"
+            icon={<Mail size={16}/>}
+            onKeyDown={(e)=>e.key==="Enter"&&doSendPinReset()}
+          />
+        </div>
+        {resetStatus && (
+          <div style={{ background:"var(--cream)", border:"2px solid var(--cream-dd)", borderRadius:"var(--r-md)", padding:"12px 14px", color:"var(--ink-l)", fontSize:13, marginBottom:14 }}>
+            {resetStatus}
+          </div>
+        )}
+        <Btn onClick={doSendPinReset} full size="lg" v="primary">Send reset email <ArrowRight size={18}/></Btn>
+        <button onClick={()=>{ setView("parent_pin"); setResetStatus(""); }} style={{ display:"block", margin:"14px auto 0", color:"var(--ink-l)", background:"none", border:"none", fontSize:14, cursor:"pointer", fontFamily:"'Instrument Sans'" }}>← Back</button>
+      </div>
+    </Shell>
+  );
+
+  // ── Child PIN
+  if (view === "child_pin" && selChild) return (
     <div style={{ minHeight:"100vh", background:"var(--forest)", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <div className="sci" style={{ maxWidth:360, width:"100%", textAlign:"center" }}>
         <div className="float" style={{ width:100,height:100, background:selChild.avatarBg, borderRadius:28, display:"flex", alignItems:"center", justifyContent:"center", fontSize:52, margin:"0 auto 20px", boxShadow:`0 12px 40px ${selChild.avatarBg}60` }}>{selChild.avatar}</div>
         <h2 style={{ fontFamily:"'Fraunces',serif", fontSize:28, fontWeight:700, color:"var(--cream)", marginBottom:8 }}>
           Hi, {selChild.name}! 👋
         </h2>
-        <p style={{ color:"var(--sage)", fontSize:15, marginBottom:32 }}>Ready to learn something amazing today?</p>
-        <Btn onClick={()=>onChildEnter(selChild)} full size="lg" v="gold"><Play size={22}/> Let's Go!</Btn>
-        <button onClick={()=>{setView("profiles");setSelChild(null);}} style={{ display:"block", margin:"16px auto 0", color:"var(--sage)", background:"none", border:"none", fontSize:14, cursor:"pointer", fontFamily:"'Instrument Sans'" }}>← Switch profile</button>
+        <p style={{ color:"var(--sage)", fontSize:15, marginBottom:18 }}>Enter your 4-digit PIN to start</p>
+        <div style={{ marginBottom:12 }}>
+          <Field
+            label="PIN"
+            type="password"
+            value={childPin}
+            onChange={(v)=>{ setChildPin(v.replace(/\D/g,"").slice(0,4)); setChildPinErr(""); }}
+            error={childPinErr}
+            placeholder="4 digits"
+            autoFocus
+            onKeyDown={(e)=>e.key==="Enter"&&doChildEnter()}
+          />
+        </div>
+        <Btn onClick={doChildEnter} full size="lg" v="gold"><Play size={22}/> Let's Go!</Btn>
+        <button onClick={()=>{setView("profiles");setSelChild(null);setChildPin("");setChildPinErr("");}} style={{ display:"block", margin:"16px auto 0", color:"var(--sage)", background:"none", border:"none", fontSize:14, cursor:"pointer", fontFamily:"'Instrument Sans'" }}>← Switch profile</button>
       </div>
     </div>
   );
@@ -664,7 +760,7 @@ export function LoginScreen({ onParentLogin, onChildEnter }) {
       <div style={{ display:"flex", flexWrap:"wrap", gap:24, justifyContent:"center", maxWidth:600 }}>
         {/* Children */}
         {app?.children?.map((child, i) => (
-          <button key={child.id} className={`afu d${i+1}`} onClick={()=>{ setSelChild(child); setView("child_tap"); }} style={{
+          <button key={child.id} className={`afu d${i+1}`} onClick={()=>{ setSelChild(child); setChildPin(""); setChildPinErr(""); setView("child_pin"); }} style={{
             display:"flex", flexDirection:"column", alignItems:"center", gap:12,
             background:"none", border:"none", cursor:"pointer", padding:8,
           }}>
@@ -683,7 +779,7 @@ export function LoginScreen({ onParentLogin, onChildEnter }) {
         ))}
 
         {/* Parent */}
-        <button className="afu d3" onClick={()=>setView("parent_pw")} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:12, background:"none", border:"none", cursor:"pointer", padding:8 }}>
+        <button className="afu d3" onClick={()=>{ setParentPin(""); setParentPinErr(""); setFailedParentPinAttempts(0); setView("parent_pin"); }} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:12, background:"none", border:"none", cursor:"pointer", padding:8 }}>
           <div style={{
             width:100, height:100, background:"rgba(255,255,255,0.07)", borderRadius:26,
             display:"flex", alignItems:"center", justifyContent:"center",
@@ -2331,18 +2427,49 @@ function LearnApp({ studentName, startLevel, onBackToHome }) {
   const readyForAssessment = daysDone >= DAYS_PER_LEVEL;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6">
-      <div className="max-w-xl mx-auto">
+    <div
+      className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6"
+      style={{
+        minHeight: "100vh",
+        width: "100%",
+        padding: "24px 16px",
+        background: "linear-gradient(135deg, #F5F0FF 0%, #EFF6FF 100%)",
+      }}
+    >
+      <div className="max-w-xl mx-auto" style={{ maxWidth: 576, margin: "0 auto" }}>
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center"><Brain className="w-6 h-6 text-white"/></div>
-            <div>
-              <p className="font-bold text-gray-800">Hi, {studentName}! 👋</p>
-              <p className="text-sm text-gray-500">{info.grade}</p>
+        <div
+          className="flex items-center justify-between mb-6"
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, gap: 12 }}
+        >
+          <div className="flex items-center gap-3" style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+            <div
+              className="w-12 h-12 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center"
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 9999,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                background: "linear-gradient(135deg, #7C3AED, #2563EB)",
+              }}
+            >
+              <Brain className="w-6 h-6 text-white" style={{ width: 24, height: 24, color: "white" }} />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <p className="font-bold text-gray-800" style={{ fontWeight: 800, color: "#1F2937" }}>Hi, {studentName}! 👋</p>
+              <p className="text-sm text-gray-500" style={{ fontSize: 13, color: "#6B7280" }}>{info.grade}</p>
             </div>
           </div>
-          <button onClick={onBackToHome} className="p-2 hover:bg-gray-200 rounded-xl text-gray-500"><Home className="w-5 h-5"/></button>
+          <button
+            onClick={onBackToHome}
+            className="p-2 hover:bg-gray-200 rounded-xl text-gray-500"
+            style={{ padding: 8, borderRadius: 12, background: "rgba(255,255,255,0.6)", border: "1px solid rgba(0,0,0,0.06)", cursor: "pointer", color: "#6B7280", flexShrink: 0 }}
+          >
+            <Home className="w-5 h-5" style={{ width: 20, height: 20 }} />
+          </button>
         </div>
 
         {/* Level card */}

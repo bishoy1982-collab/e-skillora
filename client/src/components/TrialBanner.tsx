@@ -8,6 +8,7 @@ export default function TrialBanner() {
   const [dismissed, setDismissed] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  if (user?.subscriptionStatus === "active") return null;
   if (dismissed || user?.subscriptionStatus !== "trial" || trialDaysLeft === null) return null;
 
   const isLastDay = trialDaysLeft <= 1;
