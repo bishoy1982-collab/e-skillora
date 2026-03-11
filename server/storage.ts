@@ -9,6 +9,7 @@ export interface IStorage {
   getUserById(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByStripeCustomerId(customerId: string): Promise<User | undefined>;
+  getUserByPasswordResetToken(token: string): Promise<User | undefined>;
   createUser(data: { email: string; name: string; passwordHash: string; trialEndsAt: Date }): Promise<User>;
   updateUser(id: string, data: Partial<User>): Promise<User>;
   createSession(data: { userId: string; subject: string; grade: number; topic: string }): Promise<Session>;
@@ -30,6 +31,11 @@ export class DatabaseStorage implements IStorage {
 
   async getUserByStripeCustomerId(customerId: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.stripeCustomerId, customerId));
+    return user;
+  }
+
+  async getUserByPasswordResetToken(token: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.passwordResetToken, token));
     return user;
   }
 

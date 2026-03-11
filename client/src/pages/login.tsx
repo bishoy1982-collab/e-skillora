@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Brain, ArrowRight, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Brain, ArrowRight, Eye, EyeOff, AlertCircle, Mail } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { apiRequest } from "@/lib/queryClient";
 
 const G_FONT = `https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,800&family=Instrument+Sans:wght@400;500;600;700&display=swap`;
 
@@ -15,7 +16,7 @@ const CSS = `
 `;
 
 interface LoginPageProps {
-  onNavigate: (page: "landing" | "signup" | "app") => void;
+  onNavigate: (page: "landing" | "signup" | "app" | "reset-password") => void;
 }
 
 export default function LoginPage({ onNavigate }: LoginPageProps) {
@@ -25,6 +26,11 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotMessage, setForgotMessage] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,9 +42,11 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
     setLoading(true);
     try {
       await login(email, password);
+      setFailedAttempts(0);
       onNavigate("app");
     } catch (err: any) {
       const msg = err?.message || "";
+      setFailedAttempts((n) => n + 1);
       if (msg.includes("401") || msg.includes("Invalid")) {
         setError("Invalid email or password");
       } else {
@@ -46,6 +54,25 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotMessage("");
+    if (!forgotEmail.trim() || !forgotEmail.includes("@")) {
+      setForgotMessage("Please enter a valid email address.");
+      return;
+    }
+    setForgotLoading(true);
+    try {
+      const res = await apiRequest("POST", "/api/auth/forgot-password", { email: forgotEmail.trim().toLowerCase() });
+      const data = await res.json().catch(() => ({}));
+      setForgotMessage(data.message ?? "If an account exists for this email, you will receive a password reset link.");
+    } catch {
+      setForgotMessage("Something went wrong. Please try again.");
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -83,12 +110,69 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
             fontFamily: "'Fraunces', serif", fontSize: 28,
             fontWeight: 800, color: "#1C3A2F", marginBottom: 6,
           }}>
-            Welcome back
+            {showForgotPassword ? "Reset password" : "Welcome back"}
           </h1>
           <p style={{ color: "#9A9A9A", fontSize: 15, marginBottom: 28 }}>
-            Log in to continue your child's learning journey
+            {showForgotPassword
+              ? "Enter your email and we'll send you a link to reset your password."
+              : "Log in to continue your child's learning journey"}
           </p>
 
+          {showForgotPassword ? (
+            <form onSubmit={handleForgotSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#3D3D3D", marginBottom: 6 }}>
+                  Email address
+                </label>
+                <input
+                  type="email"
+                  value={forgotEmail}
+                  onChange={(e) => { setForgotEmail(e.target.value); setForgotMessage(""); }}
+                  placeholder="you@email.com"
+                  autoComplete="email"
+                  style={{
+                    width: "100%", fontFamily: "'Instrument Sans', sans-serif",
+                    fontSize: 15, color: "#1A1A1A", background: "#F7F3ED",
+                    border: "2px solid #E0D9CF", borderRadius: 12,
+                    padding: "13px 16px", transition: "border-color 0.2s",
+                  }}
+                />
+              </div>
+              {forgotMessage && (
+                <div style={{
+                  background: "#E6F0E8", border: "1px solid #B8D4BE",
+                  borderRadius: 10, padding: "12px 14px", fontSize: 14, color: "#1C3A2F",
+                }}>
+                  {forgotMessage}
+                </div>
+              )}
+              <button
+                type="submit"
+                disabled={forgotLoading}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  fontFamily: "'Instrument Sans', sans-serif", fontWeight: 700,
+                  fontSize: 16, background: "#1C3A2F", color: "#F7F3ED",
+                  border: "none", borderRadius: 14, padding: "15px",
+                  cursor: forgotLoading ? "not-allowed" : "pointer",
+                  opacity: forgotLoading ? 0.7 : 1,
+                }}
+              >
+                {forgotLoading ? "Sending…" : <> Send reset link <Mail size={18} /> </>}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowForgotPassword(false); setForgotMessage(""); }}
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  color: "#9A9A9A", fontSize: 14, fontFamily: "'Instrument Sans', sans-serif",
+                }}
+              >
+                ← Back to login
+              </button>
+            </form>
+          ) : (
+            <>
           {error && (
             <div style={{
               display: "flex", alignItems: "center", gap: 8,
@@ -169,6 +253,20 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
             >
               {loading ? "Logging in..." : <> Log in <ArrowRight size={18} /> </>}
             </button>
+            {failedAttempts >= 3 && (
+              <button
+                type="button"
+                onClick={() => { setShowForgotPassword(true); setForgotEmail(email); setForgotMessage(""); }}
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  color: "#1C3A2F", fontWeight: 700, fontSize: 14,
+                  fontFamily: "'Instrument Sans', sans-serif",
+                  marginTop: 12, textDecoration: "underline",
+                }}
+              >
+                Forgot password?
+              </button>
+            )}
           </form>
 
           <p style={{ textAlign: "center", color: "#9A9A9A", fontSize: 14, marginTop: 24 }}>
@@ -184,6 +282,8 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
               Start free trial
             </button>
           </p>
+            </>
+          )}
         </div>
 
         <button

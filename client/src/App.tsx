@@ -4,11 +4,12 @@ import LandingPage from "./pages/landing";
 import LoginPage from "./pages/login";
 import SignupPage from "./pages/signup";
 import SuccessPage from "./pages/success";
+import ResetPasswordPage from "./pages/reset-password";
 import PaywallModal from "./components/PaywallModal";
 import TrialBanner from "./components/TrialBanner";
 import ESkillora from "./components/ESkillora-v3";
 
-type Page = "landing" | "login" | "signup" | "app" | "success";
+type Page = "landing" | "login" | "signup" | "app" | "success" | "reset-password";
 
 function getInitialPage(): Page {
   const path = window.location.pathname;
@@ -16,6 +17,7 @@ function getInitialPage(): Page {
   if (path === "/login") return "login";
   if (path === "/signup") return "signup";
   if (path === "/app") return "app";
+  if (path === "/reset-password") return "reset-password";
   return "landing";
 }
 
@@ -27,7 +29,7 @@ function AppRouter() {
   useEffect(() => {
     const paths: Record<Page, string> = {
       landing: "/", login: "/login", signup: "/signup",
-      app: "/app", success: "/success",
+      app: "/app", success: "/success", "reset-password": "/reset-password",
     };
     window.history.pushState({}, "", paths[page]);
   }, [page]);
@@ -77,6 +79,7 @@ function AppRouter() {
   if (page === "login") return <LoginPage onNavigate={(p) => navigate(p as Page)} />;
   if (page === "signup") return <SignupPage onNavigate={(p) => navigate(p as Page)} />;
   if (page === "success") return <SuccessPage onNavigate={() => navigate("app")} />;
+  if (page === "reset-password") return <ResetPasswordPage onNavigate={() => navigate("login")} />;
 
   // App page
   if (page === "app") {

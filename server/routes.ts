@@ -1,8 +1,9 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, loginSchema } from "@shared/schema";
+import { insertUserSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } from "@shared/schema";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -130,6 +131,61 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
   app.post("/api/auth/logout", (req, res) => {
     req.session.destroy(() => res.json({ success: true }));
+  });
+
+  // Forgot password: send reset link (token stored in DB; email sending can be wired separately)
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      const parsed = forgotPasswordSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "Please enter a valid email address." });
+      }
+      const { email } = parsed.data;
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.json({ message: "If an account exists for this email, you will receive a password reset link." });
+      }
+      const token = crypto.randomBytes(32).toString("hex");
+      const expires = new Date(Date.now() + 60 * 60 * 1000);
+      await storage.updateUser(user.id, {
+        passwordResetToken: token,
+        passwordResetExpires: expires,
+      });
+      const resetUrl = `${APP_URL}/reset-password?token=${token}`;
+      // TODO: send email with resetUrl (e.g. SendGrid, Resend, nodemailer). For now log in dev.
+      if (process.env.NODE_ENV !== "production") {
+        console.log("[dev] Password reset link:", resetUrl);
+      }
+      return res.json({ message: "If an account exists for this email, you will receive a password reset link." });
+    } catch (err: any) {
+      console.error("Forgot password error:", err);
+      return res.status(500).json({ message: "Something went wrong. Please try again." });
+    }
+  });
+
+  // Reset password with token from email link
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const parsed = resetPasswordSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: parsed.error.errors[0]?.message ?? "Invalid request." });
+      }
+      const { token, newPassword } = parsed.data;
+      const user = await storage.getUserByPasswordResetToken(token);
+      if (!user || !user.passwordResetExpires || new Date() > new Date(user.passwordResetExpires)) {
+        return res.status(400).json({ message: "This reset link is invalid or has expired. Please request a new one." });
+      }
+      const passwordHash = await bcrypt.hash(newPassword, 12);
+      await storage.updateUser(user.id, {
+        passwordHash,
+        passwordResetToken: null,
+        passwordResetExpires: null,
+      });
+      return res.json({ message: "Password updated. You can now log in with your new password." });
+    } catch (err: any) {
+      console.error("Reset password error:", err);
+      return res.status(500).json({ message: "Something went wrong. Please try again." });
+    }
   });
 
   // ─── STRIPE ROUTES ───────────────────────────────────────────

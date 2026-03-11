@@ -12,6 +12,8 @@ export const users = pgTable("users", {
   stripeSubscriptionId: text("stripe_subscription_id"),
   subscriptionStatus: text("subscription_status").default("trial"), // trial | active | expired | cancelled | past_due
   trialEndsAt: timestamp("trial_ends_at"),
+  passwordResetToken: text("password_reset_token"),
+  passwordResetExpires: timestamp("password_reset_expires"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -44,6 +46,15 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
+});
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1, "Invalid or expired reset link"),
+  newPassword: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 export const insertWaitlistSchema = createInsertSchema(waitlistSubmissions).pick({
