@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const trialDaysLeft =
     user?.subscriptionStatus === "trial" && user.trialEndsAt
-      ? Math.max(0, Math.ceil((new Date(user.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+      ? Math.max(0, Math.round((new Date(user.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
       : null;
 
   return (

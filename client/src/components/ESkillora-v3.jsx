@@ -5,6 +5,7 @@
 // Single file → drop in as src/App.jsx in Replit
 // ═══════════════════════════════════════════════════════════════
 import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Brain, Play, CheckCircle, XCircle, Home, PenTool, Trash2, X,
   Lock, Plus, BookOpen, BarChart3, ChevronRight, ChevronLeft,
@@ -114,9 +115,11 @@ const LS = {
   set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
   del: (k)    => { try { localStorage.removeItem(k); } catch {} },
 };
-const APP_KEY = "eskillora_v3_app";
-const getApp  = ()  => LS.get(APP_KEY, null);
-const setApp  = (d) => LS.set(APP_KEY, d);
+const BASE_APP_KEY = "eskillora_v3_app";
+let _appKey = BASE_APP_KEY;
+function _setAppKey(userId) { _appKey = userId ? `${BASE_APP_KEY}_${userId}` : BASE_APP_KEY; }
+const getApp  = ()  => LS.get(_appKey, null);
+const setApp  = (d) => LS.set(_appKey, d);
 
 function initApp(email, password, pin, plan, children) {
   return {
@@ -2694,6 +2697,12 @@ function getStartLevelForAge(age) {
 // ROOT — orchestrates all screens
 // ─────────────────────────────────────────────────────────────
 export default function App() {
+  const { user: authUser } = useAuth();
+
+  // Scope localStorage to the authenticated user so different accounts
+  // on the same browser never share each other's children.
+  _setAppKey(authUser?.id);
+
   // Inject global styles + fonts
   useEffect(() => {
     const el = document.createElement("style");
