@@ -90,7 +90,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             boxShadow: "0 2px 8px rgba(28,58,47,0.08)",
           }}>
             <Star size={12} fill="#C9973A" color="#C9973A" />
-            3-DAY FREE TRIAL · THEN $10.99/MONTH
+            3-DAY FREE TRIAL · THEN FROM $9/MONTH
           </div>
 
           <h1 className="fade-up d1" style={{
@@ -295,7 +295,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             </div>
             <div style={{ marginBottom: 8 }}>
               <span style={{ fontFamily: "'Fraunces', serif", fontSize: 48, fontWeight: 800, color: "white", letterSpacing: "-0.03em" }}>
-                $10.99
+                $9
               </span>
               <span style={{ fontSize: 15, color: "#8BAF94", marginLeft: 4 }}>/month</span>
             </div>

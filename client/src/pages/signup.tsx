@@ -110,7 +110,7 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
           backdropFilter: "blur(8px)",
         }}>
           <Star size={12} fill="#E5B96A" color="#E5B96A" />
-          3 DAYS FREE · THEN $10.99/MONTH
+          3 DAYS FREE · THEN FROM $9/MONTH
         </div>
 
         {/* Card */}

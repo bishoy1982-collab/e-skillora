@@ -102,7 +102,7 @@ export default function PaywallModal({ reason, onClose }: PaywallModalProps) {
         }}>
           <div>
             <p style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 700, color: "#1C3A2F" }}>
-              $10.99<span style={{ fontSize: 14, fontWeight: 400, color: "#9A9A9A" }}>/month</span>
+              $9<span style={{ fontSize: 14, fontWeight: 400, color: "#9A9A9A" }}>/month</span>
             </p>
             <p style={{ fontSize: 12, color: "#9A9A9A", marginTop: 2 }}>Cancel anytime</p>
           </div>

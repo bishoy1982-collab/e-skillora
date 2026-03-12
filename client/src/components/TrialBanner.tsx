@@ -51,12 +51,6 @@ export default function TrialBanner() {
             ? "Your trial expires today!"
             : `${trialDaysLeft} day${trialDaysLeft !== 1 ? "s" : ""} left in trial`}
         </span>
-        <span style={{
-          fontSize: 12, color: "rgba(255,255,255,0.6)",
-          whiteSpace: "nowrap",
-        }}>
-          · $10.99/mo
-        </span>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
         <button

@@ -1023,12 +1023,12 @@ export function LoginScreen({ onParentLogin, onChildEnter }) {
 // ─────────────────────────────────────────────────────────────
 // ③ PARENT DASHBOARD
 // ─────────────────────────────────────────────────────────────
-export function ParentDashboard({ onLogout, onSwitchToChild }) {
+export function ParentDashboard({ onLogout, onFullLogout }) {
   const [app, setAppLocal] = useState(() => getApp());
   const [tab, setTab] = useState("overview");
   const refresh = () => { const d=getApp(); setAppLocal(d); };
 
-  const planData = PLANS.find(p=>p.id===app?.parent?.plan) || PLANS[1];
+  const planData = PLANS.find(p=>p.id===app?.parent?.plan) || PLANS[0];
 
   // Bottom navigation tabs
   const TABS = [
@@ -1057,17 +1057,17 @@ export function ParentDashboard({ onLogout, onSwitchToChild }) {
             <span style={{...s.tag("forest"),marginLeft:8,fontSize:10}}>Parent</span>
           </div>
         </div>
-        <button onClick={onLogout} style={{...s.btn("ghost","","","sm"),color:"var(--coral)",fontWeight:600,gap:5}}>
-          <LogOut size={15}/> Sign out
+        <button onClick={onLogout} style={{...s.btn("ghost","","","sm"),color:"var(--ink-l)",fontWeight:600,gap:5}}>
+          <Users size={15}/> Switch User
         </button>
       </div>
 
       {/* Tab Content */}
       <div style={{flex:1,overflowY:"auto",paddingBottom:"calc(var(--nav-h) + var(--safe-b) + 16px)"}}>
-        {tab==="overview" && <OverviewTab app={app} onSwitchToChild={onSwitchToChild}/>}
+        {tab==="overview" && <OverviewTab app={app}/>}
         {tab==="children" && <ChildrenTab app={app} planData={planData} refresh={refresh}/>}
         {tab==="plan" && <PlanTab app={app} planData={planData}/>}
-        {tab==="settings" && <SettingsTab app={app} onLogout={onLogout} refresh={refresh}/>}
+        {tab==="settings" && <SettingsTab app={app} onLogout={onFullLogout || onLogout} refresh={refresh}/>}
       </div>
 
       {/* Bottom Navigation */}
@@ -1097,7 +1097,7 @@ export function ParentDashboard({ onLogout, onSwitchToChild }) {
   );
 }
 
-function OverviewTab({ app, onSwitchToChild }) {
+function OverviewTab({ app }) {
   const hour = new Date().getHours();
   const greeting = hour<12?"Good morning":hour<17?"Good afternoon":"Good evening";
   const emoji = hour<12?"☀️":hour<17?"🌤️":"🌙";
@@ -1165,12 +1165,6 @@ function OverviewTab({ app, onSwitchToChild }) {
                 ))}
               </div>
 
-              {/* Switch button */}
-              <div style={{padding:"0 20px 16px"}}>
-                <button onClick={()=>onSwitchToChild(child)} style={{...s.btn("primary",true,false,"sm"),borderRadius:"var(--r-md)",gap:6}}>
-                  <Play size={13}/> Switch to {child.name}
-                </button>
-              </div>
             </div>
           </div>
         );
@@ -1242,14 +1236,19 @@ function ChildrenTab({ app, planData, refresh }) {
 
 function PlanTab({ app, planData }) {
   const [loading, setLoading] = useState(false);
-  const handleUpgrade = async () => {
+  const [error, setError] = useState("");
+  const handleManageSubscription = async () => {
     setLoading(true);
+    setError("");
     try {
       const { apiRequest } = await import("@/lib/queryClient");
-      const res = await apiRequest("POST", "/api/stripe/checkout", {});
+      const res = await apiRequest("POST", "/api/stripe/portal", {});
       const { url } = await res.json();
       window.location.href = url;
-    } catch { setLoading(false); }
+    } catch (err) {
+      setError("Unable to open billing portal. Please ensure you have an active subscription.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -1271,34 +1270,177 @@ function PlanTab({ app, planData }) {
           </div>
         ))}
       </div>
-      <button onClick={handleUpgrade} disabled={loading} style={{...s.btn("gold",true,loading,"lg")}}>
-        {loading?"Processing...":"Manage Subscription"}
+      {error && (
+        <div style={{background:"rgba(232,96,76,0.1)",border:"1px solid rgba(232,96,76,0.3)",borderRadius:"var(--r-md)",padding:"12px 16px",fontSize:13,color:"var(--coral)",fontWeight:500}}>
+          {error}
+        </div>
+      )}
+      <button onClick={handleManageSubscription} disabled={loading} style={{...s.btn("gold",true,loading,"lg"),gap:8}}>
+        <Settings size={16}/> {loading?"Processing...":"Manage / Cancel Subscription"}
       </button>
     </div>
   );
 }
 
 function SettingsTab({ app, onLogout, refresh }) {
+  const [pwSection, setPwSection] = useState(false);
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+  const [pwMsg, setPwMsg] = useState("");
+  const [pwLoading, setPwLoading] = useState(false);
+
+  const [pinSection, setPinSection] = useState(false);
+  const [newPin, setNewPin] = useState("");
+  const [pinMsg, setPinMsg] = useState("");
+
+  const [showCurriculum, setShowCurriculum] = useState(false);
+  const [expandedLevel, setExpandedLevel] = useState(null);
+  const [curriculumSubject, setCurriculumSubject] = useState("math");
+
+  const handleChangePassword = async () => {
+    if (newPw !== confirmPw) { setPwMsg("Passwords do not match."); return; }
+    if (newPw.length < 6) { setPwMsg("Password must be at least 6 characters."); return; }
+    setPwLoading(true); setPwMsg("");
+    try {
+      const { apiRequest } = await import("@/lib/queryClient");
+      await apiRequest("POST", "/api/change-password", { currentPassword: currentPw, newPassword: newPw });
+      setPwMsg("Password updated successfully!");
+      setCurrentPw(""); setNewPw(""); setConfirmPw("");
+    } catch (err) {
+      setPwMsg("Failed to update password. Check your current password.");
+    }
+    setPwLoading(false);
+  };
+
+  const handleChangePin = () => {
+    if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) { setPinMsg("PIN must be exactly 4 digits."); return; }
+    const appData = getApp();
+    if (appData) {
+      appData.parent.pin = newPin;
+      setApp(appData);
+      refresh();
+      setPinMsg("PIN updated!");
+      setNewPin("");
+    }
+  };
+
   return (
-    <div style={{padding:"20px",display:"flex",flexDirection:"column",gap:12}}>
+    <div style={{padding:"20px",display:"flex",flexDirection:"column",gap:16}}>
       <h2 style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:20,color:"var(--forest)"}}>Settings</h2>
-      {[
-        {label:"Email address",value:app?.parent?.email,icon:<Mail size={16}/>,action:"Change"},
-        {label:"Password",value:"••••••••",icon:<Lock size={16}/>,action:"Update"},
-        {label:"Parent PIN",value:"••••",icon:<Shield size={16}/>,action:"Change"},
-        {label:"Notifications",value:"Email & push",icon:<Bell size={16}/>,action:"Configure"},
-      ].map(row=>(
-        <div key={row.label} style={{...s.card(16),display:"flex",alignItems:"center",gap:14}}>
+
+      {/* Email display */}
+      <div style={{...s.card(16),display:"flex",alignItems:"center",gap:14}}>
+        <div style={{width:38,height:38,borderRadius:"var(--r-sm)",background:"var(--sage-ll)",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--forest)",flexShrink:0}}>
+          <Mail size={16}/>
+        </div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:11,color:"var(--ink-ll)",fontWeight:500,letterSpacing:"0.02em"}}>Email address</div>
+          <div style={{fontSize:14,color:"var(--ink-m)",fontWeight:600,marginTop:1}}>{app?.parent?.email}</div>
+        </div>
+      </div>
+
+      {/* Change Password */}
+      <div style={{...s.card(16)}}>
+        <button onClick={()=>setPwSection(!pwSection)} style={{display:"flex",alignItems:"center",gap:14,background:"none",border:"none",cursor:"pointer",width:"100%",textAlign:"left",padding:0}}>
           <div style={{width:38,height:38,borderRadius:"var(--r-sm)",background:"var(--sage-ll)",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--forest)",flexShrink:0}}>
-            {row.icon}
+            <Lock size={16}/>
           </div>
           <div style={{flex:1}}>
-            <div style={{fontSize:11,color:"var(--ink-ll)",fontWeight:500,letterSpacing:"0.02em"}}>{row.label}</div>
-            <div style={{fontSize:14,color:"var(--ink-m)",fontWeight:600,marginTop:1}}>{row.value}</div>
+            <div style={{fontSize:14,color:"var(--ink-m)",fontWeight:600}}>Change Password</div>
           </div>
-          <button style={{...s.btn("outline","","","sm"),fontSize:12,padding:"6px 12px"}}>{row.action}</button>
-        </div>
-      ))}
+          <ChevronRight size={16} color="var(--ink-ll)" style={{transform:pwSection?"rotate(90deg)":"none",transition:"transform .2s"}}/>
+        </button>
+        {pwSection && (
+          <div style={{marginTop:14,display:"flex",flexDirection:"column",gap:10}}>
+            <input type="password" placeholder="Current password" value={currentPw} onChange={e=>setCurrentPw(e.target.value)}
+              style={{...s.input(),fontSize:14}}/>
+            <input type="password" placeholder="New password" value={newPw} onChange={e=>setNewPw(e.target.value)}
+              style={{...s.input(),fontSize:14}}/>
+            <input type="password" placeholder="Confirm new password" value={confirmPw} onChange={e=>setConfirmPw(e.target.value)}
+              style={{...s.input(),fontSize:14}}/>
+            {pwMsg && <p style={{fontSize:12,color:pwMsg.includes("success")?"var(--green)":"var(--coral)",fontWeight:500}}>{pwMsg}</p>}
+            <button onClick={handleChangePassword} disabled={pwLoading} style={{...s.btn("primary",true,pwLoading,"sm")}}>
+              {pwLoading?"Updating...":"Update Password"}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Change PIN */}
+      <div style={{...s.card(16)}}>
+        <button onClick={()=>setPinSection(!pinSection)} style={{display:"flex",alignItems:"center",gap:14,background:"none",border:"none",cursor:"pointer",width:"100%",textAlign:"left",padding:0}}>
+          <div style={{width:38,height:38,borderRadius:"var(--r-sm)",background:"var(--sage-ll)",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--forest)",flexShrink:0}}>
+            <Shield size={16}/>
+          </div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:14,color:"var(--ink-m)",fontWeight:600}}>Change Parent PIN</div>
+          </div>
+          <ChevronRight size={16} color="var(--ink-ll)" style={{transform:pinSection?"rotate(90deg)":"none",transition:"transform .2s"}}/>
+        </button>
+        {pinSection && (
+          <div style={{marginTop:14,display:"flex",flexDirection:"column",gap:10}}>
+            <input type="text" inputMode="numeric" maxLength={4} placeholder="New 4-digit PIN" value={newPin}
+              onChange={e=>setNewPin(e.target.value.replace(/\D/g,"").slice(0,4))}
+              style={{...s.input(),fontSize:18,fontFamily:"'Fraunces',serif",fontWeight:700,letterSpacing:"0.3em",textAlign:"center"}}/>
+            {pinMsg && <p style={{fontSize:12,color:pinMsg.includes("updated")?"var(--green)":"var(--coral)",fontWeight:500}}>{pinMsg}</p>}
+            <button onClick={handleChangePin} style={{...s.btn("primary",true,false,"sm")}}>Update PIN</button>
+          </div>
+        )}
+      </div>
+
+      {/* Curriculum Overview */}
+      <div style={{...s.card(16)}}>
+        <button onClick={()=>setShowCurriculum(!showCurriculum)} style={{display:"flex",alignItems:"center",gap:14,background:"none",border:"none",cursor:"pointer",width:"100%",textAlign:"left",padding:0}}>
+          <div style={{width:38,height:38,borderRadius:"var(--r-sm)",background:"var(--sage-ll)",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--forest)",flexShrink:0}}>
+            <BookOpen size={16}/>
+          </div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:14,color:"var(--ink-m)",fontWeight:600}}>Curriculum Overview</div>
+            <div style={{fontSize:11,color:"var(--ink-ll)",marginTop:1}}>12 Math + 12 Reading levels · Pre-K through Grade 12</div>
+          </div>
+          <ChevronRight size={16} color="var(--ink-ll)" style={{transform:showCurriculum?"rotate(90deg)":"none",transition:"transform .2s"}}/>
+        </button>
+        {showCurriculum && (
+          <div style={{marginTop:14,display:"flex",flexDirection:"column",gap:6}}>
+            {/* Subject tabs */}
+            <div style={{display:"flex",background:"var(--cream-d)",borderRadius:"var(--r-full)",padding:3,gap:3}}>
+              {[{id:"math",label:"➗ Math"},{id:"ela",label:"📚 Reading"}].map(sub=>(
+                <button key={sub.id} onClick={()=>{setCurriculumSubject(sub.id);setExpandedLevel(null);}} style={{
+                  flex:1,borderRadius:"var(--r-full)",padding:"7px 10px",border:"none",cursor:"pointer",fontSize:12,fontWeight:700,transition:"all .15s",
+                  ...(curriculumSubject===sub.id?{background:"#fff",boxShadow:"0 1px 6px rgba(0,0,0,0.1)",color:"var(--forest)"}:{background:"transparent",color:"var(--ink-l)"}),
+                }}>{sub.label}</button>
+              ))}
+            </div>
+            {LEVEL_ORDER.map(lv=>{
+              const levelMapToUse = curriculumSubject === "ela" ? ELA_LEVEL_MAP : LEVEL_MAP;
+              const info=levelMapToUse[lv];
+              const isOpen=expandedLevel===lv;
+              return (
+                <div key={lv}>
+                  <button onClick={()=>setExpandedLevel(isOpen?null:lv)} style={{display:"flex",alignItems:"center",gap:10,width:"100%",background:isOpen?"var(--sage-ll)":"var(--cream)",border:"none",borderRadius:"var(--r-sm)",padding:"10px 12px",cursor:"pointer",textAlign:"left"}}>
+                    <div style={{width:28,height:28,borderRadius:"var(--r-full)",background:info.color,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:11,fontWeight:800,flexShrink:0}}>{lv}</div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:13,fontWeight:600,color:"var(--ink)"}}>{info.grade}</div>
+                      <div style={{fontSize:11,color:"var(--ink-ll)"}}>Ages {info.ageRange}</div>
+                    </div>
+                    <ChevronRight size={14} color="var(--ink-ll)" style={{transform:isOpen?"rotate(90deg)":"none",transition:"transform .2s"}}/>
+                  </button>
+                  {isOpen && (
+                    <div style={{padding:"8px 12px 8px 50px",display:"flex",flexWrap:"wrap",gap:6}}>
+                      {info.themes.map(t=>(
+                        <span key={t} style={{fontSize:11,background:"var(--cream-dd)",borderRadius:"var(--r-full)",padding:"4px 10px",color:"var(--ink-l)",fontWeight:500}}>{t}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Sign Out */}
       <div style={{marginTop:8}}>
         <button onClick={onLogout} style={{...s.btn("danger",true,false,"lg"),gap:8}}>
           <LogOut size={16}/> Sign Out
@@ -1475,6 +1617,735 @@ const LEVEL_MAP = {
   L:{ grade:"Algebra II / Pre-Calculus", ageRange:"16–18", color:"#16a085",
       themes:["Polynomial Functions","Rational Functions","Logarithms","Exponential Equations","Sequences and Series","Trig Functions","Trig Identities","Matrices","Combinatorics"] },
 };
+
+const ELA_LEVEL_MAP = {
+  A:{ grade:"Pre-K / Kindergarten", ageRange:"4–6", color:"#e91e8c",
+      themes:["Letter Recognition","Phonics Basics","Sight Words","Simple Sentences","Rhyming Words","Story Sequence"] },
+  B:{ grade:"Grade 1", ageRange:"6–7", color:"#9c27b0",
+      themes:["Short Vowels","Word Families","Reading Comprehension","Vocabulary","Capitalization","Punctuation Basics"] },
+  C:{ grade:"Grade 2", ageRange:"7–8", color:"#673ab7",
+      themes:["Long Vowels","Compound Words","Main Idea","Context Clues","Nouns & Verbs","Story Elements"] },
+  D:{ grade:"Grade 3", ageRange:"8–9", color:"#3f51b5",
+      themes:["Prefixes & Suffixes","Synonyms & Antonyms","Text Evidence","Adjectives & Adverbs","Paragraph Writing","Figurative Language"] },
+  E:{ grade:"Grade 4", ageRange:"9–10", color:"#2196f3",
+      themes:["Greek & Latin Roots","Inference","Compare & Contrast","Point of View","Grammar Review","Research Skills"] },
+  F:{ grade:"Grade 5", ageRange:"10–11", color:"#03a9f4",
+      themes:["Vocabulary in Context","Theme & Moral","Author's Purpose","Figurative Language","Sentence Structure","Opinion Writing"] },
+  G:{ grade:"Grade 6", ageRange:"11–12", color:"#00bcd4",
+      themes:["Connotation & Denotation","Central Idea","Argument & Evidence","Literary Devices","Comma Rules","Persuasive Writing"] },
+  H:{ grade:"Grade 7", ageRange:"12–13", color:"#009688",
+      themes:["Word Choice & Tone","Textual Analysis","Bias & Perspective","Complex Sentences","MLA Basics","Expository Writing"] },
+  I:{ grade:"Grade 8 / Pre-Algebra Level", ageRange:"13–14", color:"#4caf50",
+      themes:["Advanced Vocabulary","Rhetoric & Appeals","Poetry Analysis","Semicolons & Colons","Research Writing","Literary Analysis"] },
+  J:{ grade:"High School 1", ageRange:"14–15", color:"#8bc34a",
+      themes:["SAT Vocabulary","Analyzing Arguments","Shakespeare Basics","Complex Grammar","Essay Structure","Critical Reading"] },
+  K:{ grade:"High School 2", ageRange:"15–16", color:"#cddc39",
+      themes:["Advanced Grammar","AP Vocabulary","Comparative Literature","Rhetorical Analysis","College Essay","Satire & Irony"] },
+  L:{ grade:"High School 3", ageRange:"16–18", color:"#ff9800",
+      themes:["AP Lang Terms","Advanced Rhetoric","Research Paper","Literary Theory","SAT Reading","College-Level Writing"] },
+};
+
+function generateELAThemeQuestions(level, theme, mkId) {
+  const qs = [];
+  const add = (question, type, options, answer, hint, explanation) => {
+    qs.push({ id:mkId(), level, theme, difficulty:type==="input"?"medium":"easy", question, type, options:options||null, answer:String(answer), hint:hint||"", explanation:explanation||"" });
+  };
+  const addH = (question, type, options, answer, hint, explanation) => {
+    qs.push({ id:mkId(), level, theme, difficulty:"hard", question, type, options:options||null, answer:String(answer), hint:hint||"", explanation:explanation||"" });
+  };
+
+  // ── LEVEL A ──
+  if (theme==="Letter Recognition") {
+    const letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    for (let i=0;i<26;i++) {
+      add(`What letter is this? ${letters[i]}`,"input",null,letters[i],`Look at the shape of the letter.`,`The letter is ${letters[i]}.`);
+      const opts=shuffle([letters[i],letters[(i+1)%26],letters[(i+3)%26],letters[(i+5)%26]]);
+      add(`Which is the letter ${letters[i]}?`,"multiple",opts,letters[i],`Look for ${letters[i]}.`,`The answer is ${letters[i]}.`);
+      if(i<25) add(`What letter comes after ${letters[i]}?`,"multiple",shuffle([letters[i+1],letters[Math.max(0,i-1)],letters[(i+2)%26],letters[(i+4)%26]]),letters[i+1],`Think of the alphabet song.`,`After ${letters[i]} comes ${letters[i+1]}.`);
+    }
+    add("How many letters are in the alphabet?","input",null,"26","Sing the alphabet song and count.","There are 26 letters.");
+    add("What is the first letter of the alphabet?","multiple",["A","B","Z","M"],"A","The alphabet starts with...","A is the first letter.");
+    add("What is the last letter of the alphabet?","multiple",["Z","Y","X","A"],"Z","The alphabet ends with...","Z is the last letter.");
+  }
+  if (theme==="Phonics Basics") {
+    const phonics=[["B","bat"],["C","cat"],["D","dog"],["F","fish"],["G","goat"],["H","hat"],["J","jam"],["K","kite"],["L","leg"],["M","map"],["N","net"],["P","pig"],["R","run"],["S","sun"],["T","top"],["V","van"],["W","web"],["Z","zip"]];
+    phonics.forEach(([letter,word])=>{
+      add(`What sound does the letter ${letter} make? Think of the word "${word}".`,"multiple",shuffle([`/${letter.toLowerCase()}/`,"/a/","/e/","/o/"]),`/${letter.toLowerCase()}/`,`Say "${word}" slowly.`,`${letter} makes the /${letter.toLowerCase()}/ sound as in "${word}".`);
+      add(`What letter does "${word}" start with?`,"input",null,letter,`Say "${word}" slowly — what's the first sound?`,`"${word}" starts with ${letter}.`);
+    });
+    ["a","e","i","o","u"].forEach(v=>{
+      add(`Is "${v.toUpperCase()}" a vowel or a consonant?`,"multiple",["Vowel","Consonant"],"Vowel","A, E, I, O, U are...","Vowels are A, E, I, O, U.");
+    });
+    ["B","C","D","F"].forEach(c=>{
+      add(`Is "${c}" a vowel or a consonant?`,"multiple",["Vowel","Consonant"],"Consonant","A, E, I, O, U are vowels. Everything else is...","Consonants are all the letters that aren't vowels.");
+    });
+  }
+  if (theme==="Sight Words") {
+    const words=["the","and","is","it","to","in","I","a","my","we","can","see","go","like","he","she","was","for","on","are","you","they","this","have","from","not","but","what","all","had"];
+    words.forEach(w=>{
+      add(`Can you spell this sight word? "${w.toUpperCase()}"`,"input",null,w,`Sound it out: "${w}".`,`The word is "${w}".`);
+      const wrong=shuffle(words.filter(x=>x!==w)).slice(0,3);
+      add(`Which word is "${w}"?`,"multiple",shuffle([w,...wrong]),w,`Look carefully at each word.`,`The correct word is "${w}".`);
+    });
+  }
+  if (theme==="Simple Sentences") {
+    const subjects=["The cat","The dog","A bird","The fish","My mom"];
+    const verbs=["runs","jumps","sits","eats","plays"];
+    subjects.forEach((sub,i)=>{
+      add(`Finish the sentence: "${sub} _____."  (${verbs[i]})`,"input",null,verbs[i],`What does ${sub.toLowerCase()} do?`,`${sub} ${verbs[i]}.`);
+      add(`What is the subject of: "${sub} ${verbs[i]}."?`,"multiple",shuffle([sub,"A rock","The house","nothing"]),sub,`The subject is who or what does the action.`,`The subject is "${sub}".`);
+    });
+    add("Every sentence starts with a _____ letter.","multiple",["capital","small","number","symbol"],"capital","Think about how sentences begin.","Sentences start with a capital letter.");
+    add("Every sentence ends with a _____.","multiple",["period","comma","colon","dash"],"period","What goes at the end?","Sentences end with a period (or ? or !).");
+    for(let i=0;i<8;i++) add(`Does this need a period or question mark? "Where is the cat___"`,"multiple",["?",".","!",","],"?","Is it asking something?","Questions end with ?");
+  }
+  if (theme==="Rhyming Words") {
+    const pairs=[["cat","hat"],["dog","log"],["sun","fun"],["bed","red"],["pig","big"],["hop","top"],["run","bun"],["lake","cake"],["bell","well"],["king","ring"],["fish","dish"],["mat","bat"],["pen","ten"],["sit","hit"],["cup","pup"]];
+    pairs.forEach(([a,b])=>{
+      const wrong=shuffle(pairs.filter(p=>p[0]!==a).map(p=>p[1])).slice(0,3);
+      add(`Which word rhymes with "${a}"?`,"multiple",shuffle([b,...wrong]),b,`Words that rhyme sound the same at the end.`,`"${a}" rhymes with "${b}".`);
+      add(`Do "${a}" and "${b}" rhyme?`,"multiple",["Yes","No"],"Yes",`Do they sound alike at the end?`,`"${a}" and "${b}" rhyme!`);
+    });
+  }
+  if (theme==="Story Sequence") {
+    add("What happens FIRST in a story?","multiple",["The beginning","The middle","The end","The title"],"The beginning","Stories have a beginning, middle, and end.","The beginning comes first.");
+    add("What happens LAST in a story?","multiple",["The end","The beginning","The middle","The title"],"The end","Stories have a beginning, middle, and end.","The end comes last.");
+    for(let i=0;i<5;i++){
+      add(`Put in order: "She ate breakfast. She woke up. She went to school." What happened first?`,"multiple",["She woke up","She ate breakfast","She went to school","She slept"],"She woke up","Think about what you do first in the morning.","First she woke up, then ate, then went to school.");
+      add(`Put in order: "The seed grew. We planted a seed. A flower bloomed." What happened first?`,"multiple",["We planted a seed","The seed grew","A flower bloomed","It rained"],"We planted a seed","What has to happen before something can grow?","First plant, then grow, then bloom.");
+      add(`Put in order: "He blew out candles. He opened presents. His friends arrived." What happened first?`,"multiple",["His friends arrived","He blew out candles","He opened presents","He ate cake"],"His friends arrived","Friends come to the party before cake.","First friends arrive, then candles, then presents.");
+    }
+  }
+
+  // ── LEVEL B ──
+  if (theme==="Short Vowels") {
+    const words=[["cat","a"],["bed","e"],["pig","i"],["dog","o"],["bus","u"],["hat","a"],["pen","e"],["sit","i"],["hot","o"],["cup","u"],["bat","a"],["red","e"],["fin","i"],["log","o"],["sun","u"]];
+    words.forEach(([w,v])=>{
+      add(`What is the short vowel sound in "${w}"?`,"multiple",shuffle(["a","e","i","o","u"]),v,`Say "${w}" slowly. Which vowel do you hear?`,`"${w}" has a short ${v} sound.`);
+      add(`Type a word with a short "${v}" sound.`,"input",null,w,`Think: c-${v}-t, b-${v}-d...`,`"${w}" has a short ${v}.`);
+    });
+  }
+  if (theme==="Word Families") {
+    const families=[["at","cat","bat","hat","mat","sat","rat","fat","pat"],["an","can","ban","fan","man","pan","ran","tan","van"],["ig","big","dig","fig","jig","pig","rig","wig"],["ot","cot","dot","got","hot","lot","not","pot","rot"],["ug","bug","dug","hug","jug","mug","pug","rug","tug"]];
+    families.forEach(([ending,...words])=>{
+      words.forEach(w=>{
+        const wrong=shuffle(families.filter(f=>f[0]!==ending).map(f=>f[1])).slice(0,3);
+        add(`"${w}" belongs to the -${ending} family. Which other word belongs?`,"multiple",shuffle([words.find(x=>x!==w)||words[0],...wrong]),words.find(x=>x!==w)||words[0],`Words in the -${ending} family end in -${ending}.`,`Both end in -${ending}.`);
+      });
+    });
+  }
+  if (theme==="Reading Comprehension") {
+    const passages=[
+      {text:"Tom has a red ball. He likes to play with it in the park.",q:"What color is Tom's ball?",a:"Red",opts:["Red","Blue","Green","Yellow"]},
+      {text:"The cat sat on a mat. It was a sunny day.",q:"Where did the cat sit?",a:"On a mat",opts:["On a mat","On a bed","On a chair","On the floor"]},
+      {text:"Sara loves to read books. Her favorite book is about a dog named Max.",q:"What is Sara's favorite book about?",a:"A dog named Max",opts:["A dog named Max","A cat","A bird","A fish"]},
+      {text:"Ben went to the store. He bought milk and bread.",q:"What did Ben buy?",a:"Milk and bread",opts:["Milk and bread","Eggs","Juice","Cookies"]},
+      {text:"It was raining outside. Lily took her umbrella.",q:"Why did Lily take her umbrella?",a:"It was raining",opts:["It was raining","It was sunny","It was snowing","It was windy"]},
+    ];
+    passages.forEach(p=>{
+      add(`Read: "${p.text}" — ${p.q}`,"multiple",shuffle(p.opts),p.a,"Read the passage carefully.","The answer is found in the text.");
+      add(`Read: "${p.text}" — ${p.q} (type your answer)`,"input",null,p.a,"Look for the answer in the passage.","Re-read the passage to find it.");
+    });
+    for(let i=0;i<5;i++) add(`In the sentence "The happy puppy ran fast," what word describes the puppy?`,"multiple",shuffle(["happy","ran","fast","the"]),"happy","Describing words tell us about the noun.","'Happy' describes the puppy.");
+  }
+  if (theme==="Vocabulary") {
+    const vocab=[["big","large"],["small","tiny"],["fast","quick"],["happy","glad"],["sad","unhappy"],["pretty","beautiful"],["smart","clever"],["begin","start"],["end","finish"],["hard","difficult"]];
+    vocab.forEach(([w,syn])=>{
+      add(`Which word means the same as "${w}"?`,"multiple",shuffle([syn,"broken","purple","seven"]),syn,`Think of another word for "${w}".`,`"${syn}" means the same as "${w}".`);
+      add(`"${w}" means the same as _____.`,"input",null,syn,`Another word for ${w}...`,`"${w}" = "${syn}".`);
+    });
+  }
+  if (theme==="Capitalization") {
+    const names=["john","sara","new york","monday","january","mr. smith","fido","main street"];
+    const correct=["John","Sara","New York","Monday","January","Mr. Smith","Fido","Main Street"];
+    names.forEach((n,i)=>{
+      add(`Capitalize correctly: "${n}"`,"input",null,correct[i],"Names and proper nouns start with a capital letter.",`"${correct[i]}" is correct.`);
+      add(`Should "${n}" be capitalized?`,"multiple",["Yes","No"],"Yes","Is it a name, place, or day?","Names, places, and days are capitalized.");
+    });
+    add("Which should be capitalized?","multiple",shuffle(["tuesday","ball","run","happy"]),"tuesday","Days of the week are capitalized.","Tuesday is a proper noun.");
+    add("Which should be capitalized?","multiple",shuffle(["march","chair","walk","green"]),"march","Months are capitalized.","March is a proper noun.");
+    for(let i=0;i<5;i++) add("The first word of a sentence should be _____.","multiple",["capitalized","lowercase","bold","underlined"],"capitalized","Every sentence starts with...","The first word is always capitalized.");
+  }
+  if (theme==="Punctuation Basics") {
+    for(let i=0;i<5;i++){
+      add("A telling sentence ends with a _____.","multiple",shuffle(["period","question mark","exclamation point","comma"]),"period","Telling sentences end with .","A period ends a statement.");
+      add("An asking sentence ends with a _____.","multiple",shuffle(["question mark","period","exclamation point","comma"]),"question mark","Asking sentences end with ?","A question mark ends a question.");
+      add("A sentence showing excitement ends with _____.","multiple",shuffle(["exclamation point","period","question mark","comma"]),"exclamation point","Exciting! Amazing! Wow!","An exclamation point shows strong feeling.");
+    }
+    add(`What punctuation goes here? "Where are you going___"`,"multiple",["?",".",",","!"],"?","Is it asking something?","Questions need a question mark.");
+    add(`What punctuation goes here? "I love ice cream___"`,"multiple",["!","?",".",","],"!","It shows excitement.","An exclamation point shows excitement.");
+    add(`What punctuation goes here? "The cat is sleeping___"`,"multiple",[".",",","?","!"],".","It's a simple statement.","Statements end with periods.");
+  }
+
+  // ── LEVEL C ──
+  if (theme==="Long Vowels") {
+    const words=[["cake","a"],["bike","i"],["bone","o"],["cute","u"],["tree","e"],["kite","i"],["home","o"],["tube","u"],["make","a"],["these","e"],["time","i"],["hope","o"],["mule","u"],["lake","a"],["gene","e"]];
+    words.forEach(([w,v])=>{
+      add(`What is the long vowel sound in "${w}"?`,"multiple",shuffle(["a","e","i","o","u"]),v,`The silent E makes the vowel say its name.`,`"${w}" has a long ${v} sound.`);
+      add(`Does "${w}" have a long or short vowel sound?`,"multiple",["Long","Short"],"Long","Silent E at the end makes it long.","The E at the end makes the vowel long.");
+    });
+  }
+  if (theme==="Compound Words") {
+    const compounds=[["sun","flower","sunflower"],["rain","bow","rainbow"],["foot","ball","football"],["bed","room","bedroom"],["cup","cake","cupcake"],["air","plane","airplane"],["base","ball","baseball"],["some","thing","something"],["out","side","outside"],["butter","fly","butterfly"],["fire","truck","firetruck"],["book","shelf","bookshelf"],["tooth","brush","toothbrush"],["snow","man","snowman"],["star","fish","starfish"]];
+    compounds.forEach(([a,b,c])=>{
+      add(`Combine "${a}" + "${b}" = ?`,"input",null,c,`Put the two words together.`,`${a} + ${b} = ${c}.`);
+      const wrong=shuffle(compounds.filter(x=>x[2]!==c).map(x=>x[2])).slice(0,3);
+      add(`Which is a compound word?`,"multiple",shuffle([c,...wrong]),c,`A compound word is two words put together.`,`"${c}" = "${a}" + "${b}".`);
+    });
+  }
+  if (theme==="Main Idea") {
+    const passages=[
+      {text:"Dogs make great pets. They are loyal and fun. Dogs love to play fetch and go for walks.",q:"What is the main idea?",a:"Dogs make great pets",opts:["Dogs make great pets","Cats are better","Birds can fly","Fish swim"]},
+      {text:"Apples are a healthy snack. They have vitamins and taste sweet. You can eat them raw or in a pie.",q:"What is the main idea?",a:"Apples are a healthy snack",opts:["Apples are a healthy snack","Pie is tasty","Vitamins are important","Oranges are better"]},
+      {text:"Exercise is important for everyone. It keeps your body strong and your mind sharp. You should try to exercise every day.",q:"What is the main idea?",a:"Exercise is important",opts:["Exercise is important","Sleep is good","Food gives energy","Water is wet"]},
+    ];
+    passages.forEach(p=>{
+      add(`Read: "${p.text}" — ${p.q}`,"multiple",shuffle(p.opts),p.a,"The main idea is what the whole passage is about.","The main idea is the most important point.");
+      add(`Read: "${p.text}" — What is the passage mainly about?`,"input",null,p.a,"What is the big idea?","The main idea is the central topic.");
+    });
+    for(let i=0;i<9;i++) add("The main idea of a paragraph is _____.","multiple",shuffle(["what the whole paragraph is about","a small detail","the first word","the last sentence"]),"what the whole paragraph is about","The main idea is the big picture.","The main idea tells what the paragraph is mostly about.");
+  }
+  if (theme==="Context Clues") {
+    const clues=[
+      {sent:"The enormous elephant was the biggest animal at the zoo.",word:"enormous",a:"Very big",opts:["Very big","Very small","Fast","Colorful"]},
+      {sent:"She was famished after not eating all day, so she ate three plates of food.",word:"famished",a:"Very hungry",opts:["Very hungry","Tired","Happy","Scared"]},
+      {sent:"The frigid wind made everyone shiver and put on their coats.",word:"frigid",a:"Very cold",opts:["Very cold","Hot","Windy","Calm"]},
+      {sent:"He was elated when he won the prize — he jumped up and down with joy.",word:"elated",a:"Very happy",opts:["Very happy","Angry","Sad","Tired"]},
+      {sent:"The swift rabbit ran so fast that no one could catch it.",word:"swift",a:"Very fast",opts:["Very fast","Slow","Big","Small"]},
+    ];
+    clues.forEach(c=>{
+      add(`"${c.sent}" What does "${c.word}" mean?`,"multiple",shuffle(c.opts),c.a,"Use the other words to figure out the meaning.","Context clues help you figure out unknown words.");
+      add(`Based on the sentence "${c.sent}", "${c.word}" means _____.`,"input",null,c.a,"What does the rest of the sentence tell you?",`"${c.word}" means "${c.a}".`);
+      addH(`Write a sentence using the word "${c.word}".`,"input",null,c.word,"Use it like the example sentence.",`Any sentence correctly using "${c.word}" works.`);
+    });
+  }
+  if (theme==="Nouns & Verbs") {
+    const nouns=["dog","cat","house","tree","book","ball","car","apple","teacher","school"];
+    const verbs=["run","jump","eat","read","play","sing","walk","swim","write","draw"];
+    nouns.forEach(n=>{
+      add(`Is "${n}" a noun or a verb?`,"multiple",["Noun","Verb"],"Noun","A noun is a person, place, or thing.","Nouns name people, places, or things.");
+      add(`Which word is a NOUN?`,"multiple",shuffle([n,"run","quickly","beautiful"]),n,"A noun is a person, place, or thing.",`"${n}" is a noun.`);
+    });
+    verbs.forEach(v=>{
+      add(`Is "${v}" a noun or a verb?`,"multiple",["Noun","Verb"],"Verb","A verb is an action word.","Verbs show action.");
+      add(`Which word is a VERB?`,"multiple",shuffle([v,"table","pretty","slowly"]),v,"A verb shows action.",`"${v}" is a verb.`);
+    });
+  }
+  if (theme==="Story Elements") {
+    for(let i=0;i<5;i++){
+      add("The CHARACTERS in a story are _____.","multiple",shuffle(["the people or animals in the story","where the story takes place","what happens","the author"]),"the people or animals in the story","Characters are who the story is about.","Characters are the people/animals in a story.");
+      add("The SETTING of a story is _____.","multiple",shuffle(["where and when the story takes place","who is in the story","the problem","the ending"]),"where and when the story takes place","Setting = where + when.","The setting is the time and place.");
+      add("The PLOT of a story is _____.","multiple",shuffle(["what happens in the story","who is in it","where it takes place","the title"]),"what happens in the story","Plot = events.","The plot is the sequence of events.");
+    }
+  }
+
+  // ── LEVEL D ──
+  if (theme==="Prefixes & Suffixes") {
+    const prefixes=[["un","not","unhappy","happy"],["re","again","redo","do"],["pre","before","preview","view"],["mis","wrongly","misspell","spell"],["dis","not","disagree","agree"]];
+    prefixes.forEach(([pre,meaning,example,base])=>{
+      add(`What does the prefix "${pre}-" mean?`,"multiple",shuffle([meaning,"after","more","under"]),meaning,`Think: "${example}" means ${meaning} ${base}.`,`"${pre}-" means "${meaning}".`);
+      add(`Add the prefix "${pre}-" to "${base}":`,  "input",null,example,`Put "${pre}" in front of "${base}".`,`${pre} + ${base} = ${example}.`);
+      add(`"${example}" means _____ ${base}.`,"multiple",shuffle([meaning,"very","always","sometimes"]),meaning,`The prefix "${pre}-" means...`,`"${pre}-" means "${meaning}".`);
+    });
+    const suffixes=[["ful","full of","hopeful","hope"],["less","without","careless","care"],["ness","state of","kindness","kind"],["ly","in a way","slowly","slow"],["er","one who","teacher","teach"],["ing","doing","running","run"],["ed","past tense","jumped","jump"]];
+    suffixes.forEach(([suf,meaning,example,base])=>{
+      add(`What does the suffix "-${suf}" mean?`,"multiple",shuffle([meaning,"before","not","again"]),meaning,`Think: "${example}" means ${meaning} ${base}.`,`"-${suf}" means "${meaning}".`);
+      add(`Add "-${suf}" to "${base}":`, "input",null,example,`Put "-${suf}" at the end of "${base}".`,`${base} + ${suf} = ${example}.`);
+    });
+  }
+  if (theme==="Synonyms & Antonyms") {
+    const syns=[["happy","joyful"],["sad","unhappy"],["big","large"],["small","tiny"],["fast","quick"],["slow","sluggish"],["smart","clever"],["pretty","beautiful"],["angry","furious"],["brave","courageous"],["start","begin"],["end","finish"],["easy","simple"],["hard","difficult"],["loud","noisy"]];
+    syns.forEach(([a,b])=>{
+      add(`What is a synonym for "${a.toUpperCase()}"?`,"multiple",shuffle([b,"purple","seven","chair"]),b,`A synonym means the same thing.`,`"${b}" means the same as "${a}".`);
+      add(`"${a}" and "${b}" are _____.`,"multiple",["Synonyms","Antonyms","Homophones","Verbs"],"Synonyms","They mean the same thing.","Synonyms have the same meaning.");
+    });
+    const ants=[["hot","cold"],["big","small"],["happy","sad"],["fast","slow"],["up","down"],["light","dark"],["old","new"],["open","close"],["hard","soft"],["wet","dry"],["loud","quiet"],["long","short"],["full","empty"],["right","wrong"],["win","lose"]];
+    ants.forEach(([a,b])=>{
+      add(`What is an antonym for "${a.toUpperCase()}"?`,"multiple",shuffle([b,"purple","seven","chair"]),b,`An antonym means the opposite.`,`"${b}" is the opposite of "${a}".`);
+      add(`"${a}" and "${b}" are _____.`,"multiple",["Antonyms","Synonyms","Homophones","Verbs"],"Antonyms","They mean the opposite.","Antonyms have opposite meanings.");
+    });
+  }
+  if (theme==="Text Evidence") {
+    const passages=[
+      {text:"Maria loves painting. She paints every day after school. Her room is full of paintings.",q:"How do you know Maria loves painting?",a:"She paints every day",opts:["She paints every day","She said so","Her mom told her","She has brushes"]},
+      {text:"The sky grew dark and the wind blew hard. Trees bent sideways.",q:"What evidence tells you a storm is coming?",a:"The sky grew dark and wind blew hard",opts:["The sky grew dark and wind blew hard","It was sunny","Birds were singing","Flowers bloomed"]},
+    ];
+    passages.forEach(p=>{
+      for(let i=0;i<4;i++){
+        add(`Read: "${p.text}" — ${p.q}`,"multiple",shuffle(p.opts),p.a,"Find the clues in the text.","Text evidence means proof from the passage.");
+      }
+      add(`Read: "${p.text}" — Find evidence: ${p.q}`,"input",null,p.a,"Quote from the passage.","Look at what the text says directly.");
+    });
+    for(let i=0;i<5;i++) add("Text evidence is _____.","multiple",shuffle(["proof from the passage","your opinion","a guess","what a friend says"]),"proof from the passage","Evidence comes from the text itself.","Text evidence = proof found in the reading.");
+  }
+  if (theme==="Adjectives & Adverbs") {
+    const adjs=["big","small","red","happy","tall","old","new","fast","slow","bright"];
+    adjs.forEach(a=>{
+      add(`Is "${a}" an adjective or an adverb?`,"multiple",["Adjective","Adverb"],"Adjective","Adjectives describe nouns.",`"${a}" describes a noun, so it's an adjective.`);
+    });
+    const advs=["quickly","slowly","loudly","softly","happily","sadly","carefully","badly","easily","eagerly"];
+    advs.forEach(a=>{
+      add(`Is "${a}" an adjective or an adverb?`,"multiple",["Adjective","Adverb"],"Adverb","Adverbs describe verbs and often end in -ly.",`"${a}" describes how something is done.`);
+    });
+    add("Adjectives describe _____.","multiple",shuffle(["nouns","verbs","adverbs","prepositions"]),"nouns","Adjectives tell about people, places, things.","Adjectives modify nouns.");
+    add("Adverbs describe _____.","multiple",shuffle(["verbs","nouns","articles","pronouns"]),"verbs","Adverbs tell how, when, or where.","Adverbs modify verbs.");
+  }
+  if (theme==="Paragraph Writing") {
+    for(let i=0;i<5;i++){
+      add("Every paragraph should have a _____ sentence.","multiple",shuffle(["topic","funny","long","short"]),"topic","The first sentence tells what the paragraph is about.","A topic sentence introduces the main idea.");
+      add("Supporting details _____.","multiple",shuffle(["give more information about the main idea","change the topic","end the paragraph","start a new paragraph"]),"give more information about the main idea","Details support the topic sentence.","Supporting details explain the main idea.");
+      add("A concluding sentence _____.","multiple",shuffle(["wraps up the paragraph","starts a new idea","asks a question","is always short"]),"wraps up the paragraph","The last sentence closes the paragraph.","A concluding sentence summarizes or restates the main idea.");
+    }
+  }
+  if (theme==="Figurative Language" && level==="D") {
+    const similes=[["quick as a fox","Simile"],["the sun is a golden coin","Metaphor"],["the wind whispered through the trees","Personification"],["I told you a million times","Hyperbole"],["buzz went the bee","Onomatopoeia"],["brave as a lion","Simile"],["life is a rollercoaster","Metaphor"],["the flowers danced in the wind","Personification"],["I'm so hungry I could eat a horse","Hyperbole"],["crash bang boom","Onomatopoeia"]];
+    similes.forEach(([ex,type])=>{
+      add(`"${ex}" is an example of:`,"multiple",shuffle(["Simile","Metaphor","Personification","Hyperbole"]),type,`${type==="Simile"?"Uses 'like' or 'as'":type==="Metaphor"?"Says something IS something else":type==="Personification"?"Gives human qualities to non-human things":"Extreme exaggeration"}.`,`This is ${type.toLowerCase()}.`);
+    });
+    add("A simile uses the words _____.","multiple",shuffle(["like or as","is","but","and"]),"like or as","Similes compare using 'like' or 'as'.","Similes use 'like' or 'as' to compare.");
+    add("A metaphor says something _____ something else.","multiple",shuffle(["IS","LIKE","AS","BUT"]),"IS","Metaphors don't use 'like' or 'as'.","Metaphors directly say one thing is another.");
+  }
+
+  // ── LEVEL E ──
+  if (theme==="Greek & Latin Roots") {
+    const roots=[["bio","life","biology"],["graph","write","autograph"],["port","carry","transport"],["aud","hear","audience"],["vis","see","visible"],["dict","say","dictionary"],["struct","build","construct"],["rupt","break","interrupt"],["scrib","write","describe"],["spec","look","inspect"],["aqua","water","aquarium"],["terra","earth","territory"],["phon","sound","telephone"],["auto","self","automatic"],["micro","small","microscope"]];
+    roots.forEach(([root,meaning,example])=>{
+      add(`The root "${root}" means:`, "multiple",shuffle([meaning,"opposite","again","under"]),meaning,`Think of the word "${example}".`,`"${root}" means "${meaning}" as in "${example}".`);
+      add(`Which word contains the root "${root}"?`, "multiple",shuffle([example,"banana","purple","thirteen"]),example,`"${root}" means "${meaning}".`,`"${example}" contains "${root}".`);
+    });
+  }
+  if (theme==="Inference") {
+    const inferences=[
+      {text:"Sam grabbed his umbrella and raincoat before leaving.",q:"What can you infer about the weather?",a:"It is raining or about to rain",opts:["It is raining or about to rain","It is sunny","It is snowing","It is windy"]},
+      {text:"The puppy wagged its tail and jumped on the visitor.",q:"How does the puppy feel?",a:"Happy and excited",opts:["Happy and excited","Scared","Angry","Tired"]},
+      {text:"Maria yawned and rubbed her eyes during the movie.",q:"What can you infer about Maria?",a:"She is tired",opts:["She is tired","She is scared","She is hungry","She is angry"]},
+      {text:"The cafeteria was noisy with children laughing and talking.",q:"What can you infer?",a:"It is lunchtime at school",opts:["It is lunchtime at school","It is nighttime","Everyone is sleeping","The school is closed"]},
+    ];
+    inferences.forEach(inf=>{
+      add(`Read: "${inf.text}" — ${inf.q}`,"multiple",shuffle(inf.opts),inf.a,"Use clues in the text to figure out what's not directly stated.","An inference uses clues to draw a conclusion.");
+      add(`Read: "${inf.text}" — ${inf.q}`,"input",null,inf.a,"What do the details suggest?","Infer means to read between the lines.");
+    });
+    for(let i=0;i<7;i++) add("An inference is _____.","multiple",shuffle(["a conclusion based on evidence and reasoning","a fact stated in the text","a random guess","the author's name"]),"a conclusion based on evidence and reasoning","Inferences use clues from the text.","An inference is an educated conclusion.");
+  }
+  if (theme==="Compare & Contrast") {
+    for(let i=0;i<5;i++){
+      add("When you COMPARE two things, you find _____.","multiple",shuffle(["how they are similar","how they are different","what color they are","how old they are"]),"how they are similar","Compare = same.","Comparing finds similarities.");
+      add("When you CONTRAST two things, you find _____.","multiple",shuffle(["how they are different","how they are similar","their names","their sizes"]),"how they are different","Contrast = different.","Contrasting finds differences.");
+      add("Which signal word shows COMPARISON?","multiple",shuffle(["similarly","however","but","although"]),"similarly","Comparison = alike.","'Similarly' shows comparison.");
+      add("Which signal word shows CONTRAST?","multiple",shuffle(["however","likewise","also","similarly"]),"however","Contrast = different.","'However' signals contrast.");
+    }
+  }
+  if (theme==="Point of View") {
+    for(let i=0;i<5;i++){
+      add(`"I went to the store." — What point of view is this?`,"multiple",shuffle(["First person","Second person","Third person","Fourth person"]),"First person","Look for 'I' or 'we'.","First person uses 'I' or 'we'.");
+      add(`"You should try this." — What point of view?`,"multiple",shuffle(["Second person","First person","Third person","None"]),"Second person","Look for 'you'.","Second person uses 'you'.");
+      add(`"She walked to school." — What point of view?`,"multiple",shuffle(["Third person","First person","Second person","None"]),"Third person","Look for 'he', 'she', 'they'.","Third person uses 'he', 'she', 'they'.");
+    }
+  }
+  if (theme==="Grammar Review") {
+    for(let i=0;i<5;i++){
+      add("A NOUN is _____.","multiple",shuffle(["a person, place, or thing","an action word","a describing word","a connecting word"]),"a person, place, or thing","Nouns name things.","Nouns are people, places, or things.");
+      add("A VERB is _____.","multiple",shuffle(["an action word","a person","a place","a describing word"]),"an action word","Verbs show action.","Verbs express action or state of being.");
+      add("An ADJECTIVE describes _____.","multiple",shuffle(["a noun","a verb","an adverb","a conjunction"]),"a noun","Adjectives modify nouns.","Adjectives describe nouns.");
+      add("A PRONOUN replaces _____.","multiple",shuffle(["a noun","a verb","an adjective","a sentence"]),"a noun","He, she, they, it...","Pronouns take the place of nouns.");
+    }
+  }
+  if (theme==="Research Skills") {
+    for(let i=0;i<5;i++){
+      add("A reliable source is _____.","multiple",shuffle(["a trusted place to find information","any website","a friend's opinion","a social media post"]),"a trusted place to find information","Think: can you trust it?","Reliable sources are trustworthy and accurate.");
+      add("An encyclopedia is _____.","multiple",shuffle(["a book of facts on many topics","a story book","a dictionary","a comic book"]),"a book of facts on many topics","Encyclopedias have factual information.","Encyclopedias contain factual articles.");
+      add("The table of contents is found _____.","multiple",shuffle(["at the beginning of a book","at the end","in the middle","on the cover"]),"at the beginning of a book","It lists chapters and pages.","The table of contents is at the front.");
+    }
+  }
+
+  // ── LEVEL F ──
+  if (theme==="Vocabulary in Context" && level==="F") {
+    const vocab=[
+      {sent:"The benevolent king gave food to all the poor families.",word:"benevolent",a:"Kind and generous",opts:["Kind and generous","Mean","Confused","Loud"]},
+      {sent:"The meticulous artist spent hours on every tiny detail.",word:"meticulous",a:"Very careful and precise",opts:["Very careful and precise","Messy","Lazy","Quick"]},
+      {sent:"Her candid response surprised everyone because it was so honest.",word:"candid",a:"Honest and open",opts:["Honest and open","Sneaky","Quiet","Rude"]},
+      {sent:"The dilapidated building was falling apart.",word:"dilapidated",a:"In poor condition",opts:["In poor condition","Brand new","Beautiful","Tall"]},
+      {sent:"She showed great resilience by bouncing back from every setback.",word:"resilience",a:"Ability to recover quickly",opts:["Ability to recover quickly","Weakness","Anger","Speed"]},
+    ];
+    vocab.forEach(v=>{
+      add(`"${v.sent}" — The word "${v.word}" means:`,"multiple",shuffle(v.opts),v.a,"Use context clues from the sentence.",`"${v.word}" means "${v.a}".`);
+      add(`Based on context, "${v.word}" means _____.`,"input",null,v.a,"Read the whole sentence for clues.",`"${v.word}" means "${v.a}".`);
+      addH(`Use "${v.word}" in a sentence.`,"input",null,v.word,"Show you understand the meaning.",`Use it to show its meaning.`);
+    });
+  }
+  if (theme==="Theme & Moral") {
+    for(let i=0;i<5;i++){
+      add("The THEME of a story is _____.","multiple",shuffle(["the lesson or message","the main character","the setting","the title"]),"the lesson or message","Theme = the big lesson.","The theme is the underlying message.");
+      add("A MORAL is _____.","multiple",shuffle(["a lesson learned from a story","a character","a setting","a conflict"]),"a lesson learned from a story","Fables often have morals.","A moral is a life lesson from the story.");
+      add(`The story of the tortoise and the hare teaches: "Slow and steady wins the race." This is the _____.`,"multiple",shuffle(["moral","setting","character","conflict"]),"moral","It's the lesson of the story.","The moral is the lesson.");
+    }
+  }
+  if (theme==="Author's Purpose") {
+    for(let i=0;i<5;i++){
+      add("The three main purposes for writing are _____.","multiple",shuffle(["to inform, persuade, and entertain","to read, write, and listen","to speak, sing, and dance","to eat, sleep, and play"]),"to inform, persuade, and entertain","PIE: Persuade, Inform, Entertain.","Authors write to persuade, inform, or entertain.");
+      add("A newspaper article is written to _____.","multiple",shuffle(["inform","entertain","persuade","confuse"]),"inform","News gives facts.","News articles inform readers.");
+      add("A fairy tale is written to _____.","multiple",shuffle(["entertain","inform","persuade","scare"]),"entertain","Stories are for enjoyment.","Fairy tales entertain readers.");
+      add("An advertisement is written to _____.","multiple",shuffle(["persuade","inform","entertain","educate"]),"persuade","Ads want you to buy something.","Advertisements persuade people.");
+    }
+  }
+  if (theme==="Figurative Language" && level==="F") {
+    const examples=[
+      ["The stars winked at me","Personification"],["He runs like the wind","Simile"],["Time is money","Metaphor"],["I have a ton of homework","Hyperbole"],["The leaves whispered secrets","Personification"],["She is as brave as a lion","Simile"],["The world is a stage","Metaphor"],["I waited forever","Hyperbole"],["The thunder grumbled","Personification"],["Cool as a cucumber","Simile"],
+    ];
+    examples.forEach(([ex,type])=>{
+      add(`"${ex}" is an example of:`,"multiple",shuffle(["Simile","Metaphor","Personification","Hyperbole"]),type,`Think about what technique is being used.`,`This is ${type.toLowerCase()}.`);
+    });
+    add("Personification gives _____ qualities to non-human things.","multiple",shuffle(["human","animal","plant","rock"]),"human","Person = human.","Personification attributes human traits to non-human things.");
+    add("Hyperbole is _____.","multiple",shuffle(["extreme exaggeration","a comparison using 'like'","a direct comparison","giving human traits"]),"extreme exaggeration","Hyper = over the top.","Hyperbole is extreme exaggeration for effect.");
+  }
+  if (theme==="Sentence Structure" && level==="F") {
+    for(let i=0;i<5;i++){
+      add("A SIMPLE sentence has _____.","multiple",shuffle(["one independent clause","two independent clauses","a dependent clause","no subject"]),"one independent clause","Simple = one complete thought.","A simple sentence has one independent clause.");
+      add("A COMPOUND sentence joins two clauses with _____.","multiple",shuffle(["a conjunction (and, but, or)","a period","nothing","a question mark"]),"a conjunction (and, but, or)","FANBOYS: For, And, Nor, But, Or, Yet, So.","Compound sentences use conjunctions.");
+      add("Which is a compound sentence?","multiple",shuffle(["I ran and she walked.","The cat sat.","Running fast.","Blue sky."]),"I ran and she walked.","It has two complete thoughts joined by 'and'.","Two independent clauses joined by a conjunction.");
+    }
+  }
+  if (theme==="Opinion Writing") {
+    for(let i=0;i<5;i++){
+      add("An opinion is _____.","multiple",shuffle(["what someone thinks or believes","a proven fact","a question","a command"]),"what someone thinks or believes","Opinions are personal views.","An opinion reflects a personal belief.");
+      add("A FACT is _____.","multiple",shuffle(["something that can be proven true","what someone thinks","a guess","a hope"]),"something that can be proven true","Facts can be verified.","Facts are provable statements.");
+      add(`"Pizza is the best food." — Is this a fact or opinion?`,"multiple",["Opinion","Fact"],"Opinion","Can it be proven?","It's a personal preference, not provable.");
+      add(`"Water boils at 100°C." — Is this a fact or opinion?`,"multiple",["Fact","Opinion"],"Fact","Can it be proven?","This can be scientifically verified.");
+    }
+  }
+
+  // ── LEVELS G–L: generate themed questions ──
+  const upperThemeBank = {
+    "Connotation & Denotation":[
+      {q:"The DENOTATION of a word is its _____.",opts:["dictionary definition","emotional meaning","synonym","antonym"],a:"dictionary definition"},
+      {q:"The CONNOTATION of a word is its _____.",opts:["emotional association","dictionary meaning","spelling","pronunciation"],a:"emotional association"},
+      {q:`"Thrifty" and "cheap" have the same denotation but different _____.`,opts:["connotations","spellings","pronunciations","definitions"],a:"connotations"},
+      {q:`"Home" has a _____ connotation compared to "house".`,opts:["warmer","colder","neutral","negative"],a:"warmer"},
+      {q:`Which word has a NEGATIVE connotation?`,opts:["stubborn","determined","firm","resolute"],a:"stubborn"},
+      {q:`Which word has a POSITIVE connotation?`,opts:["courageous","reckless","foolish","careless"],a:"courageous"},
+      {q:`"Inexpensive" vs "cheap" — which sounds more positive?`,opts:["Inexpensive","Cheap","Both the same","Neither"],a:"Inexpensive"},
+      {q:`"Slender" has a more _____ connotation than "skinny".`,opts:["positive","negative","neutral","angry"],a:"positive"},
+      {q:`The denotation of "snake" is a reptile. A common connotation is _____.`,opts:["untrustworthy","friendly","colorful","slow"],a:"untrustworthy"},
+      {q:`"Childlike" has a _____ connotation; "childish" has a _____ one.`,opts:["positive; negative","negative; positive","both positive","both negative"],a:"positive; negative"},
+      {q:"Connotation can be positive, negative, or _____.","opts":["neutral","loud","fast","colorful"],a:"neutral"},
+      {q:`"Assertive" vs "bossy" — "bossy" has a _____ connotation.`,opts:["negative","positive","neutral","happy"],a:"negative"},
+      {q:`"Vintage" vs "old" — "vintage" sounds more _____.`,opts:["valuable","worthless","broken","ugly"],a:"valuable"},
+      {q:`"Unique" vs "weird" — which is more positive?`,opts:["Unique","Weird","Both","Neither"],a:"Unique"},
+      {q:`Authors choose words with specific connotations to influence the reader's _____.`,opts:["feelings","spelling","grammar","handwriting"],a:"feelings"},
+    ],
+    "Central Idea":[
+      {q:"The central idea is _____.","opts":["the main point of a text","a supporting detail","the title","the author"],a:"the main point of a text"},
+      {q:"Supporting details help _____.","opts":["explain the central idea","change the topic","confuse the reader","end the text"],a:"explain the central idea"},
+      {q:"To find the central idea, ask: 'What is this text MOSTLY about?' True or false?","opts":["True","False"],a:"True"},
+      {q:"A summary should include the _____ and key details.","opts":["central idea","author's birthday","page numbers","illustrations"],a:"central idea"},
+      {q:"The central idea is usually _____ in the text.","opts":["implied or stated","always the first sentence","always the title","never mentioned"],a:"implied or stated"},
+      {q:"Which is a central idea vs. a detail? 'Exercise is important' vs 'Running burns calories'","opts":["Exercise is important = central idea","Running burns calories = central idea","Both are details","Both are central ideas"],a:"Exercise is important = central idea"},
+    ],
+    "Argument & Evidence":[
+      {q:"A claim is _____.","opts":["a statement the author wants you to believe","a fact everyone agrees on","a question","a summary"],a:"a statement the author wants you to believe"},
+      {q:"Evidence supports a _____.","opts":["claim","title","bibliography","heading"],a:"claim"},
+      {q:"Which is the strongest evidence?","opts":["A scientific study","A friend's opinion","A rumor","A guess"],a:"A scientific study"},
+      {q:"A counterargument is _____.","opts":["the opposing viewpoint","your main claim","a summary","a conclusion"],a:"the opposing viewpoint"},
+      {q:"Logical reasoning connects evidence to the _____.","opts":["claim","title","author","setting"],a:"claim"},
+      {q:"Anecdotal evidence is _____ than statistical evidence.","opts":["weaker","stronger","the same","unrelated"],a:"weaker"},
+    ],
+    "Literary Devices":[
+      {q:"Alliteration is _____.","opts":["repeating the same beginning sound","a type of rhyme","a metaphor","a plot twist"],a:"repeating the same beginning sound"},
+      {q:`"Peter Piper picked a peck" is an example of _____.`,"opts":["alliteration","metaphor","simile","hyperbole"],a:"alliteration"},
+      {q:"Foreshadowing gives _____ about future events.","opts":["hints","facts","opinions","definitions"],a:"hints"},
+      {q:"Irony is when the opposite of what is _____ happens.","opts":["expected","written","said","seen"],a:"expected"},
+      {q:"An allusion is a reference to _____.","opts":["something well-known","nothing","the future","a footnote"],a:"something well-known"},
+      {q:"Imagery appeals to the reader's _____.","opts":["senses","logic","memory","schedule"],a:"senses"},
+    ],
+    "Comma Rules":[
+      {q:"Use a comma _____ items in a list.","opts":["between","after all","before all","instead of"],a:"between"},
+      {q:`"I bought apples oranges and bananas." Where do commas go?`,"opts":["After apples and oranges","After bananas","Nowhere","After I"],a:"After apples and oranges"},
+      {q:"Use a comma after an _____ phrase.","opts":["introductory","ending","middle","short"],a:"introductory"},
+      {q:"Use a comma before a _____ in a compound sentence.","opts":["conjunction","period","noun","verb"],a:"conjunction"},
+      {q:`"However I disagree." — The comma goes after _____.`,"opts":["However","I","disagree","No comma needed"],a:"However"},
+      {q:"The Oxford comma goes before the last item and the _____ in a list.","opts":["conjunction","period","semicolon","colon"],a:"conjunction"},
+    ],
+    "Persuasive Writing":[
+      {q:"Persuasive writing tries to _____.","opts":["convince the reader","inform the reader","entertain the reader","confuse the reader"],a:"convince the reader"},
+      {q:"A strong persuasive essay includes _____.","opts":["evidence and reasoning","only opinions","no examples","random facts"],a:"evidence and reasoning"},
+      {q:"Emotional appeal targets the reader's _____.","opts":["feelings","logic","ethics","spelling"],a:"feelings"},
+      {q:"Logical appeal uses _____.","opts":["facts and reasoning","emotions","personal stories","humor"],a:"facts and reasoning"},
+      {q:"Ethical appeal builds the writer's _____.","opts":["credibility","humor","vocabulary","speed"],a:"credibility"},
+      {q:"A call to action tells the reader to _____.","opts":["do something","stop reading","forget everything","take a nap"],a:"do something"},
+    ],
+  };
+  // Add more themes for levels G-L
+  const moreThemes = {
+    "Word Choice & Tone":[
+      {q:"Tone is the author's _____ toward the subject.","opts":["attitude","name","age","address"],a:"attitude"},
+      {q:"Formal tone is used in _____.","opts":["academic writing","text messages","jokes","diaries"],a:"academic writing"},
+      {q:"Word choice affects the _____ of a text.","opts":["tone and mood","length","font","page number"],a:"tone and mood"},
+      {q:`"The experiment yielded results" has a _____ tone.`,"opts":["formal","casual","angry","silly"],a:"formal"},
+      {q:"Informal tone sounds like _____.","opts":["everyday conversation","a textbook","a legal document","a dictionary"],a:"everyday conversation"},
+      {q:"Diction means _____.","opts":["word choice","punctuation","spelling","grammar"],a:"word choice"},
+    ],
+    "Textual Analysis":[
+      {q:"Textual analysis examines _____.","opts":["how a text creates meaning","just the plot","only characters","the cover"],a:"how a text creates meaning"},
+      {q:"When analyzing a text, consider the author's _____.","opts":["purpose and audience","favorite color","age","hometown"],a:"purpose and audience"},
+      {q:"Structure in a text refers to _____.","opts":["how it is organized","how long it is","the font used","the paper quality"],a:"how it is organized"},
+      {q:"A thesis statement presents the _____ of an analysis.","opts":["main argument","bibliography","title page","dedication"],a:"main argument"},
+      {q:"Evidence in textual analysis comes from _____.","opts":["the text itself","outside sources only","your imagination","the author's biography"],a:"the text itself"},
+      {q:"Analysis goes beyond summary by explaining _____.","opts":["WHY and HOW","just WHAT","only WHO","just WHERE"],a:"WHY and HOW"},
+    ],
+    "Bias & Perspective":[
+      {q:"Bias is _____.","opts":["a one-sided viewpoint","a fact","a summary","a question"],a:"a one-sided viewpoint"},
+      {q:"To identify bias, look for _____ language.","opts":["loaded or emotional","neutral","simple","short"],a:"loaded or emotional"},
+      {q:"A balanced text presents _____ sides.","opts":["multiple","one","no","random"],a:"multiple"},
+      {q:"Perspective is shaped by a person's _____.","opts":["experiences and beliefs","height","hair color","shoe size"],a:"experiences and beliefs"},
+      {q:"Media literacy helps you _____.","opts":["evaluate sources critically","watch more TV","read faster","write shorter"],a:"evaluate sources critically"},
+      {q:"An objective text is _____.","opts":["free from personal opinions","full of bias","always short","always long"],a:"free from personal opinions"},
+    ],
+    "Complex Sentences":[
+      {q:"A complex sentence has one independent clause and at least one _____ clause.","opts":["dependent","independent","simple","compound"],a:"dependent"},
+      {q:"Which word starts a dependent clause?","opts":["Because","And","But","Or"],a:"Because"},
+      {q:`"Because it rained, we stayed inside." — The dependent clause is _____.`,"opts":["Because it rained","we stayed inside","we","inside"],a:"Because it rained"},
+      {q:"Subordinating conjunctions include: because, although, when, if, and _____.","opts":["since","and","but","or"],a:"since"},
+      {q:"A dependent clause _____ stand alone as a sentence.","opts":["cannot","can","always","sometimes"],a:"cannot"},
+      {q:`"Although she was tired, she finished the race." — "Although she was tired" is a _____ clause.`,"opts":["dependent","independent","simple","run-on"],a:"dependent"},
+    ],
+    "MLA Basics":[
+      {q:"MLA stands for _____.","opts":["Modern Language Association","Math Learning Academy","Multiple Letter Arrangement","Main Lesson Approach"],a:"Modern Language Association"},
+      {q:"MLA format uses _____ spacing.","opts":["double","single","triple","no"],a:"double"},
+      {q:"In MLA, the Works Cited page lists _____.","opts":["all sources used","only books","the title","the author's bio"],a:"all sources used"},
+      {q:"MLA in-text citations include the author's _____ and page number.","opts":["last name","first name","middle name","nickname"],a:"last name"},
+      {q:"MLA format uses _____ font.","opts":["12-point Times New Roman","Comic Sans","any font","bold Arial"],a:"12-point Times New Roman"},
+      {q:"The header in MLA includes your _____ and page number.","opts":["last name","favorite quote","school name","grade"],a:"last name"},
+    ],
+    "Expository Writing":[
+      {q:"Expository writing _____.","opts":["explains or informs","tells a story","persuades","describes feelings"],a:"explains or informs"},
+      {q:"An expository essay uses _____ evidence.","opts":["factual","emotional","fictional","poetic"],a:"factual"},
+      {q:"A thesis statement in expository writing states the _____.","opts":["main idea","character","setting","conflict"],a:"main idea"},
+      {q:"Transition words in expository writing include _____.","opts":["furthermore, additionally, however","once upon a time","the end","dear diary"],a:"furthermore, additionally, however"},
+      {q:"The purpose of expository writing is to _____.","opts":["educate the reader","make the reader laugh","scare the reader","bore the reader"],a:"educate the reader"},
+      {q:"Expository essays should be written in _____ person.","opts":["third","first","second","no"],a:"third"},
+    ],
+    "Advanced Vocabulary":[
+      {q:`"Ubiquitous" means _____.`,"opts":["found everywhere","rare","invisible","ancient"],a:"found everywhere"},
+      {q:`"Ephemeral" means _____.`,"opts":["lasting a very short time","eternal","heavy","colorful"],a:"lasting a very short time"},
+      {q:`"Pragmatic" means _____.`,"opts":["practical and realistic","dreamy","artistic","lazy"],a:"practical and realistic"},
+      {q:`"Eloquent" means _____.`,"opts":["fluent and persuasive in speaking","quiet","rude","boring"],a:"fluent and persuasive in speaking"},
+      {q:`"Ambiguous" means _____.`,"opts":["open to more than one interpretation","clear","simple","obvious"],a:"open to more than one interpretation"},
+      {q:`"Benevolent" means _____.`,"opts":["well-meaning and kindly","evil","selfish","lazy"],a:"well-meaning and kindly"},
+    ],
+    "Rhetoric & Appeals":[
+      {q:"Ethos appeals to _____.","opts":["credibility/ethics","emotions","logic","humor"],a:"credibility/ethics"},
+      {q:"Pathos appeals to _____.","opts":["emotions","logic","credibility","facts"],a:"emotions"},
+      {q:"Logos appeals to _____.","opts":["logic and reason","emotions","ethics","authority"],a:"logic and reason"},
+      {q:"A rhetorical question does NOT expect a _____.","opts":["real answer","reaction","thought","pause"],a:"real answer"},
+      {q:"Repetition in rhetoric is used to _____.","opts":["emphasize a point","waste time","confuse","bore"],a:"emphasize a point"},
+      {q:"An appeal to authority uses _____ to support a claim.","opts":["expert opinions","rumors","gossip","wishes"],a:"expert opinions"},
+    ],
+    "Poetry Analysis":[
+      {q:"A stanza in poetry is like a _____ in prose.","opts":["paragraph","word","letter","period"],a:"paragraph"},
+      {q:"Rhyme scheme is labeled using _____.","opts":["letters (ABAB)","numbers","symbols","colors"],a:"letters (ABAB)"},
+      {q:"Free verse poetry has NO regular _____.","opts":["rhyme or meter","words","meaning","author"],a:"rhyme or meter"},
+      {q:"A sonnet has _____ lines.","opts":["14","10","20","8"],a:"14"},
+      {q:"Meter is the _____ pattern in poetry.","opts":["rhythmic","color","size","font"],a:"rhythmic"},
+      {q:"A haiku has _____ syllables total.","opts":["17","10","20","12"],a:"17"},
+    ],
+    "Semicolons & Colons":[
+      {q:"A semicolon connects two _____ clauses.","opts":["independent","dependent","short","run-on"],a:"independent"},
+      {q:"Use a colon before a _____.","opts":["list","period","comma","semicolon"],a:"list"},
+      {q:`Which is correct? "I have three pets___ a dog, a cat, and a fish."`,"opts":["colon (:)","semicolon (;)","comma (,)","period (.)"],a:"colon (:)"},
+      {q:`"She loves to read; he prefers to write." — The semicolon joins two _____ ideas.`,"opts":["related","unrelated","opposite","random"],a:"related"},
+      {q:"A semicolon is _____ than a comma but _____ than a period.","opts":["stronger; weaker","weaker; stronger","the same","unrelated"],a:"stronger; weaker"},
+      {q:"Do NOT use a semicolon before a _____ clause.","opts":["dependent","independent","main","complete"],a:"dependent"},
+    ],
+    "Research Writing":[
+      {q:"A research paper starts with a _____.","opts":["thesis statement","bibliography","conclusion","index"],a:"thesis statement"},
+      {q:"Primary sources are _____ accounts.","opts":["firsthand","secondhand","thirdhand","fictional"],a:"firsthand"},
+      {q:"Secondary sources _____ primary sources.","opts":["analyze or interpret","replace","ignore","copy"],a:"analyze or interpret"},
+      {q:"Plagiarism is _____.","opts":["using someone's work without credit","good research","a type of citation","a writing style"],a:"using someone's work without credit"},
+      {q:"A bibliography lists _____.","opts":["all sources consulted","only books","the author's friends","the page count"],a:"all sources consulted"},
+      {q:"Paraphrasing means _____.","opts":["restating in your own words","copying exactly","deleting","ignoring"],a:"restating in your own words"},
+    ],
+    "Literary Analysis":[
+      {q:"Literary analysis examines _____.","opts":["how an author creates meaning","just the plot","only the ending","the book cover"],a:"how an author creates meaning"},
+      {q:"A motif is a _____ element in a literary work.","opts":["recurring","one-time","hidden","deleted"],a:"recurring"},
+      {q:"Symbolism uses objects to represent _____.","opts":["abstract ideas","nothing","other objects","prices"],a:"abstract ideas"},
+      {q:"Characterization is how an author _____ characters.","opts":["develops","names","counts","draws"],a:"develops"},
+      {q:"Theme differs from subject because theme is a _____ about the subject.","opts":["statement or message","single word","name","date"],a:"statement or message"},
+      {q:"Conflict in literature can be internal or _____.","opts":["external","invisible","optional","imaginary"],a:"external"},
+    ],
+    "SAT Vocabulary":[
+      {q:`"Arduous" means _____.`,"opts":["difficult and tiring","easy","fun","colorful"],a:"difficult and tiring"},
+      {q:`"Candid" means _____.`,"opts":["truthful and straightforward","dishonest","shy","confused"],a:"truthful and straightforward"},
+      {q:`"Diligent" means _____.`,"opts":["hardworking","lazy","careless","rude"],a:"hardworking"},
+      {q:`"Gregarious" means _____.`,"opts":["sociable","shy","angry","bored"],a:"sociable"},
+      {q:`"Meticulous" means _____.`,"opts":["showing great attention to detail","careless","fast","loud"],a:"showing great attention to detail"},
+      {q:`"Pragmatic" means _____.`,"opts":["dealing with things practically","idealistic","dreamy","random"],a:"dealing with things practically"},
+    ],
+    "Analyzing Arguments":[
+      {q:"A valid argument has _____.","opts":["logical reasoning and evidence","only emotions","no evidence","personal attacks"],a:"logical reasoning and evidence"},
+      {q:"A logical fallacy is _____.","opts":["a flaw in reasoning","strong evidence","a fact","good logic"],a:"a flaw in reasoning"},
+      {q:"Ad hominem attacks the _____ instead of the argument.","opts":["person","evidence","logic","conclusion"],a:"person"},
+      {q:"A straw man fallacy _____ the opponent's argument.","opts":["misrepresents","strengthens","supports","ignores"],a:"misrepresents"},
+      {q:"Appeal to popularity assumes something is right because _____.","opts":["many people believe it","it is proven","experts agree","studies show it"],a:"many people believe it"},
+      {q:"A red herring _____ from the main argument.","opts":["distracts","supports","proves","strengthens"],a:"distracts"},
+    ],
+    "Shakespeare Basics":[
+      {q:"Shakespeare wrote in _____ pentameter.","opts":["iambic","trochaic","anapestic","dactylic"],a:"iambic"},
+      {q:"A soliloquy is when a character _____.","opts":["speaks thoughts aloud alone","sings","fights","dances"],a:"speaks thoughts aloud alone"},
+      {q:`"Romeo and Juliet" is a _____.`,"opts":["tragedy","comedy","history","fairy tale"],a:"tragedy"},
+      {q:"Shakespeare's plays were performed at the _____ Theatre.","opts":["Globe","Empire","Palace","Royal"],a:"Globe"},
+      {q:`"To be, or not to be" is from _____.`,"opts":["Hamlet","Macbeth","Othello","King Lear"],a:"Hamlet"},
+      {q:"Shakespeare wrote approximately _____ plays.","opts":["37","10","50","100"],a:"37"},
+    ],
+    "Essay Structure":[
+      {q:"An essay has an introduction, body, and _____.","opts":["conclusion","appendix","glossary","index"],a:"conclusion"},
+      {q:"The thesis statement is in the _____.","opts":["introduction","conclusion","body","title"],a:"introduction"},
+      {q:"Body paragraphs support the _____.","opts":["thesis","title","author","date"],a:"thesis"},
+      {q:"Each body paragraph needs a _____ sentence.","opts":["topic","random","final","first"],a:"topic"},
+      {q:"The conclusion should _____ the thesis.","opts":["restate","contradict","ignore","delete"],a:"restate"},
+      {q:"Transitions connect _____ between paragraphs.","opts":["ideas","pages","words","letters"],a:"ideas"},
+    ],
+    "Critical Reading":[
+      {q:"Critical reading means _____.","opts":["analyzing and evaluating a text","reading fast","reading aloud","skimming"],a:"analyzing and evaluating a text"},
+      {q:"When reading critically, question the author's _____.","opts":["assumptions and evidence","handwriting","spelling","age"],a:"assumptions and evidence"},
+      {q:"Annotating a text means _____.","opts":["making notes and marking key passages","drawing pictures","erasing words","copying it"],a:"making notes and marking key passages"},
+      {q:"Critical readers consider _____ perspectives.","opts":["multiple","only one","no","random"],a:"multiple"},
+      {q:"Evaluating credibility means checking if a source is _____.","opts":["trustworthy","long","short","colorful"],a:"trustworthy"},
+      {q:"Critical reading requires _____ engagement with the text.","opts":["active","passive","no","minimal"],a:"active"},
+    ],
+    "Complex Grammar":[
+      {q:"A gerund is a verb form used as a _____.","opts":["noun","verb","adjective","adverb"],a:"noun"},
+      {q:"A participle is a verb form used as an _____.","opts":["adjective","noun","adverb","conjunction"],a:"adjective"},
+      {q:"An infinitive begins with _____.","opts":["to","for","by","at"],a:"to"},
+      {q:"Parallel structure means using the same _____ pattern.","opts":["grammatical","color","size","font"],a:"grammatical"},
+      {q:"A dangling modifier has no clear _____ to modify.","opts":["word","sentence","paragraph","book"],a:"word"},
+      {q:"Subject-verb agreement means they must match in _____.","opts":["number","color","length","font"],a:"number"},
+    ],
+    "Advanced Grammar":[
+      {q:"The subjunctive mood expresses _____.","opts":["wishes or hypotheticals","facts","commands","questions"],a:"wishes or hypotheticals"},
+      {q:`"If I were rich" uses the _____ mood.`,"opts":["subjunctive","indicative","imperative","interrogative"],a:"subjunctive"},
+      {q:"An appositive _____ a noun.","opts":["renames or describes","replaces","deletes","hides"],a:"renames or describes"},
+      {q:"A relative clause begins with _____.","opts":["who, which, or that","and, but, or","because, since","for, to, by"],a:"who, which, or that"},
+      {q:"Active voice: the subject _____ the action.","opts":["performs","receives","ignores","watches"],a:"performs"},
+      {q:"Passive voice: the subject _____ the action.","opts":["receives","performs","ignores","creates"],a:"receives"},
+    ],
+    "AP Vocabulary":[
+      {q:`"Juxtaposition" means _____.`,"opts":["placing things side by side for comparison","separating","hiding","ignoring"],a:"placing things side by side for comparison"},
+      {q:`"Didactic" means _____.`,"opts":["intended to teach","entertaining","confusing","boring"],a:"intended to teach"},
+      {q:`"Pedantic" means _____.`,"opts":["excessively focused on minor details","relaxed","creative","emotional"],a:"excessively focused on minor details"},
+      {q:`"Sardonic" means _____.`,"opts":["grimly mocking","kind","gentle","happy"],a:"grimly mocking"},
+      {q:`"Verisimilitude" means _____.`,"opts":["appearance of being true","beauty","complexity","humor"],a:"appearance of being true"},
+      {q:`"Anaphora" is the repetition of words at the _____ of successive clauses.`,"opts":["beginning","end","middle","random place"],a:"beginning"},
+    ],
+    "Comparative Literature":[
+      {q:"Comparative literature studies _____.","opts":["literature across cultures and languages","only English texts","only poetry","only novels"],a:"literature across cultures and languages"},
+      {q:"An archetype is a _____ pattern.","opts":["universal","rare","modern","artificial"],a:"universal"},
+      {q:"The Hero's Journey is a common _____.","opts":["narrative archetype","poem type","essay format","grammar rule"],a:"narrative archetype"},
+      {q:"Intertextuality is when texts _____ each other.","opts":["reference","ignore","contradict","copy"],a:"reference"},
+      {q:"A universal theme is understood across _____.","opts":["cultures","one country only","one school","one classroom"],a:"cultures"},
+      {q:"Genre means _____ of literature.","opts":["category or type","length","age","color"],a:"category or type"},
+    ],
+    "Rhetorical Analysis":[
+      {q:"Rhetorical analysis examines HOW an author _____.","opts":["makes an argument","tells a joke","draws a picture","sings a song"],a:"makes an argument"},
+      {q:"The rhetorical triangle includes speaker, audience, and _____.","opts":["message","setting","time","weather"],a:"message"},
+      {q:"SOAPSTone stands for Speaker, Occasion, Audience, Purpose, Subject, _____.","opts":["Tone","Time","Text","Title"],a:"Tone"},
+      {q:"Kairos refers to the _____ context of an argument.","opts":["timeliness / right moment","color","length","font"],a:"timeliness / right moment"},
+      {q:"A rhetorical strategy is a technique used to _____.","opts":["persuade the audience","confuse the audience","bore the audience","ignore the audience"],a:"persuade the audience"},
+      {q:"Analyzing rhetoric requires examining both content and _____.","opts":["style/delivery","cover page","bibliography","index"],a:"style/delivery"},
+    ],
+    "College Essay":[
+      {q:"A college essay should showcase your _____.","opts":["unique voice and personality","test scores","GPA","class rank"],a:"unique voice and personality"},
+      {q:"The best college essays are _____.","opts":["authentic and specific","generic","very long","copied"],a:"authentic and specific"},
+      {q:"'Show, don't tell' means using _____ details.","opts":["vivid, specific","vague","general","boring"],a:"vivid, specific"},
+      {q:"A college essay prompt asks you to _____.","opts":["reflect and share your perspective","list achievements","write a research paper","summarize a book"],a:"reflect and share your perspective"},
+      {q:"The opening of a college essay should _____.","opts":["grab the reader's attention","be boring","restate the prompt","list your grades"],a:"grab the reader's attention"},
+      {q:"Revision is _____ for a strong college essay.","opts":["essential","optional","unnecessary","harmful"],a:"essential"},
+    ],
+    "Satire & Irony":[
+      {q:"Satire uses humor to _____.","opts":["criticize or mock","praise","ignore","hide"],a:"criticize or mock"},
+      {q:"Verbal irony is when someone says the _____ of what they mean.","opts":["opposite","same","more","less"],a:"opposite"},
+      {q:"Situational irony is when the outcome is _____ what was expected.","opts":["opposite of","exactly","similar to","unrelated to"],a:"opposite of"},
+      {q:"Dramatic irony is when the audience knows something the _____ does not.","opts":["character","author","narrator","reader"],a:"character"},
+      {q:`"A Modest Proposal" by Jonathan Swift is an example of _____.`,"opts":["satire","romance","mystery","comedy"],a:"satire"},
+      {q:"Sarcasm is a form of _____ irony.","opts":["verbal","situational","dramatic","cosmic"],a:"verbal"},
+    ],
+    "AP Lang Terms":[
+      {q:"An antithesis presents _____ ideas in parallel structure.","opts":["contrasting","similar","random","unrelated"],a:"contrasting"},
+      {q:"Chiasmus is a _____ of grammatical structures.","opts":["reversal","repetition","deletion","combination"],a:"reversal"},
+      {q:"Synecdoche uses a _____ to represent the whole.","opts":["part","color","sound","shape"],a:"part"},
+      {q:"Metonymy replaces a name with something _____ associated.","opts":["closely","loosely","never","rarely"],a:"closely"},
+      {q:`"The pen is mightier than the sword" — "pen" is _____ for writing.`,"opts":["metonymy","simile","alliteration","onomatopoeia"],a:"metonymy"},
+      {q:"Epistrophe is repetition at the _____ of successive clauses.","opts":["end","beginning","middle","random point"],a:"end"},
+    ],
+    "Advanced Rhetoric":[
+      {q:"Aristotle identified three rhetorical appeals: ethos, pathos, and _____.","opts":["logos","kairos","mythos","chronos"],a:"logos"},
+      {q:"The Toulmin model of argument includes claim, evidence, and _____.","opts":["warrant","thesis","topic","theme"],a:"warrant"},
+      {q:"A warrant connects the evidence to the _____.","opts":["claim","title","author","conclusion only"],a:"claim"},
+      {q:"Rogerian argument seeks _____ ground.","opts":["common","higher","lower","no"],a:"common"},
+      {q:"A concession acknowledges the _____ of the opposing view.","opts":["validity","weakness","irrelevance","humor"],a:"validity"},
+      {q:"Effective rhetoric considers the audience's _____.","opts":["values and beliefs","age only","name","height"],a:"values and beliefs"},
+    ],
+    "Research Paper":[
+      {q:"A research paper requires _____ sources.","opts":["credible","any","no","fictional"],a:"credible"},
+      {q:"An annotated bibliography includes a _____ of each source.","opts":["summary and evaluation","picture","graph","song"],a:"summary and evaluation"},
+      {q:"A literature review surveys _____.","opts":["existing research on a topic","fiction books","newspapers only","magazines only"],a:"existing research on a topic"},
+      {q:"Peer-reviewed articles are reviewed by _____.","opts":["experts in the field","the public","students","anyone"],a:"experts in the field"},
+      {q:"APA and MLA are types of _____ styles.","opts":["citation","writing","reading","speaking"],a:"citation"},
+      {q:"A counterargument _____ your paper.","opts":["strengthens","weakens","destroys","ignores"],a:"strengthens"},
+    ],
+    "Literary Theory":[
+      {q:"Feminist criticism examines _____.","opts":["gender roles and power","only female authors","only poetry","only novels"],a:"gender roles and power"},
+      {q:"Marxist criticism focuses on _____.","opts":["social class and economics","grammar","rhythm","rhyme"],a:"social class and economics"},
+      {q:"Psychoanalytic criticism explores characters' _____.","opts":["unconscious motivations","clothes","names","ages"],a:"unconscious motivations"},
+      {q:"New Historicism considers the _____ context of literature.","opts":["historical and cultural","grammatical","numerical","visual"],a:"historical and cultural"},
+      {q:"Reader-response theory focuses on the _____ interpretation.","opts":["reader's","author's","editor's","publisher's"],a:"reader's"},
+      {q:"Formalism focuses on the text's _____ elements.","opts":["structural and literary","historical","biographical","cultural"],a:"structural and literary"},
+    ],
+    "SAT Reading":[
+      {q:"SAT Reading passages test your ability to _____.","opts":["comprehend and analyze texts","write essays","do math","draw pictures"],a:"comprehend and analyze texts"},
+      {q:"Evidence-based questions ask you to _____ your answer.","opts":["support with text evidence","guess","skip","imagine"],a:"support with text evidence"},
+      {q:"In SAT Reading, 'best evidence' means the lines that _____ your answer.","opts":["most directly support","contradict","are unrelated to","repeat"],a:"most directly support"},
+      {q:"Paired passages require you to _____ two texts.","opts":["compare and analyze","ignore one","only read one","combine into one"],a:"compare and analyze"},
+      {q:"Vocabulary in context questions ask for the meaning _____ used in the passage.","opts":["as","always","never","sometimes"],a:"as"},
+      {q:"The main purpose question asks WHY the author _____.","opts":["wrote the passage","chose the title","used that font","lived there"],a:"wrote the passage"},
+    ],
+    "College-Level Writing":[
+      {q:"College-level writing requires _____ thinking.","opts":["critical","basic","no","simple"],a:"critical"},
+      {q:"A strong thesis is _____ and arguable.","opts":["specific","vague","obvious","broad"],a:"specific"},
+      {q:"Academic writing uses _____ person.","opts":["third","first","second","no"],a:"third"},
+      {q:"Synthesis means combining _____ sources.","opts":["multiple","zero","one","fictional"],a:"multiple"},
+      {q:"Proper citation avoids _____.","opts":["plagiarism","creativity","research","reading"],a:"plagiarism"},
+      {q:"Revision focuses on _____ while proofreading focuses on _____.","opts":["content/structure; grammar/spelling","spelling; content","nothing; everything","grammar; ideas"],a:"content/structure; grammar/spelling"},
+    ],
+  };
+
+  // Check in both banks
+  const bank = upperThemeBank[theme] || moreThemes[theme];
+  if (bank) {
+    bank.forEach(item => {
+      add(item.q,"multiple",shuffle(item.opts),item.a,`Think about what "${theme}" means.`,`The answer is "${item.a}".`);
+    });
+    // Add input variants for first 8
+    bank.slice(0,8).forEach(item => {
+      add(`${item.q} (type your answer)`,"input",null,item.a,`Think carefully about ${theme}.`,`The answer is "${item.a}".`);
+    });
+  }
+
+  return qs;
+}
+
+function generateELAQuestions(level) {
+  const info = ELA_LEVEL_MAP[level];
+  if (!info) return [];
+  const questions = [];
+  let idNum = 1;
+  const mkId = () => `${level}ELA-${String(idNum++).padStart(4,"0")}`;
+
+  info.themes.forEach(theme => {
+    questions.push(...generateELAThemeQuestions(level, theme, mkId));
+  });
+
+  return questions;
+}
 
 // ─────────────────────────────────────────────────────────────
 // 2. CONCEPT EXAMPLES (shown before first worksheet per theme)
@@ -2181,7 +3052,7 @@ function Whiteboard({ open, onClose }) {
   const clear = () => { const c=ref.current.getContext("2d"); c.fillStyle="#fff"; c.fillRect(0,0,800,480); };
   if (!open) return null;
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:12}}>
+    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.6)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:12}}>
       <div style={{background:"#fff",borderRadius:"var(--r-xl)",boxShadow:"var(--shadow-xl)",width:"100%",maxWidth:720,display:"flex",flexDirection:"column",overflow:"hidden"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 16px",borderBottom:"1px solid var(--cream-dd)"}}>
           <h3 style={{fontWeight:700,fontSize:14,display:"flex",alignItems:"center",gap:6,color:"var(--ink)"}}>
@@ -2511,16 +3382,24 @@ function LearnApp({ studentName, startLevel, onBackToHome }) {
   const DAILY_Q = 50;
   const DAYS_PER_LEVEL = 60; // 60 days × 50 questions = 3000 per level
 
-  // Student progress persisted in localStorage
-  const [progress, setProgress] = useState(() => loadState(`skillora-progress-${studentName}`, {
+  const [subject, setSubject] = useState("math"); // "math" | "ela"
+
+  const getProgressKey = (subj) => subj === "ela"
+    ? `skillora-progress-${studentName}-ela`
+    : `skillora-progress-${studentName}`;
+
+  const defaultProgress = {
     currentLevel: startLevel,
     dayNumber: 1,
-    completedDays: {},   // { "A-1": { correct, total, wrongIds }, ... }
-    levelAttempt: {},    // { "A": 1 } — how many times level attempted
-    levelQuestions: {},  // { "A": [all generated questions] }
-    pendingRetry: {},    // { "A-2": [question ids to retry] } — wrong q's from prev day
-    seenThemes: {},      // { "A": ["Counting 1-20"] } — which themes already shown examples for
-  }));
+    completedDays: {},
+    levelAttempt: {},
+    levelQuestions: {},
+    pendingRetry: {},
+    seenThemes: {},
+  };
+
+  // Student progress persisted in localStorage
+  const [progress, setProgress] = useState(() => loadState(getProgressKey("math"), defaultProgress));
 
   const [view, setView] = useState("dashboard"); // dashboard|concept|worksheet|results|assessment
   const [worksheetQ, setWorksheetQ] = useState([]);
@@ -2532,14 +3411,23 @@ function LearnApp({ studentName, startLevel, onBackToHome }) {
   const [pendingTheme, setPendingTheme] = useState(null);
   const [isRetryDay, setIsRetryDay] = useState(false);
 
-  const save = (newProg) => { setProgress(newProg); saveState(`skillora-progress-${studentName}`, newProg); };
+  const save = (newProg) => { setProgress(newProg); saveState(getProgressKey(subject), newProg); };
+
+  const handleSubjectChange = (newSubject) => {
+    const prog = loadState(getProgressKey(newSubject), defaultProgress);
+    setSubject(newSubject);
+    setProgress(prog);
+    setView("dashboard");
+  };
+
+  const activeLevelMap = subject === "ela" ? ELA_LEVEL_MAP : LEVEL_MAP;
 
   // Get or generate questions for current level
   const getLevelQuestions = (prog, level) => {
     if (prog.levelQuestions[level] && prog.levelQuestions[level].length > 0) {
       return prog.levelQuestions[level];
     }
-    const generated = generateLevelQuestions(level);
+    const generated = subject === "ela" ? generateELAQuestions(level) : generateLevelQuestions(level);
     const updated = { ...prog, levelQuestions: { ...prog.levelQuestions, [level]: generated } };
     save(updated);
     return generated;
@@ -2553,7 +3441,7 @@ function LearnApp({ studentName, startLevel, onBackToHome }) {
     const allQ = getLevelQuestions(prog, level);
 
     // How many questions per theme (distribute across themes over 60 days)
-    const themes = LEVEL_MAP[level].themes;
+    const themes = activeLevelMap[level].themes;
     const themeIndex = (day - 1) % themes.length;
     const primaryTheme = themes[themeIndex];
     const secondaryTheme = themes[(themeIndex + 1) % themes.length];
@@ -2701,9 +3589,9 @@ function LearnApp({ studentName, startLevel, onBackToHome }) {
     const q = worksheetQ[curQ];
     if (!q) return null;
     const pct = (curQ / worksheetQ.length) * 100;
-    const info = LEVEL_MAP[q.level];
+    const info = activeLevelMap[q.level] || LEVEL_MAP[q.level];
     return (
-      <div style={{minHeight:"100svh",background:"linear-gradient(145deg,#F5F0FF,#EFF6FF)",padding:"16px 16px",display:"flex",flexDirection:"column",alignItems:"center"}}>
+      <div style={{minHeight:"100svh",background:"linear-gradient(145deg,#F5F0FF,#EFF6FF)",padding:"16px",display:"flex",flexDirection:"column",alignItems:"center",width:"100%",boxSizing:"border-box"}}>
         <div style={{width:"100%",maxWidth:560,display:"flex",flexDirection:"column",gap:12}}>
           {/* Header */}
           <div style={{...s.card(14)}}>
@@ -2772,7 +3660,7 @@ function LearnApp({ studentName, startLevel, onBackToHome }) {
 
   // ── DASHBOARD ──────────────────────────────────────────
   const level = progress.currentLevel;
-  const info = LEVEL_MAP[level];
+  const info = activeLevelMap[level] || LEVEL_MAP[level];
   const day = progress.dayNumber;
   const daysDone = Object.keys(progress.completedDays).filter(k=>k.startsWith(level+"-")).length;
   const totalCorrect = Object.values(progress.completedDays).reduce((s,v)=>s+v.correct,0);
@@ -2783,7 +3671,7 @@ function LearnApp({ studentName, startLevel, onBackToHome }) {
   const readyForAssessment = daysDone >= DAYS_PER_LEVEL;
 
   return (
-    <div style={{minHeight:"100svh",background:"linear-gradient(145deg,#F5F0FF,#EFF6FF)",padding:"16px 16px",display:"flex",flexDirection:"column",alignItems:"center"}}>
+    <div style={{minHeight:"100svh",background:"linear-gradient(145deg,#F5F0FF,#EFF6FF)",padding:"16px",display:"flex",flexDirection:"column",alignItems:"center",width:"100%",boxSizing:"border-box"}}>
       <div style={{width:"100%",maxWidth:520,display:"flex",flexDirection:"column",gap:14}}>
 
         {/* Header */}
@@ -2800,6 +3688,19 @@ function LearnApp({ studentName, startLevel, onBackToHome }) {
           <button onClick={onBackToHome} style={{width:38,height:38,borderRadius:"var(--r-md)",background:"rgba(255,255,255,0.85)",border:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--ink-l)",flexShrink:0,boxShadow:"var(--shadow-xs)"}}>
             <Home size={18}/>
           </button>
+        </div>
+
+        {/* Subject selector */}
+        <div style={{display:"flex",background:"rgba(255,255,255,0.7)",borderRadius:"var(--r-full)",padding:4,gap:4,boxShadow:"var(--shadow-xs)"}}>
+          {[{id:"math",label:"Math",icon:"➗"},{id:"ela",label:"Reading",icon:"📚"}].map(sub=>(
+            <button key={sub.id} onClick={()=>handleSubjectChange(sub.id)} style={{
+              flex:1,borderRadius:"var(--r-full)",padding:"9px 16px",border:"none",cursor:"pointer",
+              fontSize:14,fontWeight:700,transition:"all .2s",display:"flex",alignItems:"center",justifyContent:"center",gap:6,
+              ...(subject===sub.id
+                ? {background:"#fff",boxShadow:"0 2px 10px rgba(0,0,0,0.12)",color:"var(--forest)"}
+                : {background:"transparent",color:"var(--ink-l)"}),
+            }}>{sub.icon} {sub.label}</button>
+          ))}
         </div>
 
         {/* Level card */}
@@ -2925,7 +3826,7 @@ function getStartLevelForAge(age) {
 // ROOT — orchestrates all screens
 // ─────────────────────────────────────────────────────────────
 export default function App() {
-  const { user: authUser } = useAuth();
+  const { user: authUser, logout: authLogout } = useAuth();
 
   // Scope localStorage to the authenticated user so different accounts
   // on the same browser never share each other's children.
@@ -2999,11 +3900,19 @@ export default function App() {
     setScreen("child_learn");
   };
 
-  // ── 6. Logout
+  // ── 6. Switch user (returns to profile selector, stays logged into account)
   const handleLogout = () => {
     setScreen("login");
     setActiveChild(null);
     setCelebData(null);
+  };
+
+  // ── 6b. Full sign out (logs out of account entirely)
+  const handleFullLogout = async () => {
+    setScreen("login");
+    setActiveChild(null);
+    setCelebData(null);
+    try { await authLogout(); } catch {}
   };
 
   // ── 7. Child back to login
@@ -3018,7 +3927,7 @@ export default function App() {
     <>
       {screen === "onboarding"       && <OnboardingFlow onComplete={handleOnboardingDone}/>}
       {screen === "login"            && <LoginScreen onParentLogin={handleParentLogin} onChildEnter={handleChildEnter}/>}
-      {screen === "parent_dash"      && <ParentDashboard onLogout={handleLogout} onSwitchToChild={handleDashSwitchChild}/>}
+      {screen === "parent_dash"      && <ParentDashboard onLogout={handleLogout} onFullLogout={handleFullLogout}/>}
       {screen === "child_placement"  && activeChild && <ChildPlacement child={activeChild} onComplete={handlePlacementDone}/>}
       {screen === "child_learn"      && activeChild && (
         <LearnApp

@@ -22,7 +22,7 @@ function getInitialPage(): Page {
 }
 
 function AppRouter() {
-  const { user, loading, hasAccess } = useAuth();
+  const { user, loading, hasAccess, refreshUser } = useAuth();
   const [page, setPage] = useState<Page>(getInitialPage);
 
   // Update URL when page changes
@@ -54,6 +54,13 @@ function AppRouter() {
       setPage("landing");
     }
   }, [user, loading, page]);
+
+  // Refresh subscription status whenever navigating to app
+  useEffect(() => {
+    if (page === "app" && user) {
+      refreshUser();
+    }
+  }, [page]);
 
   if (loading) {
     return (

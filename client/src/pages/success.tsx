@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Brain, CheckCircle, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -9,13 +9,29 @@ interface SuccessPageProps {
 }
 
 export default function SuccessPage({ onNavigate }: SuccessPageProps) {
-  const { refreshUser } = useAuth();
+  const { refreshUser, user } = useAuth();
+  const attemptsRef = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    // Refresh user to pick up new subscription status from webhook
-    const timer = setTimeout(() => refreshUser(), 2000);
-    return () => clearTimeout(timer);
+    const poll = async () => {
+      await refreshUser();
+      attemptsRef.current += 1;
+      if (attemptsRef.current >= 6 && timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+    timerRef.current = setInterval(poll, 1500);
+    poll();
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []);
+
+  // Stop polling once subscription is active
+  useEffect(() => {
+    if (user?.subscriptionStatus === "active" && timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+  }, [user?.subscriptionStatus]);
 
   return (
     <>
