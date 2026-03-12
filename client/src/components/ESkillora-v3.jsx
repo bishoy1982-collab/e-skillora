@@ -159,7 +159,7 @@ const setApp  = (d) => LS.set(_appKey, d);
 function initApp(email, password, pin, plan, children) {
   return {
     v: 3,
-    parent: { email, password, pin, plan, trialEnd: Date.now() + 7*24*3600*1000 },
+    parent: { email, password, pin, plan, trialEnd: Date.now() + 3*24*3600*1000 },
     children: children.map((c, i) => ({
       id: `child_${Date.now()}_${i}`,
       name: c.name, age: c.age,
@@ -398,7 +398,7 @@ function OB_Plan({ onNext }) {
   return (
     <div className="afu" style={s.card(36)}>
       <h1 style={{ fontFamily:"'Fraunces',serif", fontSize:30, fontWeight:700, color:"var(--forest)", marginBottom:6 }}>Choose a plan</h1>
-      <p style={{ color:"var(--ink-l)", fontSize:15, marginBottom:28 }}>Try free for <strong>7 days</strong> · Cancel anytime</p>
+      <p style={{ color:"var(--ink-l)", fontSize:15, marginBottom:28 }}>Try free for <strong>3 days</strong> · Cancel anytime</p>
 
       <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:28 }}>
         {PLANS.map(p => {
@@ -451,13 +451,13 @@ function OB_Payment({ plan, onNext }) {
   return (
     <div className="afu" style={s.card(36)}>
       <h1 style={{ fontFamily:"'Fraunces',serif", fontSize:30, fontWeight:700, color:"var(--forest)", marginBottom:6 }}>Payment details</h1>
-      <p style={{ color:"var(--ink-l)", fontSize:15, marginBottom:20 }}>7-day free trial, then ${p?.price}/month</p>
+      <p style={{ color:"var(--ink-l)", fontSize:15, marginBottom:20 }}>3-day free trial, then ${p?.price}/month</p>
 
       {/* Plan pill */}
       <div style={{ background:"var(--sage-ll)", borderRadius:"var(--r-md)", padding:"12px 16px", marginBottom:24, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
         <div>
           <p style={{ fontWeight:700, color:"var(--forest)", fontSize:14 }}>{p?.label} Plan — {p?.cap} child{p?.cap>1?"ren":""}</p>
-          <p style={{ fontSize:12, color:"var(--ink-l)" }}>Free for 7 days, then billed monthly</p>
+          <p style={{ fontSize:12, color:"var(--ink-l)" }}>Free for 3 days, then billed monthly</p>
         </div>
         <span style={{ fontFamily:"'Fraunces',serif", fontSize:24, fontWeight:700, color:"var(--forest)" }}>${p?.price}</span>
       </div>
@@ -472,7 +472,7 @@ function OB_Payment({ plan, onNext }) {
       </div>
 
       <div style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, color:"var(--ink-ll)", marginBottom:20 }}>
-        <Shield size={13}/> Secured with 256-bit TLS encryption · No card charges for 7 days
+        <Shield size={13}/> Secured with 256-bit TLS encryption · No card charges for 3 days
       </div>
       <Btn onClick={pay} full size="lg" disabled={!name||!card||!exp||!cvc||loading}>
         {loading ? <><Spinner/> Processing…</> : <><Check size={18}/> Start Free Trial</>}
