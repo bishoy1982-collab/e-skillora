@@ -26,37 +26,72 @@ const G_FONT = `https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght
 const GLOBAL_CSS = `
 @import url('${G_FONT}');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{min-height:100%;-webkit-font-smoothing:antialiased}
+html,body{min-height:100%;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
 body{font-family:'Instrument Sans',sans-serif;background:#F7F3ED;color:#1A1A1A}
 :root{
   --cream:#F7F3ED;--cream-d:#EDE8E0;--cream-dd:#E0D9CF;
-  --forest:#1C3A2F;--forest-m:#2A5240;--forest-l:#3D7A5C;
+  --forest:#1C3A2F;--forest-m:#2A5240;--forest-l:#3D7A5C;--forest-xl:#4F9E74;
   --gold:#C9973A;--gold-l:#E5B96A;--gold-ll:#F5E4C0;
   --coral:#E8604C;--coral-l:#F08070;
   --sage:#8BAF94;--sage-l:#B8D4BE;--sage-ll:#E6F0E8;
   --ink:#1A1A1A;--ink-m:#3D3D3D;--ink-l:#6B6B6B;--ink-ll:#9A9A9A;
-  --white:#FFFFFF;--shadow:0 2px 12px rgba(28,58,47,0.10);
-  --shadow-lg:0 8px 40px rgba(28,58,47,0.14);
-  --r-sm:10px;--r-md:16px;--r-lg:24px;--r-xl:32px;--r-full:9999px;
+  --white:#FFFFFF;
+  --purple:#7C3AED;--purple-l:#A78BFA;--purple-ll:#EDE9FE;
+  --blue:#2563EB;--blue-l:#60A5FA;--blue-ll:#DBEAFE;
+  --amber:#D97706;--amber-l:#FCD34D;--amber-ll:#FEF3C7;
+  --green:#16A34A;--green-l:#4ADE80;--green-ll:#DCFCE7;
+  --grad-forest:linear-gradient(145deg,#1C3A2F 0%,#2A5240 100%);
+  --grad-gold:linear-gradient(145deg,#C9973A 0%,#E5B96A 100%);
+  --grad-learn:linear-gradient(145deg,#7C3AED 0%,#2563EB 100%);
+  --grad-success:linear-gradient(145deg,#16A34A 0%,#22C55E 100%);
+  --grad-coral:linear-gradient(145deg,#E8604C 0%,#F87060 100%);
+  --grad-hero:linear-gradient(160deg,#1C3A2F 0%,#2A5240 45%,#3D7A5C 100%);
+  --shadow-xs:0 1px 3px rgba(0,0,0,0.07);
+  --shadow-sm:0 2px 8px rgba(0,0,0,0.09);
+  --shadow-md:0 4px 20px rgba(0,0,0,0.11);
+  --shadow-lg:0 8px 40px rgba(0,0,0,0.14);
+  --shadow-xl:0 16px 64px rgba(0,0,0,0.18);
+  --shadow-forest:0 8px 32px rgba(28,58,47,0.22);
+  --shadow-gold:0 8px 32px rgba(201,151,58,0.26);
+  --shadow-learn:0 8px 32px rgba(124,58,237,0.22);
+  --r-xs:6px;--r-sm:10px;--r-md:16px;--r-lg:20px;--r-xl:28px;--r-2xl:40px;--r-full:9999px;
+  --nav-h:66px;
+  --safe-b:env(safe-area-inset-bottom,0px);
 }
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes slideIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
-@keyframes scaleIn{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}}
-@keyframes pop{0%{transform:scale(0) rotate(-15deg);opacity:0}65%{transform:scale(1.15) rotate(4deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes shimmer{0%{opacity:.4}50%{opacity:1}100%{opacity:.4}}
-@keyframes celebrate{0%{transform:scale(1)}30%{transform:scale(1.08)}60%{transform:scale(.97)}100%{transform:scale(1)}}
+input,button,textarea,select{font-family:inherit}
+button{cursor:pointer}
+.sci{animation:fadeUp .45s cubic-bezier(.22,1,.36,1) both}
+.sci2{animation:fadeUp .45s .08s cubic-bezier(.22,1,.36,1) both}
+.sci3{animation:fadeUp .45s .16s cubic-bezier(.22,1,.36,1) both}
+.sci4{animation:fadeUp .45s .24s cubic-bezier(.22,1,.36,1) both}
+.fin{animation:fadeIn .35s ease both}
+.sli{animation:slideIn .4s cubic-bezier(.22,1,.36,1) both}
+.scl{animation:scaleIn .35s cubic-bezier(.22,1,.36,1) both}
+.pop{animation:pop .5s cubic-bezier(.22,1,.36,1) both}
+.flt{animation:float 3s ease-in-out infinite}
+.cel{animation:celebrate .6s ease both}
+.pulse{animation:pulse 2s ease-in-out infinite}
 .afu{animation:fadeUp .45s cubic-bezier(.22,1,.36,1) both}
 .afi{animation:fadeIn .35s ease both}
 .asi{animation:slideIn .4s cubic-bezier(.22,1,.36,1) both}
-.sci{animation:scaleIn .35s cubic-bezier(.34,1.56,.64,1) both}
-.pop{animation:pop .5s cubic-bezier(.34,1.56,.64,1) both}
 .float{animation:float 3s ease-in-out infinite}
 .d1{animation-delay:.06s}.d2{animation-delay:.12s}.d3{animation-delay:.18s}.d4{animation-delay:.24s}.d5{animation-delay:.3s}
 input:-webkit-autofill,input:-webkit-autofill:focus{transition:background-color 9999s ease 0s,-webkit-text-fill-color 9999s ease 0s;-webkit-text-fill-color:var(--ink)!important}
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--cream-dd);border-radius:2px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideIn{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+@keyframes pop{0%{opacity:0;transform:scale(0) rotate(-8deg)}70%{transform:scale(1.08) rotate(2deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes celebrate{0%{transform:scale(1)}30%{transform:scale(1.1)}60%{transform:scale(.97)}100%{transform:scale(1)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes slideUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:none}}
+@keyframes bounceIn{0%{opacity:0;transform:scale(.6)}60%{transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--cream-dd);border-radius:999px}
 button:focus-visible,input:focus-visible{outline:2px solid var(--forest);outline-offset:2px}
 `;
 
@@ -141,62 +176,101 @@ function initApp(email, password, pin, plan, children) {
 // UI PRIMITIVES
 // ─────────────────────────────────────────────────────────────
 const s = {
-  // Buttons
-  btn: (v="primary", full=false, disabled=false) => ({
-    display:"flex", alignItems:"center", justifyContent:"center", gap:8,
-    fontFamily:"'Instrument Sans',sans-serif", fontWeight:600, fontSize:16,
-    borderRadius:"var(--r-lg)", border:"1px solid transparent", cursor: disabled?"not-allowed":"pointer",
-    transition:"all .18s", userSelect:"none", outline:"none",
-    padding:"14px 28px", width: full?"100%":"auto",
-    opacity: disabled ? .45 : 1,
-    ...(v==="primary"  && { background:"var(--forest)",  color:"var(--cream)",  boxShadow:"0 10px 26px rgba(28,58,47,0.18)" }),
-    ...(v==="gold"     && { background:"var(--gold)",    color:"var(--forest)", boxShadow:"0 10px 26px rgba(201,151,58,0.22)" }),
-    ...(v==="outline"  && { background:"rgba(255,255,255,0.75)", color:"var(--forest)", border:"1px solid var(--cream-dd)" }),
-    ...(v==="ghost"    && { background:"transparent",    color:"var(--ink-l)",  padding:"10px 16px" }),
-    ...(v==="danger"   && { background:"var(--coral)",   color:"var(--white)"  }),
-    ...(v==="sage"     && { background:"var(--sage-ll)", color:"var(--forest)" }),
+  btn:(v="primary",full=false,disabled=false,size="md")=>({
+    display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8,
+    fontFamily:"'Instrument Sans',sans-serif",fontWeight:700,
+    fontSize:size==="lg"?17:size==="sm"?13:15,
+    borderRadius:"var(--r-full)",border:"none",
+    cursor:disabled?"not-allowed":"pointer",
+    transition:"all .18s cubic-bezier(.22,1,.36,1)",userSelect:"none",outline:"none",
+    padding:size==="lg"?"16px 32px":size==="sm"?"9px 18px":"13px 26px",
+    width:full?"100%":"auto",opacity:disabled?.45:1,
+    letterSpacing:"-0.01em",
+    ...(v==="primary"&&{background:"var(--grad-forest)",color:"var(--cream)",boxShadow:"var(--shadow-forest)"}),
+    ...(v==="gold"&&{background:"var(--grad-gold)",color:"var(--forest)",boxShadow:"var(--shadow-gold)"}),
+    ...(v==="learn"&&{background:"var(--grad-learn)",color:"#fff",boxShadow:"var(--shadow-learn)"}),
+    ...(v==="success"&&{background:"var(--grad-success)",color:"#fff",boxShadow:"0 8px 28px rgba(22,163,74,0.28)"}),
+    ...(v==="outline"&&{background:"rgba(255,255,255,0.9)",color:"var(--forest)",border:"1.5px solid var(--cream-dd)",boxShadow:"var(--shadow-xs)"}),
+    ...(v==="ghost"&&{background:"transparent",color:"var(--ink-l)",padding:size==="sm"?"7px 14px":"10px 18px",boxShadow:"none"}),
+    ...(v==="danger"&&{background:"var(--grad-coral)",color:"#fff",boxShadow:"0 8px 24px rgba(232,96,76,0.28)"}),
+    ...(v==="sage"&&{background:"var(--sage-ll)",color:"var(--forest)",border:"1px solid var(--sage-l)"}),
+    ...(v==="white"&&{background:"rgba(255,255,255,0.18)",color:"#fff",border:"1.5px solid rgba(255,255,255,0.32)",backdropFilter:"blur(8px)"}),
   }),
-  // Cards
-  card: (p=24) => ({
+  card:(p=24,hover=false)=>({
     background:"rgba(255,255,255,0.92)",
-    borderRadius:"var(--r-xl)",
-    padding:p,
-    border:"1px solid rgba(224,217,207,0.9)",
-    boxShadow:"0 10px 40px rgba(28,58,47,0.10)",
-    backdropFilter:"blur(8px)",
+    borderRadius:"var(--r-xl)",padding:p,
+    border:"1px solid rgba(224,217,207,0.7)",
+    boxShadow:"var(--shadow-md)",
+    backdropFilter:"blur(12px)",
+    transition:hover?"all .22s cubic-bezier(.22,1,.36,1)":undefined,
   }),
-  cardForest: (p=24) => ({ background:"var(--forest)", borderRadius:"var(--r-xl)", padding:p, boxShadow:"0 16px 50px rgba(0,0,0,0.22)" }),
-  // Inputs
-  input: (err=false) => ({
-    width:"100%", fontFamily:"'Instrument Sans',sans-serif", fontSize:16, color:"var(--ink)",
-    background:"rgba(247,243,237,0.72)",
-    border:`1px solid ${err?"rgba(232,96,76,0.75)":"rgba(224,217,207,0.95)"}`,
-    borderRadius:"14px",
-    padding:"14px 16px",
-    outline:"none",
-    transition:"border-color .16s, box-shadow .16s, background .16s",
+  cardForest:(p=24)=>({background:"var(--grad-forest)",borderRadius:"var(--r-xl)",padding:p,boxShadow:"var(--shadow-forest)",border:"1px solid rgba(255,255,255,0.08)"}),
+  cardGlass:(p=20)=>({background:"rgba(255,255,255,0.12)",borderRadius:"var(--r-xl)",padding:p,border:"1px solid rgba(255,255,255,0.22)",backdropFilter:"blur(16px)"}),
+  input:(err=false)=>({
+    width:"100%",fontFamily:"'Instrument Sans',sans-serif",fontSize:16,color:"var(--ink)",
+    background:"rgba(255,255,255,0.85)",
+    border:`1.5px solid ${err?"var(--coral)":"rgba(224,217,207,0.9)"}`,
+    borderRadius:"var(--r-md)",padding:"14px 16px",
+    outline:"none",transition:"border .15s, box-shadow .15s",
+    boxShadow:err?"0 0 0 3px rgba(232,96,76,0.15)":"none",
+    WebkitAppearance:"none",
   }),
-  label: { fontSize:13, fontWeight:600, color:"var(--ink-l)", display:"block", marginBottom:6, fontFamily:"'Instrument Sans'" },
+  inputIcon:(err=false)=>({
+    width:"100%",fontFamily:"'Instrument Sans',sans-serif",fontSize:16,color:"var(--ink)",
+    background:"rgba(255,255,255,0.85)",
+    border:`1.5px solid ${err?"var(--coral)":"rgba(224,217,207,0.9)"}`,
+    borderRadius:"var(--r-md)",padding:"14px 16px 14px 46px",
+    outline:"none",transition:"border .15s",WebkitAppearance:"none",
+  }),
+  label:()=>({fontSize:13,fontWeight:600,color:"var(--ink-l)",display:"block",marginBottom:6,letterSpacing:"0.01em"}),
+  tag:(color="forest")=>({
+    display:"inline-flex",alignItems:"center",gap:4,
+    fontSize:11,fontWeight:700,letterSpacing:"0.06em",textTransform:"uppercase",
+    padding:"4px 10px",borderRadius:"var(--r-full)",
+    ...(color==="forest"&&{background:"var(--sage-ll)",color:"var(--forest-m)"}),
+    ...(color==="gold"&&{background:"var(--gold-ll)",color:"var(--gold)"}),
+    ...(color==="coral"&&{background:"rgba(232,96,76,0.12)",color:"var(--coral)"}),
+    ...(color==="purple"&&{background:"var(--purple-ll)",color:"var(--purple)"}),
+    ...(color==="green"&&{background:"var(--green-ll)",color:"var(--green)"}),
+    ...(color==="cream"&&{background:"rgba(255,255,255,0.2)",color:"rgba(255,255,255,0.9)"}),
+  }),
 };
 
 function Btn({ children, onClick, v="primary", full=false, disabled=false, style:sx={}, size="md" }) {
-  const base = s.btn(v, full, disabled);
-  const sizes = { sm:{fontSize:14,padding:"10px 20px",borderRadius:"var(--r-md)"}, md:{}, lg:{fontSize:18,padding:"18px 32px",borderRadius:"var(--r-xl)"} };
+  const [hov, setHov] = useState(false);
   return (
-    <button style={{...base,...sizes[size],...sx}} onClick={disabled?undefined:onClick}
-      onMouseEnter={e=>{ if(!disabled){ e.currentTarget.style.transform="translateY(-1px)"; e.currentTarget.style.boxShadow="var(--shadow-lg)"; }}}
-      onMouseLeave={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="none"; }}>
+    <button
+      onClick={onClick} disabled={disabled}
+      onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+      style={{
+        ...s.btn(v, full, disabled, size),
+        transform:(!disabled&&hov)?"translateY(-2px)":"none",
+        boxShadow:(!disabled&&hov)&&v!=="ghost"&&v!=="outline"?"0 14px 40px rgba(0,0,0,0.2)":s.btn(v).boxShadow,
+        ...sx,
+      }}>
       {children}
     </button>
   );
 }
 
-function Field({ label, type="text", value, onChange, placeholder, error, hint, icon, autoFocus, onKeyDown }) {
+function Field({ label, children, type="text", value, onChange, placeholder, error, hint, icon, autoFocus, onKeyDown, required }) {
   const [show, setShow] = useState(false);
   const isPass = type === "password";
+  // If children are passed, render them directly (new API)
+  if (children) {
+    return (
+      <div style={{display:"flex",flexDirection:"column",gap:0,marginBottom:0}}>
+        {label && <label style={{...s.label(),marginBottom:7}}>{label}{required&&<span style={{color:"var(--coral)",marginLeft:3}}>*</span>}</label>}
+        {children}
+        {error && <span style={{fontSize:12,color:"var(--coral)",marginTop:5,fontWeight:500,display:"flex",alignItems:"center",gap:4}}><AlertCircle size={12}/>{error}</span>}
+        {hint && !error && <span style={{fontSize:12,color:"var(--ink-ll)",marginTop:5}}>{hint}</span>}
+      </div>
+    );
+  }
+  // Legacy API with value/onChange
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:0 }}>
-      {label && <label style={s.label}>{label}</label>}
+      {label && <label style={s.label()}>{label}{required&&<span style={{color:"var(--coral)",marginLeft:3}}>*</span>}</label>}
       <div style={{ position:"relative" }}>
         {icon && <span style={{ position:"absolute", left:14, top:"50%", transform:"translateY(-50%)", color:"var(--ink-ll)" }}>{icon}</span>}
         <input
@@ -213,15 +287,14 @@ function Field({ label, type="text", value, onChange, placeholder, error, hint, 
           </button>
         )}
       </div>
-      {error && <p style={{ fontSize:12, color:"var(--coral)", marginTop:4 }}>{error}</p>}
-      {hint && !error && <p style={{ fontSize:12, color:"var(--ink-ll)", marginTop:4 }}>{hint}</p>}
+      {error && <span style={{fontSize:12,color:"var(--coral)",marginTop:5,fontWeight:500,display:"flex",alignItems:"center",gap:4}}><AlertCircle size={12}/>{error}</span>}
+      {hint && !error && <span style={{fontSize:12,color:"var(--ink-ll)",marginTop:5}}>{hint}</span>}
     </div>
   );
 }
 
 function Tag({ children, color="forest" }) {
-  const colors = { forest:{bg:"var(--forest)",fg:"var(--cream)"}, gold:{bg:"var(--gold-ll)",fg:"var(--forest)"}, sage:{bg:"var(--sage-ll)",fg:"var(--forest)"}, coral:{bg:"#FDE8E5",fg:"var(--coral)"} };
-  return <span style={{ fontSize:12, fontWeight:600, padding:"3px 10px", borderRadius:"var(--r-full)", fontFamily:"'Instrument Sans'", ...colors[color] }}>{children}</span>;
+  return <span style={s.tag(color)}>{children}</span>;
 }
 
 function StepDots({ total, current }) {
@@ -263,17 +336,17 @@ function Spinner() {
 // ─────────────────────────────────────────────────────────────
 // LAYOUT SHELL (wraps all onboarding screens)
 // ─────────────────────────────────────────────────────────────
-function Shell({ children, maxW=480, bg="var(--cream)" }) {
+function Shell({ children, maxW=520, bg="var(--cream)", noPad=false }) {
   return (
-    <div style={{ minHeight:"100vh", background:bg, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"24px 16px" }}>
+    <div style={{minHeight:"100svh",background:bg,display:"flex",flexDirection:"column",alignItems:"center",overflowX:"hidden"}}>
       {/* Logo wordmark */}
-      <div className="afu" style={{ display:"flex", alignItems:"center", gap:10, marginBottom:32 }}>
+      <div className="afu" style={{ display:"flex", alignItems:"center", gap:10, marginTop:32, marginBottom:32 }}>
         <div style={{ width:40,height:40, background:"var(--forest)", borderRadius:12, display:"flex", alignItems:"center", justifyContent:"center" }}>
           <Brain size={22} color="var(--gold)"/>
         </div>
         <span style={{ fontFamily:"'Fraunces',serif", fontSize:22, fontWeight:700, color:"var(--forest)", letterSpacing:"-0.5px" }}>e-Skillora</span>
       </div>
-      <div style={{ width:"100%", maxWidth:maxW }}>
+      <div style={{width:"100%",maxWidth:maxW,flex:1,display:"flex",flexDirection:"column",padding:noPad?0:"0 16px calc(var(--safe-b) + 16px)"}}>
         {children}
       </div>
     </div>
@@ -450,7 +523,7 @@ function OB_Children({ plan, onNext }) {
         <div key={idx} className="asi" style={{ display:"flex", flexDirection:"column", gap:20 }}>
           {/* Avatar row */}
           <div>
-            <label style={s.label}>Avatar</label>
+            <label style={s.label()}>Avatar</label>
 
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, marginBottom:10, flexWrap:"wrap" }}>
               <div style={{ display:"flex", gap:6, background:"var(--cream)", border:"1px solid var(--cream-dd)", padding:4, borderRadius:"var(--r-full)" }}>
@@ -546,7 +619,7 @@ function OB_Children({ plan, onNext }) {
 
           {/* Age picker */}
           <div>
-            <label style={s.label}>Age</label>
+            <label style={s.label()}>Age</label>
             <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
               {Array.from({length:15},(_,i)=>i+4).map(age=>(
                 <button key={age} onClick={()=>upd(idx,"age",String(age))} style={{
@@ -652,27 +725,32 @@ function OB_Pin({ onNext }) {
 // Step 6 — Confirmation
 function OB_Done({ data, onStart }) {
   return (
-    <div className="sci" style={{...s.card(36), textAlign:"center"}}>
-      <div className="pop" style={{ fontSize:72, marginBottom:8 }}>🎉</div>
-      <h1 style={{ fontFamily:"'Fraunces',serif", fontSize:32, fontWeight:700, color:"var(--forest)", marginBottom:8 }}>
-        You're all set!
-      </h1>
-      <p style={{ color:"var(--ink-l)", fontSize:15, marginBottom:28 }}>
-        Ready for {data.children?.length>1?"your children":"your child"} to start learning
-      </p>
-      <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:32 }}>
-        {(data.children||[]).map((c,i)=>(
-          <div key={i} className={`afu d${i+1}`} style={{ display:"flex", alignItems:"center", gap:14, background:"var(--cream)", borderRadius:"var(--r-lg)", padding:"14px 18px" }}>
-            <div style={{ width:48,height:48, background:c.avatarBg, borderRadius:14, display:"flex", alignItems:"center", justifyContent:"center", fontSize:26, flexShrink:0 }}>{c.avatar}</div>
-            <div style={{ textAlign:"left", flex:1 }}>
-              <p style={{ fontWeight:700, fontSize:16, color:"var(--ink)" }}>{c.name}</p>
-              <p style={{ fontSize:13, color:"var(--ink-l)" }}>Age {c.age} · {gradeLabel(c.age)} · Level {getStartLevel(c.age)}</p>
-            </div>
-            <Tag color="sage">Ready!</Tag>
-          </div>
-        ))}
+    <div className="sci" style={{...s.card(0), overflow:"hidden", textAlign:"center"}}>
+      {/* Gradient header */}
+      <div style={{background:"var(--grad-forest)",padding:"32px 24px 28px"}}>
+        <div className="pop" style={{ fontSize:72, marginBottom:8, filter:"drop-shadow(0 4px 12px rgba(0,0,0,0.2))" }}>🎉</div>
+        <h1 style={{ fontFamily:"'Fraunces',serif", fontSize:30, fontWeight:700, color:"#fff", marginBottom:6 }}>
+          You're all set!
+        </h1>
+        <p style={{ color:"rgba(255,255,255,0.65)", fontSize:14 }}>
+          Ready for {data.children?.length>1?"your children":"your child"} to start learning
+        </p>
       </div>
-      <Btn onClick={onStart} full size="lg" v="gold"><Play size={20}/> Start Learning Now</Btn>
+      <div style={{padding:"20px 24px 28px"}}>
+        <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:24 }}>
+          {(data.children||[]).map((c,i)=>(
+            <div key={i} className={`afu d${i+1}`} style={{ display:"flex", alignItems:"center", gap:14, background:"var(--cream)", borderRadius:"var(--r-lg)", padding:"14px 18px", border:"1px solid var(--cream-dd)" }}>
+              <div style={{ width:52,height:52, background:c.avatarBg, borderRadius:"var(--r-md)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:28, flexShrink:0, boxShadow:"0 4px 12px rgba(0,0,0,0.15)" }}>{c.avatar}</div>
+              <div style={{ textAlign:"left", flex:1 }}>
+                <p style={{ fontWeight:700, fontSize:16, color:"var(--ink)" }}>{c.name}</p>
+                <p style={{ fontSize:13, color:"var(--ink-l)" }}>Age {c.age} · {gradeLabel(c.age)} · Level {getStartLevel(c.age)}</p>
+              </div>
+              <Tag color="green">Ready!</Tag>
+            </div>
+          ))}
+        </div>
+        <Btn onClick={onStart} full size="lg" v="gold"><Play size={20}/> Start Learning Now</Btn>
+      </div>
     </div>
   );
 }
@@ -706,7 +784,7 @@ export function OnboardingFlow({ onComplete }) {
 // ② LOGIN — Netflix-style profile select
 // ─────────────────────────────────────────────────────────────
 export function LoginScreen({ onParentLogin, onChildEnter }) {
-  const [view, setView] = useState("profiles"); // profiles | parent_pin | forgot_pin | child_pin
+  const [view, setView] = useState("profiles");
   const [selChild, setSelChild] = useState(null);
   const [parentPin, setParentPin] = useState("");
   const [parentPinErr, setParentPinErr] = useState("");
@@ -721,10 +799,7 @@ export function LoginScreen({ onParentLogin, onChildEnter }) {
     const pin = String(parentPin || "").replace(/\D/g, "").slice(0, 4);
     if (pin.length !== 4) { setParentPinErr("Enter your 4-digit PIN"); return; }
     if (pin === app?.parent?.pin) { onParentLogin(); }
-    else {
-      setFailedParentPinAttempts((n) => n + 1);
-      setParentPinErr("Incorrect PIN");
-    }
+    else { setFailedParentPinAttempts((n) => n + 1); setParentPinErr("Incorrect PIN"); }
   };
 
   const doSendPinReset = () => {
@@ -732,7 +807,7 @@ export function LoginScreen({ onParentLogin, onChildEnter }) {
     const parentEmail = String(app?.parent?.email || "").trim().toLowerCase();
     if (!email || !email.includes("@")) { setResetStatus("Enter a valid email address"); return; }
     if (email !== parentEmail) { setResetStatus("That email doesn’t match this account"); return; }
-    setResetStatus(`If an account exists for ${email}, you'll receive a PIN reset email shortly.`);
+    setResetStatus(`A PIN reset link has been sent to ${email}.`);
   };
 
   const doChildEnter = () => {
@@ -744,153 +819,201 @@ export function LoginScreen({ onParentLogin, onChildEnter }) {
     else { setChildPinErr("Incorrect PIN"); }
   };
 
-  // ── Parent PIN screen
-  if (view === "parent_pin") return (
-    <Shell bg="var(--forest)">
-      <div className="sci" style={{...s.card(36)}}>
-        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:24 }}>
-          <div style={{ width:56,height:56, background:"var(--sage-ll)", borderRadius:16, display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <Shield size={28} color="var(--forest)"/>
-          </div>
-          <div>
-            <p style={{ fontFamily:"'Fraunces',serif", fontSize:20, fontWeight:700, color:"var(--forest)" }}>Parent Login</p>
-            <p style={{ fontSize:13, color:"var(--ink-l)" }}>{app?.parent?.email}</p>
-          </div>
+  // ── Child PIN screen
+  if (view === "child_pin") return (
+    <div style={{minHeight:"100svh",background:"var(--grad-hero)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px 20px",gap:0}}>
+      <button onClick={()=>{setView("profiles");setSelChild(null);setChildPin("");setChildPinErr("");}}
+        style={{position:"absolute",top:20,left:20,...s.btn("white","","","sm"),gap:6}}>
+        <ChevronLeft size={16}/> Back
+      </button>
+      <div className="sci" style={{display:"flex",flexDirection:"column",alignItems:"center",gap:24,width:"100%",maxWidth:360}}>
+        <div className="flt" style={{
+          width:100,height:100,borderRadius:"var(--r-2xl)",
+          background:selChild?.avatarBg||"#8BAF94",
+          fontSize:44,display:"flex",alignItems:"center",justifyContent:"center",
+          boxShadow:"0 0 0 6px rgba(255,255,255,0.15), 0 20px 60px rgba(0,0,0,0.3)",
+        }}>{selChild?.avatar}</div>
+        <div style={{textAlign:"center"}}>
+          <h2 style={{fontFamily:"’Fraunces’,serif",fontSize:26,fontWeight:700,color:"#fff",marginBottom:4}}>Hi, {selChild?.name}!</h2>
+          <p style={{color:"rgba(255,255,255,0.65)",fontSize:14}}>Enter your PIN to start learning</p>
         </div>
-        <div style={{ marginBottom:20 }}>
-          <Field
-            label="Parent PIN"
-            type="password"
-            value={parentPin}
-            onChange={v=>{ setParentPin(v.replace(/\D/g,"").slice(0,4)); setParentPinErr(""); }}
-            error={parentPinErr}
-            placeholder="4 digits"
-            autoFocus
-            onKeyDown={e=>e.key==="Enter"&&doParentLogin()}
-          />
-        </div>
-        <Btn onClick={doParentLogin} full size="lg">Enter Dashboard <ChevronRight size={18}/></Btn>
-        {failedParentPinAttempts >= 3 && (
-          <button
-            onClick={() => { setView("forgot_pin"); setResetEmail(app?.parent?.email || ""); setResetStatus(""); }}
-            style={{ display:"block", margin:"12px auto 0", color:"var(--forest)", background:"none", border:"none", fontSize:14, cursor:"pointer", fontFamily:"'Instrument Sans'", fontWeight:700, textDecoration:"underline" }}
-          >
-            Forgot PIN?
+        <div style={{...s.card(24),width:"100%"}}>
+          <Field label="Your PIN" error={childPinErr}>
+            <input
+              type="password" maxLength={4} inputMode="numeric"
+              value={childPin}
+              onChange={e=>{setChildPin(e.target.value.replace(/\D/g,"").slice(0,4));setChildPinErr("");}}
+              onKeyDown={e=>e.key==="Enter"&&doChildEnter()}
+              style={{...s.input(!!childPinErr),letterSpacing:"0.3em",fontSize:20,textAlign:"center"}}
+              placeholder="••••"
+              autoFocus
+            />
+          </Field>
+          <button onClick={doChildEnter} style={{...s.btn("learn",true,false,"lg"),marginTop:16}}>
+            Let’s Go! 🚀
           </button>
-        )}
-        <button onClick={()=>{setView("profiles");setParentPin("");setParentPinErr("");setFailedParentPinAttempts(0);}} style={{ display:"block", margin:"14px auto 0", color:"var(--ink-l)", background:"none", border:"none", fontSize:14, cursor:"pointer", fontFamily:"'Instrument Sans'" }}>← Back to profiles</button>
-      </div>
-    </Shell>
-  );
-
-  // ── Forgot PIN (email reset)
-  if (view === "forgot_pin") return (
-    <Shell bg="var(--forest)">
-      <div className="sci" style={{...s.card(36)}}>
-        <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:18 }}>
-          <div style={{ width:56,height:56, background:"var(--gold-ll)", borderRadius:16, display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <Mail size={26} color="var(--forest)"/>
-          </div>
-          <div>
-            <p style={{ fontFamily:"'Fraunces',serif", fontSize:20, fontWeight:700, color:"var(--forest)" }}>Reset Parent PIN</p>
-            <p style={{ fontSize:13, color:"var(--ink-l)" }}>We’ll email a reset link to your account email.</p>
-          </div>
         </div>
-        <div style={{ marginBottom:16 }}>
-          <Field
-            label="Email"
-            type="email"
-            value={resetEmail}
-            onChange={(v)=>{ setResetEmail(v); setResetStatus(""); }}
-            placeholder="you@email.com"
-            icon={<Mail size={16}/>}
-            onKeyDown={(e)=>e.key==="Enter"&&doSendPinReset()}
-          />
-        </div>
-        {resetStatus && (
-          <div style={{ background:"var(--cream)", border:"2px solid var(--cream-dd)", borderRadius:"var(--r-md)", padding:"12px 14px", color:"var(--ink-l)", fontSize:13, marginBottom:14 }}>
-            {resetStatus}
-          </div>
-        )}
-        <Btn onClick={doSendPinReset} full size="lg" v="primary">Send reset email <ArrowRight size={18}/></Btn>
-        <button onClick={()=>{ setView("parent_pin"); setResetStatus(""); }} style={{ display:"block", margin:"14px auto 0", color:"var(--ink-l)", background:"none", border:"none", fontSize:14, cursor:"pointer", fontFamily:"'Instrument Sans'" }}>← Back</button>
-      </div>
-    </Shell>
-  );
-
-  // ── Child PIN
-  if (view === "child_pin" && selChild) return (
-    <div style={{ minHeight:"100vh", background:"var(--forest)", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div className="sci" style={{ maxWidth:360, width:"100%", textAlign:"center" }}>
-        <div className="float" style={{ width:100,height:100, background:selChild.avatarBg, borderRadius:28, display:"flex", alignItems:"center", justifyContent:"center", fontSize:52, margin:"0 auto 20px", boxShadow:`0 12px 40px ${selChild.avatarBg}60` }}>{selChild.avatar}</div>
-        <h2 style={{ fontFamily:"'Fraunces',serif", fontSize:28, fontWeight:700, color:"var(--cream)", marginBottom:8 }}>
-          Hi, {selChild.name}! 👋
-        </h2>
-        <p style={{ color:"var(--sage)", fontSize:15, marginBottom:18 }}>Enter your 4-digit PIN to start</p>
-        <div style={{ marginBottom:12 }}>
-          <Field
-            label="PIN"
-            type="password"
-            value={childPin}
-            onChange={(v)=>{ setChildPin(v.replace(/\D/g,"").slice(0,4)); setChildPinErr(""); }}
-            error={childPinErr}
-            placeholder="4 digits"
-            autoFocus
-            onKeyDown={(e)=>e.key==="Enter"&&doChildEnter()}
-          />
-        </div>
-        <Btn onClick={doChildEnter} full size="lg" v="gold"><Play size={22}/> Let's Go!</Btn>
-        <button onClick={()=>{setView("profiles");setSelChild(null);setChildPin("");setChildPinErr("");}} style={{ display:"block", margin:"16px auto 0", color:"var(--sage)", background:"none", border:"none", fontSize:14, cursor:"pointer", fontFamily:"'Instrument Sans'" }}>← Switch profile</button>
       </div>
     </div>
   );
 
-  // ── Profile picker
-  return (
-    <div style={{ minHeight:"100vh", background:"var(--forest)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div className="afu" style={{ textAlign:"center", marginBottom:40 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10, justifyContent:"center", marginBottom:12 }}>
-          <div style={{ width:40,height:40, background:"var(--gold)", borderRadius:12, display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <Brain size={22} color="var(--forest)"/>
+  // ── Parent PIN screen
+  if (view === "parent_pin") return (
+    <div style={{minHeight:"100svh",background:"var(--grad-hero)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px 20px"}}>
+      <button onClick={()=>{setView("profiles");setParentPin("");setParentPinErr("");setFailedParentPinAttempts(0);}}
+        style={{position:"absolute",top:20,left:20,...s.btn("white","","","sm"),gap:6}}>
+        <ChevronLeft size={16}/> Back
+      </button>
+      <div className="sci" style={{width:"100%",maxWidth:360,display:"flex",flexDirection:"column",gap:20}}>
+        <div style={{textAlign:"center"}}>
+          <div style={{width:64,height:64,borderRadius:"var(--r-xl)",background:"rgba(255,255,255,0.12)",border:"1.5px solid rgba(255,255,255,0.2)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px",backdropFilter:"blur(8px)"}}>
+            <Shield size={28} color="#fff"/>
           </div>
-          <span style={{ fontFamily:"'Fraunces',serif", fontSize:22, fontWeight:700, color:"var(--cream)" }}>e-Skillora</span>
+          <h2 style={{fontFamily:"’Fraunces’,serif",fontSize:24,fontWeight:700,color:"#fff",marginBottom:4}}>Parent Access</h2>
+          <p style={{color:"rgba(255,255,255,0.6)",fontSize:13}}>{app?.parent?.email}</p>
         </div>
-        <p style={{ color:"var(--sage)", fontSize:18, fontFamily:"'Fraunces',serif", fontStyle:"italic" }}>Who's learning today?</p>
+        <div style={{...s.card(24)}}>
+          <Field label="Parent PIN" error={parentPinErr}>
+            <input
+              type="password" maxLength={4} inputMode="numeric"
+              value={parentPin}
+              onChange={e=>{setParentPin(e.target.value.replace(/\D/g,"").slice(0,4));setParentPinErr("");}}
+              onKeyDown={e=>e.key==="Enter"&&doParentLogin()}
+              style={{...s.input(!!parentPinErr),letterSpacing:"0.3em",fontSize:20,textAlign:"center"}}
+              placeholder="••••"
+              autoFocus
+            />
+          </Field>
+          <button onClick={doParentLogin} style={{...s.btn("primary",true,false,"lg"),marginTop:16}}>
+            Enter Dashboard
+          </button>
+          {failedParentPinAttempts >= 3 && (
+            <button onClick={()=>setView("forgot_pin")}
+              style={{...s.btn("ghost",true,false,"sm"),marginTop:10,color:"var(--coral)"}}>
+              Forgot PIN? Reset it
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── Forgot PIN screen
+  if (view === "forgot_pin") return (
+    <div style={{minHeight:"100svh",background:"var(--grad-hero)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px 20px"}}>
+      <button onClick={()=>setView("parent_pin")}
+        style={{position:"absolute",top:20,left:20,...s.btn("white","","","sm"),gap:6}}>
+        <ChevronLeft size={16}/> Back
+      </button>
+      <div className="sci" style={{width:"100%",maxWidth:360,display:"flex",flexDirection:"column",gap:20}}>
+        <div style={{textAlign:"center"}}>
+          <h2 style={{fontFamily:"’Fraunces’,serif",fontSize:22,fontWeight:700,color:"#fff",marginBottom:8}}>Reset your PIN</h2>
+          <p style={{color:"rgba(255,255,255,0.65)",fontSize:14,lineHeight:1.5}}>Enter your email and we’ll send a reset link</p>
+        </div>
+        <div style={{...s.card(24)}}>
+          {resetStatus ? (
+            <div style={{textAlign:"center",padding:"8px 0"}}>
+              <div style={{fontSize:32,marginBottom:12}}>📬</div>
+              <p style={{color:"var(--forest)",fontWeight:600,fontSize:14,lineHeight:1.5}}>{resetStatus}</p>
+            </div>
+          ) : (
+            <>
+              <Field label="Email address">
+                <input type="email" value={resetEmail} onChange={e=>setResetEmail(e.target.value)}
+                  style={s.input()} placeholder="you@example.com" autoFocus/>
+              </Field>
+              <button onClick={doSendPinReset} style={{...s.btn("primary",true,false,"lg"),marginTop:16}}>
+                Send Reset Link
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── Profiles view (main)
+  const children = app?.children || [];
+  return (
+    <div style={{minHeight:"100svh",background:"var(--grad-hero)",display:"flex",flexDirection:"column",overflowX:"hidden"}}>
+      {/* Header */}
+      <div style={{padding:"20px 24px 0",display:"flex",alignItems:"center",justifyContent:"center"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:36,height:36,background:"var(--gold-ll)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <Brain size={20} color="var(--forest)"/>
+          </div>
+          <span style={{fontFamily:"’Fraunces’,serif",fontWeight:700,fontSize:20,color:"#fff",letterSpacing:"-0.02em"}}>e-Skillora</span>
+        </div>
       </div>
 
-      <div style={{ display:"flex", flexWrap:"wrap", gap:24, justifyContent:"center", maxWidth:600 }}>
-        {/* Children */}
-        {app?.children?.map((child, i) => (
-          <button key={child.id} className={`afu d${i+1}`} onClick={()=>{ setSelChild(child); setChildPin(""); setChildPinErr(""); setView("child_pin"); }} style={{
-            display:"flex", flexDirection:"column", alignItems:"center", gap:12,
-            background:"none", border:"none", cursor:"pointer", padding:8,
-          }}>
-            <div style={{
-              width:100, height:100, background:child.avatarBg, borderRadius:26,
-              display:"flex", alignItems:"center", justifyContent:"center", fontSize:50,
-              boxShadow:`0 8px 30px ${child.avatarBg}50`, border:"3px solid transparent",
-              transition:"all .2s",
-            }} onMouseEnter={e=>{ e.currentTarget.style.transform="scale(1.07)"; e.currentTarget.style.border="3px solid var(--gold)"; }}
-               onMouseLeave={e=>{ e.currentTarget.style.transform="scale(1)"; e.currentTarget.style.border="3px solid transparent"; }}>
-              {child.avatar}
-            </div>
-            <p style={{ color:"var(--cream)", fontSize:16, fontWeight:600, fontFamily:"'Instrument Sans'" }}>{child.name}</p>
-            <p style={{ color:"var(--sage)", fontSize:13 }}>Age {child.age}</p>
-          </button>
-        ))}
+      {/* Title */}
+      <div className="sci" style={{textAlign:"center",padding:"32px 24px 24px"}}>
+        <h1 style={{fontFamily:"’Fraunces’,serif",fontWeight:700,fontSize:26,color:"#fff",marginBottom:8,letterSpacing:"-0.02em"}}>
+          Who’s learning today?
+        </h1>
+        <p style={{color:"rgba(255,255,255,0.55)",fontSize:14}}>Select your profile to continue</p>
+      </div>
 
-        {/* Parent */}
-        <button className="afu d3" onClick={()=>{ setParentPin(""); setParentPinErr(""); setFailedParentPinAttempts(0); setView("parent_pin"); }} style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:12, background:"none", border:"none", cursor:"pointer", padding:8 }}>
-          <div style={{
-            width:100, height:100, background:"rgba(255,255,255,0.07)", borderRadius:26,
-            display:"flex", alignItems:"center", justifyContent:"center",
-            border:"3px solid rgba(255,255,255,0.12)", transition:"all .2s",
-          }} onMouseEnter={e=>{ e.currentTarget.style.transform="scale(1.07)"; e.currentTarget.style.border="3px solid var(--gold)"; }}
-             onMouseLeave={e=>{ e.currentTarget.style.transform="scale(1)"; e.currentTarget.style.border="3px solid rgba(255,255,255,0.12)"; }}>
-            <Shield size={42} color="var(--sage)"/>
+      {/* Profiles grid */}
+      <div style={{
+        flex:1,padding:"0 20px",
+        display:"flex",flexDirection:"column",alignItems:"center",gap:16,
+        paddingBottom:"calc(var(--safe-b) + 32px)",
+      }}>
+        {/* Children profiles */}
+        <div style={{
+          display:"grid",
+          gridTemplateColumns:children.length===1?"1fr":children.length===2?"1fr 1fr":"repeat(auto-fit,minmax(140px,1fr))",
+          gap:12,width:"100%",maxWidth:420,
+        }}>
+          {children.map((child,i)=>(
+            <button key={child.id} className="sci" style={{
+              animationDelay:`${i*0.08}s`,
+              background:"rgba(255,255,255,0.10)",
+              border:"1.5px solid rgba(255,255,255,0.18)",
+              borderRadius:"var(--r-xl)",padding:"20px 12px",
+              display:"flex",flexDirection:"column",alignItems:"center",gap:10,
+              cursor:"pointer",backdropFilter:"blur(12px)",
+              transition:"all .2s cubic-bezier(.22,1,.36,1)",
+            }}
+            onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.18)";e.currentTarget.style.transform="translateY(-3px)";e.currentTarget.style.boxShadow="0 12px 40px rgba(0,0,0,0.25)";}}
+            onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.10)";e.currentTarget.style.transform="none";e.currentTarget.style.boxShadow="none";}}
+            onClick={()=>{setSelChild(child);setView("child_pin");}}>
+              <div style={{
+                width:72,height:72,borderRadius:"var(--r-lg)",
+                background:child.avatarBg||"#8BAF94",
+                fontSize:34,display:"flex",alignItems:"center",justifyContent:"center",
+                boxShadow:"0 4px 20px rgba(0,0,0,0.25)",
+              }}>{child.avatar}</div>
+              <div>
+                <div style={{fontWeight:700,fontSize:15,color:"#fff",textAlign:"center"}}>{child.name}</div>
+                <div style={{fontSize:12,color:"rgba(255,255,255,0.55)",textAlign:"center",marginTop:2}}>Age {child.age}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {/* Parent button */}
+        <button className="sci2" style={{
+          background:"rgba(255,255,255,0.08)",
+          border:"1.5px solid rgba(255,255,255,0.14)",
+          borderRadius:"var(--r-xl)",padding:"16px 28px",
+          display:"flex",alignItems:"center",gap:14,
+          width:"100%",maxWidth:420,cursor:"pointer",
+          backdropFilter:"blur(8px)",
+          transition:"all .2s cubic-bezier(.22,1,.36,1)",
+        }}
+        onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.14)";}}
+        onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.08)";}}
+        onClick={()=>setView("parent_pin")}>
+          <div style={{width:44,height:44,borderRadius:"var(--r-md)",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            <Shield size={20} color="rgba(255,255,255,0.8)"/>
           </div>
-          <p style={{ color:"var(--cream)", fontSize:16, fontWeight:600, fontFamily:"'Instrument Sans'" }}>Parent</p>
-          <p style={{ color:"var(--sage)", fontSize:13 }}>Dashboard</p>
+          <div style={{textAlign:"left"}}>
+            <div style={{fontWeight:700,fontSize:14,color:"rgba(255,255,255,0.9)"}}>Parent Dashboard</div>
+            <div style={{fontSize:12,color:"rgba(255,255,255,0.45)",marginTop:1}}>{app?.parent?.email}</div>
+          </div>
+          <ChevronRight size={16} color="rgba(255,255,255,0.4)" style={{marginLeft:"auto"}}/>
         </button>
       </div>
     </div>
@@ -905,209 +1028,281 @@ export function ParentDashboard({ onLogout, onSwitchToChild }) {
   const [tab, setTab] = useState("overview");
   const refresh = () => { const d=getApp(); setAppLocal(d); };
 
+  const planData = PLANS.find(p=>p.id===app?.parent?.plan) || PLANS[1];
+
+  // Bottom navigation tabs
   const TABS = [
-    { id:"overview",   icon:<BarChart3 size={16}/>, label:"Overview" },
-    { id:"children",   icon:<Users size={16}/>,     label:"Children" },
-    { id:"plan",       icon:<CreditCard size={16}/>, label:"Plan"    },
-    { id:"settings",   icon:<Settings size={16}/>,  label:"Settings" },
+    { id:"overview", icon:<BarChart3 size={20}/>, label:"Overview" },
+    { id:"children", icon:<Users size={20}/>, label:"Children" },
+    { id:"plan",     icon:<CreditCard size={20}/>, label:"Plan" },
+    { id:"settings", icon:<Settings size={20}/>, label:"Settings" },
   ];
 
-  const planData  = PLANS.find(p=>p.id===app?.parent?.plan) || PLANS[1];
-  const trialLeft = Math.max(0, Math.ceil((app?.parent?.trialEnd - Date.now()) / 86400000));
+  return (
+    <div style={{minHeight:"100svh",background:"var(--cream)",display:"flex",flexDirection:"column"}}>
+      {/* Sticky Top Bar */}
+      <div style={{
+        background:"rgba(247,243,237,0.92)",backdropFilter:"blur(16px)",
+        borderBottom:"1px solid var(--cream-dd)",
+        padding:"14px 20px",
+        display:"flex",alignItems:"center",justifyContent:"space-between",
+        position:"sticky",top:0,zIndex:100,
+      }}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:34,height:34,background:"var(--forest)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            <Brain size={18} color="var(--cream)"/>
+          </div>
+          <div>
+            <span style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:17,color:"var(--forest)",letterSpacing:"-0.02em"}}>e-Skillora</span>
+            <span style={{...s.tag("forest"),marginLeft:8,fontSize:10}}>Parent</span>
+          </div>
+        </div>
+        <button onClick={onLogout} style={{...s.btn("ghost","","","sm"),color:"var(--coral)",fontWeight:600,gap:5}}>
+          <LogOut size={15}/> Sign out
+        </button>
+      </div>
 
-  // Per-child stats
-  const childStats = (child) => {
-    const prog = LS.get(`skillora-progress-${child.name}`, null);
-    if (!prog) return { days:0, questions:0, accuracy:0, level: child.level||"A" };
-    const days = Object.keys(prog.completedDays||{}).length;
-    const totalQ  = Object.values(prog.completedDays||{}).reduce((s,v)=>s+v.total,0);
-    const totalC  = Object.values(prog.completedDays||{}).reduce((s,v)=>s+v.correct,0);
-    return { days, questions: totalQ, accuracy: totalQ>0?Math.round(totalC/totalQ*100):0, level: prog.currentLevel||child.level||"A" };
-  };
+      {/* Tab Content */}
+      <div style={{flex:1,overflowY:"auto",paddingBottom:"calc(var(--nav-h) + var(--safe-b) + 16px)"}}>
+        {tab==="overview" && <OverviewTab app={app} onSwitchToChild={onSwitchToChild}/>}
+        {tab==="children" && <ChildrenTab app={app} planData={planData} refresh={refresh}/>}
+        {tab==="plan" && <PlanTab app={app} planData={planData}/>}
+        {tab==="settings" && <SettingsTab app={app} onLogout={onLogout} refresh={refresh}/>}
+      </div>
+
+      {/* Bottom Navigation */}
+      <div style={{
+        position:"fixed",bottom:0,left:0,right:0,zIndex:200,
+        background:"rgba(255,255,255,0.96)",backdropFilter:"blur(20px)",
+        borderTop:"1px solid var(--cream-dd)",
+        padding:"10px 8px calc(var(--safe-b) + 10px)",
+        display:"flex",alignItems:"center",justifyContent:"space-around",
+      }}>
+        {TABS.map(t=>(
+          <button key={t.id} onClick={()=>setTab(t.id)} style={{
+            display:"flex",flexDirection:"column",alignItems:"center",gap:3,
+            padding:"6px 16px",borderRadius:"var(--r-md)",border:"none",
+            background:tab===t.id?"var(--sage-ll)":"transparent",
+            color:tab===t.id?"var(--forest)":"var(--ink-ll)",
+            fontFamily:"'Instrument Sans',sans-serif",fontWeight:600,fontSize:10,
+            letterSpacing:"0.02em",cursor:"pointer",
+            transition:"all .2s",minWidth:60,
+          }}>
+            <span style={{color:tab===t.id?"var(--forest)":"var(--ink-ll)",lineHeight:1}}>{t.icon}</span>
+            {t.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function OverviewTab({ app, onSwitchToChild }) {
+  const hour = new Date().getHours();
+  const greeting = hour<12?"Good morning":hour<17?"Good afternoon":"Good evening";
+  const emoji = hour<12?"☀️":hour<17?"🌤️":"🌙";
 
   return (
-    <div style={{ minHeight:"100vh", background:"var(--cream)", fontFamily:"'Instrument Sans'" }}>
-      {/* Top bar */}
-      <div style={{ background:"var(--forest)", padding:"0 24px", position:"sticky", top:0, zIndex:50 }}>
-        <div style={{ maxWidth:920, margin:"0 auto", height:60, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <Brain size={22} color="var(--gold)"/>
-            <span style={{ fontFamily:"'Fraunces',serif", fontSize:18, fontWeight:700, color:"var(--cream)" }}>e-Skillora</span>
-            <Tag color="gold">Parent</Tag>
-          </div>
-          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-            <span style={{ color:"var(--sage)", fontSize:13 }}>{app?.parent?.email}</span>
-            <button onClick={onLogout} style={{ display:"flex", alignItems:"center", gap:6, color:"var(--sage)", background:"rgba(255,255,255,0.07)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:"var(--r-md)", padding:"7px 14px", fontSize:13, cursor:"pointer", fontFamily:"'Instrument Sans'" }}>
-              <LogOut size={14}/> Sign out
-            </button>
-          </div>
+    <div style={{padding:"20px 20px 8px",display:"flex",flexDirection:"column",gap:20}}>
+      {/* Greeting */}
+      <div className="sci" style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div>
+          <p style={{fontSize:13,color:"var(--ink-ll)",fontWeight:500,marginBottom:2}}>{greeting} {emoji}</p>
+          <h1 style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:22,color:"var(--forest)",letterSpacing:"-0.02em"}}>
+            Your Dashboard
+          </h1>
         </div>
       </div>
 
-      <div style={{ maxWidth:920, margin:"0 auto", padding:"32px 24px" }}>
-        {/* Tab bar */}
-        <div style={{ display:"flex", gap:4, background:"var(--white)", borderRadius:"var(--r-lg)", padding:5, marginBottom:28, boxShadow:"var(--shadow)", width:"fit-content" }}>
-          {TABS.map(t=>(
-            <button key={t.id} onClick={()=>setTab(t.id)} style={{
-              display:"flex", alignItems:"center", gap:7, padding:"9px 20px", borderRadius:"var(--r-md)",
-              fontSize:14, fontWeight:600, fontFamily:"'Instrument Sans'", cursor:"pointer", border:"none", transition:"all .2s",
-              background: tab===t.id?"var(--forest)":"transparent",
-              color: tab===t.id?"var(--cream)":"var(--ink-l)",
-            }}>{t.icon} {t.label}</button>
-          ))}
-        </div>
+      {/* Children cards */}
+      {(app?.children||[]).map((child,i)=>{
+        const prog = (() => { try { const v = localStorage.getItem(`skillora-progress-${child.name}`); return v ? JSON.parse(v) : null; } catch { return null; } })();
+        const daysCompleted = Object.keys(prog?.completedDays||{}).filter(k=>k.startsWith(prog?.currentLevel||child.level)).length;
+        const totalAcc = (() => {
+          const days = Object.values(prog?.completedDays||{});
+          if (!days.length) return null;
+          const tot = days.reduce((a,d)=>a+(d.total||0),0);
+          const cor = days.reduce((a,d)=>a+(d.correct||0),0);
+          return tot>0?Math.round(cor/tot*100):null;
+        })();
 
-        {/* OVERVIEW */}
-        {tab==="overview" && (
-          <div className="afu">
-            <h2 style={{ fontFamily:"'Fraunces',serif", fontSize:28, fontWeight:700, color:"var(--forest)", marginBottom:4 }}>
-              Good {new Date().getHours()<12?"morning":"afternoon"}! 👋
-            </h2>
-            <p style={{ color:"var(--ink-l)", fontSize:15, marginBottom:24 }}>Here's how your {app?.children?.length===1?"child is":"children are"} doing</p>
-
-            {/* Trial banner */}
-            {trialLeft > 0 && (
-              <div style={{ background:"var(--gold-ll)", border:"2px solid var(--gold)", borderRadius:"var(--r-lg)", padding:"14px 20px", marginBottom:24, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                  <Clock size={18} color="var(--forest)"/>
-                  <p style={{ fontWeight:600, color:"var(--forest)", fontSize:15 }}>Free trial: {trialLeft} day{trialLeft!==1?"s":""} remaining</p>
+        return (
+          <div key={child.id} className="sci" style={{animationDelay:`${i*0.1}s`}}>
+            <div style={{...s.card(0),overflow:"hidden"}}>
+              {/* Card Header */}
+              <div style={{background:"var(--grad-forest)",padding:"18px 20px",display:"flex",alignItems:"center",gap:14}}>
+                <div style={{width:52,height:52,borderRadius:"var(--r-md)",background:child.avatarBg||"#8BAF94",fontSize:26,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 16px rgba(0,0,0,0.25)",flexShrink:0}}>
+                  {child.avatar}
                 </div>
-                <button style={{ fontSize:13, fontWeight:700, color:"var(--forest)", background:"none", border:"none", cursor:"pointer", textDecoration:"underline" }}>Upgrade now</button>
+                <div style={{flex:1}}>
+                  <div style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:18,color:"#fff"}}>{child.name}</div>
+                  <div style={{fontSize:12,color:"rgba(255,255,255,0.6)",marginTop:2}}>Age {child.age} · Level {prog?.currentLevel||child.level}</div>
+                </div>
+                <span style={{...s.tag("cream"),fontSize:10}}>
+                  {gradeLabel(child.age)}
+                </span>
               </div>
-            )}
 
-            {/* Child cards */}
-            <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
-              {app?.children?.map(child=>{
-                const st = childStats(child);
-                return (
-                  <div key={child.id} style={{ background:"var(--white)", borderRadius:"var(--r-xl)", boxShadow:"var(--shadow)", padding:24 }}>
-                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:16 }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:14 }}>
-                        <div style={{ width:56,height:56, background:child.avatarBg, borderRadius:16, display:"flex", alignItems:"center", justifyContent:"center", fontSize:28, flexShrink:0 }}>{child.avatar}</div>
-                        <div>
-                          <p style={{ fontFamily:"'Fraunces',serif", fontSize:20, fontWeight:700, color:"var(--forest)" }}>{child.name}</p>
-                          <p style={{ fontSize:13, color:"var(--ink-l)" }}>Age {child.age} · Level {st.level} · {gradeLabel(child.age)}</p>
-                        </div>
-                      </div>
-                      <Btn onClick={()=>onSwitchToChild(child)} v="sage" size="sm">Switch to {child.name} <ChevronRight size={14}/></Btn>
-                    </div>
-
-                    {/* Stats row */}
-                    <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginTop:20 }}>
-                      {[
-                        { icon:"📅", label:"Days done",  val:st.days, color:"var(--forest)" },
-                        { icon:"🎯", label:"Accuracy",    val:`${st.accuracy}%`, color: st.accuracy>=80?"var(--forest)":st.accuracy>=60?"var(--gold)":"var(--coral)" },
-                        { icon:"📝", label:"Questions",   val:st.questions.toLocaleString(), color:"var(--forest)" },
-                        { icon:"⭐", label:"Level",       val:st.level, color:"var(--gold)" },
-                      ].map((s2,i)=>(
-                        <div key={i} style={{ background:"var(--cream)", borderRadius:"var(--r-md)", padding:"14px 12px", textAlign:"center" }}>
-                          <p style={{ fontSize:22, marginBottom:2 }}>{s2.icon}</p>
-                          <p style={{ fontFamily:"'Fraunces',serif", fontSize:22, fontWeight:700, color:s2.color }}>{s2.val}</p>
-                          <p style={{ fontSize:11, color:"var(--ink-ll)" }}>{s2.label}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Level progress bar */}
-                    {st.days > 0 && (
-                      <div style={{ marginTop:16 }}>
-                        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
-                          <span style={{ fontSize:12, color:"var(--ink-l)" }}>Level {st.level} progress</span>
-                          <span style={{ fontSize:12, fontWeight:600, color:"var(--forest)" }}>{st.days}/60 days</span>
-                        </div>
-                        <div style={{ height:8, background:"var(--cream-dd)", borderRadius:4 }}>
-                          <div style={{ height:8, borderRadius:4, background:"var(--forest)", transition:"width .5s", width:`${Math.min(100,(st.days/60)*100)}%` }}/>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* CHILDREN */}
-        {tab==="children" && (
-          <div className="afu">
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:20 }}>
-              <h2 style={{ fontFamily:"'Fraunces',serif", fontSize:28, fontWeight:700, color:"var(--forest)" }}>Children</h2>
-              {(app?.children?.length||0) < planData.cap && (
-                <Btn v="primary" size="sm"><Plus size={16}/> Add child</Btn>
-              )}
-            </div>
-            <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-              {app?.children?.map(child=>(
-                <div key={child.id} style={{ background:"var(--white)", borderRadius:"var(--r-xl)", boxShadow:"var(--shadow)", padding:22, display:"flex", alignItems:"center", gap:16 }}>
-                  <div style={{ width:60,height:60, background:child.avatarBg, borderRadius:18, display:"flex", alignItems:"center", justifyContent:"center", fontSize:30, flexShrink:0 }}>{child.avatar}</div>
-                  <div style={{ flex:1 }}>
-                    <p style={{ fontFamily:"'Fraunces',serif", fontSize:18, fontWeight:700, color:"var(--forest)" }}>{child.name}</p>
-                    <p style={{ fontSize:14, color:"var(--ink-l)" }}>Age {child.age} · {gradeLabel(child.age)} · Level {getStartLevel(child.age)}</p>
-                  </div>
-                  <div style={{ display:"flex", gap:8 }}>
-                    <Btn v="sage" size="sm"><Edit2 size={14}/> Edit</Btn>
-                    <Btn v="danger" size="sm"><Trash2 size={14}/></Btn>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* PLAN */}
-        {tab==="plan" && (
-          <div className="afu">
-            <h2 style={{ fontFamily:"'Fraunces',serif", fontSize:28, fontWeight:700, color:"var(--forest)", marginBottom:20 }}>Your Subscription</h2>
-            <div style={{ background:"var(--forest)", borderRadius:"var(--r-xl)", padding:28, marginBottom:20, color:"var(--cream)" }}>
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
-                <div>
-                  <p style={{ fontSize:13, color:"var(--sage)" }}>Current plan</p>
-                  <p style={{ fontFamily:"'Fraunces',serif", fontSize:30, fontWeight:700, color:"var(--gold)" }}>{planData.label}</p>
-                </div>
-                <div style={{ textAlign:"right" }}>
-                  <p style={{ fontFamily:"'Fraunces',serif", fontSize:36, fontWeight:700, color:"var(--cream)" }}>${planData.price}</p>
-                  <p style={{ color:"var(--sage)", fontSize:13 }}>per month</p>
+              {/* Progress Bar */}
+              <div style={{padding:"0 20px"}}>
+                <div style={{height:5,background:"rgba(28,58,47,0.08)",borderRadius:"var(--r-full)",overflow:"hidden",margin:"0"}}>
+                  <div style={{height:"100%",width:`${Math.min(100,Math.round(daysCompleted/60*100))}%`,background:"var(--grad-gold)",borderRadius:"var(--r-full)",transition:"width .8s cubic-bezier(.22,1,.36,1)"}}/>
                 </div>
               </div>
-              <div style={{ borderTop:"1px solid rgba(255,255,255,0.1)", paddingTop:16 }}>
-                {["All 12 math levels","Daily 50-question worksheets",`Up to ${planData.cap} child account${planData.cap>1?"s":""}`,planData.id==="pro"?"Detailed analytics":"Progress tracking"].map((f,i)=>(
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
-                    <Check size={15} color="var(--gold)"/> <span style={{ fontSize:14, color:"var(--cream)" }}>{f}</span>
+
+              {/* Stats */}
+              <div style={{padding:"14px 20px",display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+                {[
+                  {label:"Days Done",value:daysCompleted||0,icon:"📅",color:"var(--forest)"},
+                  {label:"Accuracy",value:totalAcc!=null?`${totalAcc}%`:"—",icon:"🎯",color:totalAcc>=80?"var(--green)":totalAcc>=60?"var(--amber)":"var(--coral)"},
+                  {label:"Level",value:prog?.currentLevel||child.level,icon:"⭐",color:"var(--gold)"},
+                ].map(stat=>(
+                  <div key={stat.label} style={{textAlign:"center",background:"var(--cream)",borderRadius:"var(--r-md)",padding:"10px 6px"}}>
+                    <div style={{fontSize:18,lineHeight:1,marginBottom:4}}>{stat.icon}</div>
+                    <div style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:17,color:stat.color,lineHeight:1}}>{stat.value}</div>
+                    <div style={{fontSize:10,color:"var(--ink-ll)",marginTop:3,fontWeight:500}}>{stat.label}</div>
                   </div>
                 ))}
               </div>
-            </div>
-            <div style={{ display:"flex", gap:12 }}>
-              <Btn full v="primary">Upgrade Plan</Btn>
-              <Btn full v="outline">Cancel</Btn>
-            </div>
-          </div>
-        )}
 
-        {/* SETTINGS */}
-        {tab==="settings" && (
-          <div className="afu">
-            <h2 style={{ fontFamily:"'Fraunces',serif", fontSize:28, fontWeight:700, color:"var(--forest)", marginBottom:20 }}>Settings</h2>
-            {[
-              { label:"Email address", val:app?.parent?.email, action:"Change" },
-              { label:"Password",      val:"••••••••••",       action:"Update" },
-              { label:"Parent PIN",    val:"• • • •",          action:"Change PIN" },
-              { label:"Notifications", val:"Weekly progress reports", action:"Configure" },
-            ].map(row=>(
-              <div key={row.label} style={{ background:"var(--white)", borderRadius:"var(--r-lg)", boxShadow:"var(--shadow)", padding:"18px 22px", marginBottom:10, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                <div>
-                  <p style={{ fontSize:12, color:"var(--ink-ll)", marginBottom:2 }}>{row.label}</p>
-                  <p style={{ fontSize:15, fontWeight:500, color:"var(--ink)" }}>{row.val}</p>
-                </div>
-                <button style={{ color:"var(--forest)", background:"none", border:"none", fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"'Instrument Sans'" }}>{row.action}</button>
+              {/* Switch button */}
+              <div style={{padding:"0 20px 16px"}}>
+                <button onClick={()=>onSwitchToChild(child)} style={{...s.btn("primary",true,false,"sm"),borderRadius:"var(--r-md)",gap:6}}>
+                  <Play size={13}/> Switch to {child.name}
+                </button>
               </div>
-            ))}
-            <div style={{ marginTop:24 }}>
-              <Btn v="danger" full onClick={onLogout}><LogOut size={16}/> Sign Out</Btn>
             </div>
           </div>
+        );
+      })}
+
+      {!app?.children?.length && (
+        <div style={{...s.card(32),textAlign:"center"}}>
+          <div style={{fontSize:40,marginBottom:12}}>👨‍👩‍👧</div>
+          <p style={{fontFamily:"'Fraunces',serif",fontWeight:600,fontSize:16,color:"var(--forest)",marginBottom:6}}>No children yet</p>
+          <p style={{fontSize:13,color:"var(--ink-l)"}}>Go to Children tab to add your first child</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ChildrenTab({ app, planData, refresh }) {
+  const [editing, setEditing] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+
+  const handleDelete = (childId) => {
+    const appData = getApp();
+    if (!appData) return;
+    appData.children = appData.children.filter(c => c.id !== childId);
+    setApp(appData);
+    refresh();
+    setConfirmDelete(null);
+  };
+
+  return (
+    <div style={{padding:"20px",display:"flex",flexDirection:"column",gap:16}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <h2 style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:20,color:"var(--forest)"}}>Children</h2>
+        {(app?.children?.length||0) < planData.cap && (
+          <button style={{...s.btn("primary","","","sm"),gap:5}} onClick={()=>alert("Add child flow coming soon")}>
+            <Plus size={14}/> Add Child
+          </button>
         )}
+      </div>
+      {(app?.children||[]).map(child=>(
+        <div key={child.id} style={{...s.card(16),display:"flex",alignItems:"center",gap:14}}>
+          <div style={{width:52,height:52,borderRadius:"var(--r-md)",background:child.avatarBg,fontSize:26,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            {child.avatar}
+          </div>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:700,fontSize:15,color:"var(--forest)"}}>{child.name}</div>
+            <div style={{fontSize:12,color:"var(--ink-l)",marginTop:2}}>Age {child.age} · Level {child.level}</div>
+          </div>
+          <button onClick={()=>setConfirmDelete(child.id)} style={{...s.btn("ghost","","","sm"),color:"var(--coral)",padding:"8px"}}>
+            <Trash2 size={16}/>
+          </button>
+        </div>
+      ))}
+      {confirmDelete && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:20}}>
+          <div style={{...s.card(24),maxWidth:320,width:"100%"}}>
+            <h3 style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:18,color:"var(--forest)",marginBottom:8}}>Remove child?</h3>
+            <p style={{color:"var(--ink-l)",fontSize:14,marginBottom:20}}>This will permanently delete all progress data.</p>
+            <div style={{display:"flex",gap:10}}>
+              <button onClick={()=>setConfirmDelete(null)} style={{...s.btn("outline",true)}}>Cancel</button>
+              <button onClick={()=>handleDelete(confirmDelete)} style={{...s.btn("danger",true)}}>Remove</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PlanTab({ app, planData }) {
+  const [loading, setLoading] = useState(false);
+  const handleUpgrade = async () => {
+    setLoading(true);
+    try {
+      const { apiRequest } = await import("@/lib/queryClient");
+      const res = await apiRequest("POST", "/api/stripe/checkout", {});
+      const { url } = await res.json();
+      window.location.href = url;
+    } catch { setLoading(false); }
+  };
+
+  return (
+    <div style={{padding:"20px",display:"flex",flexDirection:"column",gap:16}}>
+      <h2 style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:20,color:"var(--forest)"}}>Your Plan</h2>
+      <div style={{...s.cardForest(24)}}>
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16}}>
+          <div>
+            <span style={{...s.tag("cream"),marginBottom:8,display:"inline-flex"}}>{planData.label}</span>
+            <div style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:32,color:"var(--gold)",lineHeight:1}}>
+              ${planData.price}<span style={{fontSize:15,fontWeight:400,opacity:0.7}}>/mo</span>
+            </div>
+          </div>
+        </div>
+        {[`Up to ${planData.cap} child${planData.cap>1?"ren":""}`, "All 12 curriculum levels", "Daily worksheets & tests", "AI tutor included"].map(f=>(
+          <div key={f} style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+            <CheckCircle size={16} color="var(--gold-l)"/>
+            <span style={{color:"rgba(255,255,255,0.85)",fontSize:14}}>{f}</span>
+          </div>
+        ))}
+      </div>
+      <button onClick={handleUpgrade} disabled={loading} style={{...s.btn("gold",true,loading,"lg")}}>
+        {loading?"Processing...":"Manage Subscription"}
+      </button>
+    </div>
+  );
+}
+
+function SettingsTab({ app, onLogout, refresh }) {
+  return (
+    <div style={{padding:"20px",display:"flex",flexDirection:"column",gap:12}}>
+      <h2 style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:20,color:"var(--forest)"}}>Settings</h2>
+      {[
+        {label:"Email address",value:app?.parent?.email,icon:<Mail size={16}/>,action:"Change"},
+        {label:"Password",value:"••••••••",icon:<Lock size={16}/>,action:"Update"},
+        {label:"Parent PIN",value:"••••",icon:<Shield size={16}/>,action:"Change"},
+        {label:"Notifications",value:"Email & push",icon:<Bell size={16}/>,action:"Configure"},
+      ].map(row=>(
+        <div key={row.label} style={{...s.card(16),display:"flex",alignItems:"center",gap:14}}>
+          <div style={{width:38,height:38,borderRadius:"var(--r-sm)",background:"var(--sage-ll)",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--forest)",flexShrink:0}}>
+            {row.icon}
+          </div>
+          <div style={{flex:1}}>
+            <div style={{fontSize:11,color:"var(--ink-ll)",fontWeight:500,letterSpacing:"0.02em"}}>{row.label}</div>
+            <div style={{fontSize:14,color:"var(--ink-m)",fontWeight:600,marginTop:1}}>{row.value}</div>
+          </div>
+          <button style={{...s.btn("outline","","","sm"),fontSize:12,padding:"6px 12px"}}>{row.action}</button>
+        </div>
+      ))}
+      <div style={{marginTop:8}}>
+        <button onClick={onLogout} style={{...s.btn("danger",true,false,"lg"),gap:8}}>
+          <LogOut size={16}/> Sign Out
+        </button>
       </div>
     </div>
   );

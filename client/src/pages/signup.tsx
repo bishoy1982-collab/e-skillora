@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Brain, ArrowRight, Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react";
+import { Brain, ArrowRight, Eye, EyeOff, AlertCircle, CheckCircle, ChevronLeft, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const G_FONT = `https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,800&family=Instrument+Sans:wght@400;500;600;700&display=swap`;
@@ -7,11 +7,16 @@ const G_FONT = `https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..1
 const CSS = `
 @import url('${G_FONT}');
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+html, body { -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
 .fade-up { animation: fadeUp 0.5s cubic-bezier(.22,1,.36,1) both; }
-.auth-input:focus { border-color: #1C3A2F !important; outline: none; }
-.submit-btn:hover:not(:disabled) { background: #2A5240 !important; transform: translateY(-1px); }
-.submit-btn { transition: all 0.2s; }
+.d1 { animation-delay: .06s; } .d2 { animation-delay: .12s; }
+.auth-input { transition: border-color 0.2s, box-shadow 0.2s; }
+.auth-input:focus { border-color: #1C3A2F !important; box-shadow: 0 0 0 3px rgba(28,58,47,0.1) !important; outline: none; }
+.submit-btn { transition: all 0.2s cubic-bezier(.22,1,.36,1); }
+.submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(28,58,47,0.25) !important; }
+.back-link { transition: color 0.2s; }
+.back-link:hover { color: #1C3A2F !important; }
 `;
 
 interface SignupPageProps {
@@ -57,65 +62,89 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
     <>
       <style>{CSS}</style>
       <div style={{
-        minHeight: "100vh", background: "#F7F3ED",
+        minHeight: "100svh",
+        background: "linear-gradient(160deg, #1C3A2F 0%, #2A5240 45%, #3D7A5C 100%)",
         fontFamily: "'Instrument Sans', sans-serif",
         display: "flex", flexDirection: "column", alignItems: "center",
-        justifyContent: "center", padding: "24px",
+        justifyContent: "center", padding: "24px 20px",
       }}>
+        {/* Back button */}
+        <button
+          className="back-link"
+          onClick={() => onNavigate("landing")}
+          style={{
+            position: "absolute", top: 20, left: 20,
+            display: "inline-flex", alignItems: "center", gap: 4,
+            background: "rgba(255,255,255,0.12)", border: "1.5px solid rgba(255,255,255,0.2)",
+            borderRadius: 9999, padding: "8px 16px", cursor: "pointer",
+            color: "rgba(255,255,255,0.8)", fontSize: 13, fontWeight: 600,
+            fontFamily: "'Instrument Sans', sans-serif",
+            backdropFilter: "blur(8px)",
+          }}
+        >
+          <ChevronLeft size={14} /> Back
+        </button>
+
         {/* Logo */}
-        <div className="fade-up" style={{ marginBottom: 32, cursor: "pointer" }} onClick={() => onNavigate("landing")}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{
-              width: 40, height: 40, background: "#1C3A2F", borderRadius: 12,
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <Brain size={22} color="#C9973A" />
-            </div>
-            <span style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 700, color: "#1C3A2F" }}>
-              e-Skillora
-            </span>
+        <div className="fade-up" style={{ marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{
+            width: 38, height: 38, background: "rgba(255,255,255,0.12)",
+            border: "1.5px solid rgba(255,255,255,0.2)",
+            borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center",
+            backdropFilter: "blur(8px)",
+          }}>
+            <Brain size={20} color="#E5B96A" />
           </div>
+          <span style={{ fontFamily: "'Fraunces', serif", fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: "-0.02em" }}>
+            e-Skillora
+          </span>
         </div>
 
         {/* Trial badge */}
         <div className="fade-up" style={{
-          background: "#E6F0E8", color: "#1C3A2F", fontSize: 13,
+          display: "inline-flex", alignItems: "center", gap: 6,
+          background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)",
+          color: "rgba(255,255,255,0.9)", fontSize: 11,
           fontWeight: 700, padding: "6px 16px", borderRadius: 9999,
-          marginBottom: 24, letterSpacing: "0.3px",
+          marginBottom: 20, letterSpacing: "0.04em", textTransform: "uppercase" as const,
+          backdropFilter: "blur(8px)",
         }}>
-          ✨ 3 DAYS FREE · THEN $10.99/MONTH · CANCEL ANYTIME
+          <Star size={12} fill="#E5B96A" color="#E5B96A" />
+          3 DAYS FREE · THEN $10.99/MONTH
         </div>
 
         {/* Card */}
-        <div className="fade-up" style={{
-          background: "white", borderRadius: 24,
-          padding: "40px 36px", width: "100%", maxWidth: 440,
-          boxShadow: "0 4px 32px rgba(28,58,47,0.10)",
+        <div className="fade-up d1" style={{
+          background: "rgba(255,255,255,0.95)", borderRadius: 28,
+          padding: "36px 28px", width: "100%", maxWidth: 420,
+          boxShadow: "0 8px 40px rgba(0,0,0,0.14), 0 0 0 1px rgba(255,255,255,0.1) inset",
+          backdropFilter: "blur(12px)",
         }}>
           <h1 style={{
-            fontFamily: "'Fraunces', serif", fontSize: 28,
-            fontWeight: 800, color: "#1C3A2F", marginBottom: 6,
+            fontFamily: "'Fraunces', serif", fontSize: 26,
+            fontWeight: 700, color: "#1C3A2F", marginBottom: 4,
+            letterSpacing: "-0.02em",
           }}>
             Create your account
           </h1>
-          <p style={{ color: "#9A9A9A", fontSize: 15, marginBottom: 28 }}>
+          <p style={{ color: "#9A9A9A", fontSize: 14, marginBottom: 24, lineHeight: 1.5 }}>
             Start your child's free 3-day trial today
           </p>
 
           {error && (
             <div style={{
               display: "flex", alignItems: "center", gap: 8,
-              background: "#FEF2F0", border: "1px solid #F8D0CA",
-              borderRadius: 10, padding: "12px 14px", marginBottom: 20,
+              background: "rgba(232,96,76,0.08)", border: "1px solid rgba(232,96,76,0.2)",
+              borderRadius: 12, padding: "12px 14px", marginBottom: 20,
             }}>
               <AlertCircle size={16} color="#E8604C" style={{ flexShrink: 0 }} />
-              <span style={{ color: "#E8604C", fontSize: 14 }}>{error}</span>
+              <span style={{ color: "#E8604C", fontSize: 14, fontWeight: 500 }}>{error}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             <div>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#3D3D3D", marginBottom: 6 }}>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#6B6B6B", marginBottom: 7, letterSpacing: "0.01em" }}>
                 Your name
               </label>
               <input
@@ -127,15 +156,15 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
                 autoComplete="name"
                 style={{
                   width: "100%", fontFamily: "'Instrument Sans', sans-serif",
-                  fontSize: 15, color: "#1A1A1A", background: "#F7F3ED",
-                  border: "2px solid #E0D9CF", borderRadius: 12,
-                  padding: "13px 16px", transition: "border-color 0.2s",
+                  fontSize: 16, color: "#1A1A1A", background: "rgba(255,255,255,0.85)",
+                  border: "1.5px solid rgba(224,217,207,0.9)", borderRadius: 16,
+                  padding: "14px 16px", WebkitAppearance: "none" as any,
                 }}
               />
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#3D3D3D", marginBottom: 6 }}>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#6B6B6B", marginBottom: 7, letterSpacing: "0.01em" }}>
                 Email address
               </label>
               <input
@@ -147,15 +176,15 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
                 autoComplete="email"
                 style={{
                   width: "100%", fontFamily: "'Instrument Sans', sans-serif",
-                  fontSize: 15, color: "#1A1A1A", background: "#F7F3ED",
-                  border: "2px solid #E0D9CF", borderRadius: 12,
-                  padding: "13px 16px", transition: "border-color 0.2s",
+                  fontSize: 16, color: "#1A1A1A", background: "rgba(255,255,255,0.85)",
+                  border: "1.5px solid rgba(224,217,207,0.9)", borderRadius: 16,
+                  padding: "14px 16px", WebkitAppearance: "none" as any,
                 }}
               />
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#3D3D3D", marginBottom: 6 }}>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#6B6B6B", marginBottom: 7, letterSpacing: "0.01em" }}>
                 Password
               </label>
               <div style={{ position: "relative" }}>
@@ -168,18 +197,19 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
                   autoComplete="new-password"
                   style={{
                     width: "100%", fontFamily: "'Instrument Sans', sans-serif",
-                    fontSize: 15, color: "#1A1A1A", background: "#F7F3ED",
-                    border: "2px solid #E0D9CF", borderRadius: 12,
-                    padding: "13px 44px 13px 16px", transition: "border-color 0.2s",
+                    fontSize: 16, color: "#1A1A1A", background: "rgba(255,255,255,0.85)",
+                    border: "1.5px solid rgba(224,217,207,0.9)", borderRadius: 16,
+                    padding: "14px 48px 14px 16px", WebkitAppearance: "none" as any,
                   }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   style={{
-                    position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
+                    position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)",
                     background: "none", border: "none", cursor: "pointer", color: "#9A9A9A",
-                    display: "flex", alignItems: "center",
+                    display: "flex", alignItems: "center", padding: 4,
+                    minWidth: 32, minHeight: 32,
                   }}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -194,10 +224,12 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 fontFamily: "'Instrument Sans', sans-serif", fontWeight: 700,
-                fontSize: 16, background: "#1C3A2F", color: "#F7F3ED",
-                border: "none", borderRadius: 14, padding: "15px",
+                fontSize: 16, background: "linear-gradient(145deg, #1C3A2F, #2A5240)", color: "#F7F3ED",
+                border: "none", borderRadius: 9999, padding: "15px",
                 cursor: loading ? "not-allowed" : "pointer",
-                opacity: loading ? 0.7 : 1, marginTop: 4,
+                opacity: loading ? 0.6 : 1, marginTop: 4,
+                boxShadow: "0 8px 32px rgba(28,58,47,0.22)",
+                minHeight: 52,
               }}
             >
               {loading ? "Creating account..." : <> Start Free Trial <ArrowRight size={18} /> </>}
@@ -206,8 +238,8 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
 
           {/* What you get */}
           <div style={{
-            borderTop: "1px solid #F0EBE3", marginTop: 24, paddingTop: 20,
-            display: "flex", flexDirection: "column", gap: 8,
+            borderTop: "1px solid rgba(224,217,207,0.5)", marginTop: 24, paddingTop: 20,
+            display: "flex", flexDirection: "column", gap: 10,
           }}>
             {[
               "3 days completely free",
@@ -215,7 +247,7 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
               "Cancel before trial ends — no charge",
             ].map((item) => (
               <div key={item} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <CheckCircle size={15} color="#3D7A5C" />
+                <CheckCircle size={15} color="#16A34A" />
                 <span style={{ fontSize: 13, color: "#6B6B6B" }}>{item}</span>
               </div>
             ))}
@@ -235,17 +267,6 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
             </button>
           </p>
         </div>
-
-        <button
-          onClick={() => onNavigate("landing")}
-          style={{
-            background: "none", border: "none", cursor: "pointer",
-            color: "#9A9A9A", fontSize: 14, marginTop: 20,
-            fontFamily: "'Instrument Sans', sans-serif",
-          }}
-        >
-          ← Back to home
-        </button>
       </div>
     </>
   );

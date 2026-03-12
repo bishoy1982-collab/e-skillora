@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Clock, ArrowRight } from "lucide-react";
+import { X, Clock, ArrowRight, AlertCircle } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -12,9 +12,7 @@ export default function TrialBanner() {
   if (dismissed || user?.subscriptionStatus !== "trial" || trialDaysLeft === null) return null;
 
   const isLastDay = trialDaysLeft <= 1;
-  const bgColor = isLastDay ? "#FEF2F0" : "#E6F0E8";
-  const textColor = isLastDay ? "#E8604C" : "#1C3A2F";
-  const borderColor = isLastDay ? "#F8D0CA" : "#B8D4BE";
+  const isUrgent = trialDaysLeft <= 2;
 
   const handleUpgrade = async () => {
     setLoading(true);
@@ -29,45 +27,70 @@ export default function TrialBanner() {
 
   return (
     <div style={{
-      background: bgColor, border: `1px solid ${borderColor}`,
-      borderRadius: 12, padding: "12px 16px",
+      position: "sticky", top: 0, left: 0, right: 0, zIndex: 150,
+      background: isUrgent
+        ? "linear-gradient(145deg, #E8604C, #F87060)"
+        : "linear-gradient(145deg, #1C3A2F, #2A5240)",
+      padding: "12px 16px",
       display: "flex", alignItems: "center", justifyContent: "space-between",
-      gap: 12, margin: "12px 16px 0", flexWrap: "wrap",
+      gap: 10, flexWrap: "wrap",
+      boxShadow: "0 4px 20px rgba(0,0,0,0.12)",
+      fontFamily: "'Instrument Sans', sans-serif",
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <Clock size={16} color={textColor} style={{ flexShrink: 0 }} />
-        <span style={{ fontSize: 14, fontWeight: 600, color: textColor }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}>
+        {isUrgent ? (
+          <AlertCircle size={16} color="rgba(255,255,255,0.9)" style={{ flexShrink: 0 }} />
+        ) : (
+          <Clock size={16} color="rgba(255,255,255,0.7)" style={{ flexShrink: 0 }} />
+        )}
+        <span style={{
+          fontSize: 13, fontWeight: 600, color: "#fff",
+          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+        }}>
           {trialDaysLeft === 0
             ? "Your trial expires today!"
-            : `${trialDaysLeft} day${trialDaysLeft !== 1 ? "s" : ""} left in your free trial`}
+            : `${trialDaysLeft} day${trialDaysLeft !== 1 ? "s" : ""} left in trial`}
         </span>
-        <span style={{ fontSize: 13, color: textColor, opacity: 0.7 }}>
-          · Then $10.99/month
+        <span style={{
+          fontSize: 12, color: "rgba(255,255,255,0.6)",
+          whiteSpace: "nowrap",
+        }}>
+          · $10.99/mo
         </span>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
         <button
           onClick={handleUpgrade}
           disabled={loading}
           style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            fontFamily: "'Instrument Sans', sans-serif", fontWeight: 600,
-            fontSize: 13, background: textColor, color: "white",
-            border: "none", borderRadius: 8, padding: "7px 14px",
-            cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1,
+            display: "inline-flex", alignItems: "center", gap: 5,
+            fontFamily: "'Instrument Sans', sans-serif", fontWeight: 700,
+            fontSize: 12,
+            background: isUrgent
+              ? "rgba(255,255,255,0.95)"
+              : "linear-gradient(145deg, #C9973A, #E5B96A)",
+            color: isUrgent ? "#E8604C" : "#1C3A2F",
+            border: "none", borderRadius: 9999, padding: "8px 16px",
+            cursor: loading ? "not-allowed" : "pointer",
+            opacity: loading ? 0.7 : 1,
             transition: "all 0.2s",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            minHeight: 36,
+            letterSpacing: "-0.01em",
           }}
         >
-          {loading ? "..." : <> Subscribe <ArrowRight size={13} /> </>}
+          {loading ? "..." : <> Subscribe <ArrowRight size={12} /> </>}
         </button>
         <button
           onClick={() => setDismissed(true)}
           style={{
             background: "none", border: "none", cursor: "pointer",
-            color: textColor, opacity: 0.5, display: "flex", alignItems: "center",
+            color: "rgba(255,255,255,0.5)", display: "flex", alignItems: "center",
+            padding: 4, minWidth: 28, minHeight: 28,
+            borderRadius: 9999,
           }}
         >
-          <X size={15} />
+          <X size={14} />
         </button>
       </div>
     </div>
