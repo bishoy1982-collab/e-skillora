@@ -2181,23 +2181,32 @@ function Whiteboard({ open, onClose }) {
   const clear = () => { const c=ref.current.getContext("2d"); c.fillStyle="#fff"; c.fillRect(0,0,800,480); };
   if (!open) return null;
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-3">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col">
-        <div className="flex items-center justify-between p-3 border-b">
-          <h3 className="font-bold flex items-center gap-2"><PenTool className="w-4 h-4"/>Scratch Pad</h3>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded"><X className="w-5 h-5"/></button>
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",zIndex:500,display:"flex",alignItems:"center",justifyContent:"center",padding:12}}>
+      <div style={{background:"#fff",borderRadius:"var(--r-xl)",boxShadow:"var(--shadow-xl)",width:"100%",maxWidth:720,display:"flex",flexDirection:"column",overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 16px",borderBottom:"1px solid var(--cream-dd)"}}>
+          <h3 style={{fontWeight:700,fontSize:14,display:"flex",alignItems:"center",gap:6,color:"var(--ink)"}}>
+            <PenTool size={15} color="var(--purple)"/> Scratch Pad
+          </h3>
+          <button onClick={onClose} style={{width:30,height:30,borderRadius:"var(--r-sm)",background:"var(--cream)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--ink-l)"}}>
+            <X size={16}/>
+          </button>
         </div>
-        <div className="p-3 border-b flex flex-wrap items-center gap-3">
+        <div style={{padding:"10px 14px",borderBottom:"1px solid var(--cream-dd)",display:"flex",flexWrap:"wrap",alignItems:"center",gap:8}}>
           {["pen","eraser"].map(t=>(
-            <button key={t} onClick={()=>setTool(t)} className={`px-3 py-1.5 rounded-lg text-sm capitalize ${tool===t?"bg-purple-600 text-white":"bg-gray-200"}`}>{t}</button>
+            <button key={t} onClick={()=>setTool(t)} style={{padding:"6px 14px",borderRadius:"var(--r-md)",fontSize:13,fontWeight:600,border:"none",cursor:"pointer",textTransform:"capitalize",background:tool===t?"var(--purple)":"var(--cream)",color:tool===t?"#fff":"var(--ink-l)"}}>
+              {t}
+            </button>
           ))}
-          {tool==="pen" && ["#1a1a1a","#e74c3c","#3498db","#27ae60","#f39c12"].map(c=>(
-            <button key={c} onClick={()=>setColor(c)} style={{background:c}} className={`w-7 h-7 rounded-full border-2 ${color===c?"border-purple-500 scale-110":"border-gray-300"}`}/>
+          {tool==="pen"&&["#1a1a1a","#e74c3c","#3498db","#27ae60","#f39c12"].map(c=>(
+            <button key={c} onClick={()=>setColor(c)} style={{width:26,height:26,borderRadius:"var(--r-full)",background:c,border:color===c?"2.5px solid var(--purple)":"2px solid transparent",cursor:"pointer",transform:color===c?"scale(1.15)":"none",transition:"transform .15s"}}/>
           ))}
-          {tool==="pen" && <input type="range" min="1" max="12" value={size} onChange={e=>setSize(+e.target.value)} className="w-20"/>}
-          <button onClick={clear} className="ml-auto px-3 py-1.5 bg-red-500 text-white rounded-lg text-sm flex items-center gap-1"><Trash2 className="w-4 h-4"/>Clear</button>
+          {tool==="pen"&&<input type="range" min="1" max="12" value={size} onChange={e=>setSize(+e.target.value)} style={{width:80}}/>}
+          <button onClick={clear} style={{marginLeft:"auto",padding:"6px 12px",background:"var(--coral)",color:"#fff",border:"none",borderRadius:"var(--r-md)",fontSize:13,fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",gap:5}}>
+            <Trash2 size={13}/> Clear
+          </button>
         </div>
-        <canvas ref={ref} width={760} height={420} onMouseDown={start} onMouseMove={draw} onMouseUp={stop} onMouseLeave={stop} onTouchStart={start} onTouchMove={draw} onTouchEnd={stop} className="m-3 border-2 border-gray-200 rounded-xl cursor-crosshair" style={{touchAction:"none",maxWidth:"100%"}}/>
+        <canvas ref={ref} width={760} height={380} onMouseDown={start} onMouseMove={draw} onMouseUp={stop} onMouseLeave={stop} onTouchStart={start} onTouchMove={draw} onTouchEnd={stop}
+          style={{margin:12,border:"1.5px solid var(--cream-dd)",borderRadius:"var(--r-md)",cursor:"crosshair",touchAction:"none",maxWidth:"calc(100% - 24px)",display:"block"}}/>
       </div>
     </div>
   );
@@ -2210,38 +2219,50 @@ function ConceptIntro({ theme, onStart }) {
   const ex = EXAMPLES[theme];
   if (!ex) { onStart(); return null; }
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-6">
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><Lightbulb className="w-5 h-5"/></div>
-              <span className="text-sm font-medium uppercase tracking-wide opacity-80">New Concept</span>
+    <div style={{minHeight:"100svh",background:"linear-gradient(145deg,#EFF6FF,#EDE9FE)",padding:"20px 16px",display:"flex",flexDirection:"column",alignItems:"center"}}>
+      <div style={{width:"100%",maxWidth:560,display:"flex",flexDirection:"column",gap:0}}>
+        <div className="sci" style={{background:"#fff",borderRadius:"var(--r-xl)",overflow:"hidden",boxShadow:"var(--shadow-lg)"}}>
+          {/* Header */}
+          <div style={{background:"var(--grad-learn)",padding:"24px 24px 20px",color:"#fff"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+              <div style={{width:40,height:40,background:"rgba(255,255,255,0.18)",borderRadius:"var(--r-md)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <Lightbulb size={20} color="#fff"/>
+              </div>
+              <span style={{fontSize:11,fontWeight:700,letterSpacing:"0.08em",textTransform:"uppercase",opacity:0.75}}>New Concept</span>
             </div>
-            <h2 className="text-2xl font-bold">{ex.title}</h2>
-            <p className="mt-2 opacity-90 text-sm">{ex.intro}</p>
+            <h2 style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:700,marginBottom:6}}>{ex.title}</h2>
+            <p style={{fontSize:14,opacity:0.85,lineHeight:1.5}}>{ex.intro}</p>
           </div>
-          <div className="p-6">
-            <h3 className="font-bold text-gray-700 mb-3 flex items-center gap-2"><BookOpen className="w-4 h-4 text-blue-600"/>Steps to solve:</h3>
-            <ol className="space-y-2 mb-6">
-              {ex.steps.map((step, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <span className="w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">{i+1}</span>
-                  <span className="text-gray-700 text-sm">{step}</span>
-                </li>
-              ))}
-            </ol>
-            <h3 className="font-bold text-gray-700 mb-3 flex items-center gap-2"><Star className="w-4 h-4 text-amber-500"/>Worked examples:</h3>
-            <div className="space-y-3 mb-6">
-              {ex.worked.map((w, i) => (
-                <div key={i} className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                  <p className="font-semibold text-gray-800 mb-1">📝 {w.problem}</p>
-                  <p className="text-amber-800 text-sm">✅ {w.solution}</p>
-                </div>
-              ))}
+          {/* Body */}
+          <div style={{padding:"20px 24px 24px",display:"flex",flexDirection:"column",gap:20}}>
+            <div>
+              <h3 style={{fontWeight:700,color:"var(--ink-m)",marginBottom:12,fontSize:14,display:"flex",alignItems:"center",gap:6}}>
+                <BookOpen size={15} color="var(--blue)"/> Steps to solve:
+              </h3>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {ex.steps.map((step,i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10}}>
+                    <span style={{width:22,height:22,background:"var(--blue-ll)",color:"var(--blue)",borderRadius:"var(--r-full)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,flexShrink:0,marginTop:1}}>{i+1}</span>
+                    <span style={{fontSize:14,color:"var(--ink-m)",lineHeight:1.5}}>{step}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <button onClick={onStart} className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3.5 rounded-xl font-bold text-lg hover:shadow-lg transition-all flex items-center justify-center gap-2">
-              <Play className="w-5 h-5"/>Start Practice Questions
+            <div>
+              <h3 style={{fontWeight:700,color:"var(--ink-m)",marginBottom:12,fontSize:14,display:"flex",alignItems:"center",gap:6}}>
+                <Star size={15} color="var(--amber)"/> Worked examples:
+              </h3>
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                {ex.worked.map((w,i)=>(
+                  <div key={i} style={{background:"var(--amber-ll)",border:"1px solid var(--amber-l)",borderRadius:"var(--r-md)",padding:"12px 14px"}}>
+                    <p style={{fontWeight:600,color:"var(--ink)",marginBottom:4,fontSize:14}}>📝 {w.problem}</p>
+                    <p style={{color:"var(--amber)",fontSize:13}}>✅ {w.solution}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <button onClick={onStart} style={{...s.btn("learn",true,false,"lg"),gap:8}}>
+              <Play size={18}/> Start Practice Questions
             </button>
           </div>
         </div>
@@ -2258,56 +2279,60 @@ function WorksheetResults({ questions, answers, dayNumber, onContinue, isRetry }
   const wrong = questions.filter((q,i) => !isCorrect(answers[i], q.answer));
   const pct = Math.round(correct.length / questions.length * 100);
   const [showAll, setShowAll] = useState(false);
+  const gradBg = pct>=80?"linear-gradient(145deg,#16A34A,#22C55E)":pct>=60?"linear-gradient(145deg,#D97706,#F59E0B)":"linear-gradient(145deg,#DC2626,#EF4444)";
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-2xl mx-auto space-y-5">
+    <div style={{minHeight:"100svh",background:"#F8F8FA",padding:"20px 16px",display:"flex",flexDirection:"column",alignItems:"center"}}>
+      <div style={{width:"100%",maxWidth:560,display:"flex",flexDirection:"column",gap:16}}>
+
         {/* Score card */}
-        <div className={`rounded-3xl shadow-xl p-7 text-white bg-gradient-to-r ${pct>=80?"from-green-500 to-emerald-600":pct>=60?"from-yellow-500 to-amber-600":"from-red-500 to-rose-600"}`}>
-          <div className="flex items-center justify-between mb-4">
+        <div className="sci" style={{background:gradBg,borderRadius:"var(--r-xl)",padding:"24px 20px",color:"#fff",boxShadow:"var(--shadow-lg)"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
             <div>
-              <p className="text-white/80 text-sm font-medium">{isRetry?"Retry Review":"Day " + dayNumber} Results</p>
-              <h2 className="text-3xl font-bold mt-1">{pct >= 80 ? "Great Work! 🎉" : pct >= 60 ? "Good Effort! 💪" : "Keep Practicing! 📚"}</h2>
+              <p style={{fontSize:13,opacity:0.8,fontWeight:500,marginBottom:4}}>{isRetry?"Retry Review":"Day "+dayNumber} Results</p>
+              <h2 style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:700}}>
+                {pct>=80?"Great Work! 🎉":pct>=60?"Good Effort! 💪":"Keep Practicing! 📚"}
+              </h2>
             </div>
-            <div className="text-right">
-              <p className="text-5xl font-bold">{pct}%</p>
-              <p className="text-white/80 text-sm">{correct.length} / {questions.length} correct</p>
+            <div style={{textAlign:"right"}}>
+              <p style={{fontFamily:"'Fraunces',serif",fontSize:48,fontWeight:800,lineHeight:1}}>{pct}%</p>
+              <p style={{fontSize:13,opacity:0.8}}>{correct.length}/{questions.length} correct</p>
             </div>
           </div>
-          <div className="bg-white/20 rounded-full h-3">
-            <div className="bg-white h-3 rounded-full transition-all" style={{width:`${pct}%`}}/>
+          <div style={{height:8,background:"rgba(255,255,255,0.25)",borderRadius:"var(--r-full)",overflow:"hidden"}}>
+            <div style={{height:"100%",width:`${pct}%`,background:"#fff",borderRadius:"var(--r-full)",transition:"width .8s cubic-bezier(.22,1,.36,1)"}}/>
           </div>
         </div>
 
-        {/* Wrong answers review */}
+        {/* Wrong answers */}
         {wrong.length > 0 && (
-          <div className="bg-white rounded-2xl shadow p-5">
-            <h3 className="font-bold text-lg mb-4 flex items-center gap-2 text-red-600">
-              <XCircle className="w-5 h-5"/>Questions to Review ({wrong.length})
+          <div className="sci2" style={{...s.card(20)}}>
+            <h3 style={{fontWeight:700,fontSize:15,color:"#DC2626",display:"flex",alignItems:"center",gap:6,marginBottom:10}}>
+              <XCircle size={16} color="#DC2626"/> Questions to Review ({wrong.length})
             </h3>
-            <p className="text-sm text-gray-500 mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3">
-              📌 These questions will appear again tomorrow so you can master them!
-            </p>
-            <div className="space-y-4">
-              {wrong.slice(0, showAll ? wrong.length : 5).map((q, i) => {
+            <div style={{background:"var(--amber-ll)",border:"1px solid var(--amber-l)",borderRadius:"var(--r-md)",padding:"10px 12px",marginBottom:14,fontSize:13,color:"var(--amber)"}}>
+              📌 These will appear again tomorrow so you can master them!
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {wrong.slice(0,showAll?wrong.length:5).map((q)=>{
                 const idx = questions.indexOf(q);
                 return (
-                  <div key={q.id} className="border-2 border-red-100 rounded-xl p-4 bg-red-50">
-                    <p className="font-semibold text-gray-800 mb-2">Q: {q.question}</p>
-                    <p className="text-red-600 text-sm mb-1">❌ Your answer: <strong>{answers[idx] || "(blank)"}</strong></p>
-                    <p className="text-green-700 text-sm mb-2">✅ Correct answer: <strong>{q.answer}</strong></p>
-                    <div className="bg-white rounded-lg p-3 border border-gray-200">
-                      <p className="text-xs font-semibold text-gray-500 mb-1">💡 How to solve it:</p>
-                      <p className="text-sm text-gray-700">{q.explanation}</p>
-                      {q.hint && <p className="text-xs text-blue-600 mt-1">Hint: {q.hint}</p>}
+                  <div key={q.id} style={{border:"1.5px solid rgba(220,38,38,0.2)",borderRadius:"var(--r-md)",padding:"14px 16px",background:"rgba(220,38,38,0.04)"}}>
+                    <p style={{fontWeight:600,color:"var(--ink)",marginBottom:6,fontSize:14,lineHeight:1.4}}>Q: {q.question}</p>
+                    <p style={{color:"#DC2626",fontSize:13,marginBottom:3}}>❌ Your answer: <strong>{answers[idx]||(answers[idx]===""?"(blank)":answers[idx])|| "(blank)"}</strong></p>
+                    <p style={{color:"var(--green)",fontSize:13,marginBottom:8}}>✅ Correct: <strong>{q.answer}</strong></p>
+                    <div style={{background:"rgba(255,255,255,0.9)",borderRadius:"var(--r-sm)",padding:"10px 12px",border:"1px solid var(--cream-dd)"}}>
+                      <p style={{fontSize:11,fontWeight:600,color:"var(--ink-ll)",marginBottom:4}}>💡 How to solve it:</p>
+                      <p style={{fontSize:13,color:"var(--ink-m)",lineHeight:1.5}}>{q.explanation}</p>
+                      {q.hint&&<p style={{fontSize:12,color:"var(--blue)",marginTop:4}}>Hint: {q.hint}</p>}
                     </div>
                   </div>
                 );
               })}
             </div>
-            {wrong.length > 5 && (
-              <button onClick={()=>setShowAll(!showAll)} className="mt-3 w-full py-2 text-sm text-purple-600 font-medium hover:bg-purple-50 rounded-xl">
-                {showAll ? "Show less ▲" : `Show all ${wrong.length} wrong answers ▼`}
+            {wrong.length>5&&(
+              <button onClick={()=>setShowAll(!showAll)} style={{marginTop:10,width:"100%",padding:"10px",fontSize:13,color:"var(--purple)",fontWeight:600,background:"transparent",border:"none",cursor:"pointer",borderRadius:"var(--r-md)"}}>
+                {showAll?`Show less ▲`:`Show all ${wrong.length} wrong answers ▼`}
               </button>
             )}
           </div>
@@ -2315,24 +2340,23 @@ function WorksheetResults({ questions, answers, dayNumber, onContinue, isRetry }
 
         {/* Correct answers */}
         {correct.length > 0 && (
-          <div className="bg-white rounded-2xl shadow p-5">
-            <h3 className="font-bold text-lg mb-3 flex items-center gap-2 text-green-600">
-              <CheckCircle className="w-5 h-5"/>Correct Answers ({correct.length})
+          <div className="sci3" style={{...s.card(20)}}>
+            <h3 style={{fontWeight:700,fontSize:15,color:"var(--green)",display:"flex",alignItems:"center",gap:6,marginBottom:12}}>
+              <CheckCircle size={16} color="var(--green)"/> Correct Answers ({correct.length})
             </h3>
-            <div className="grid grid-cols-2 gap-2">
-              {correct.map(q => (
-                <div key={q.id} className="bg-green-50 rounded-lg p-3 border border-green-100">
-                  <p className="text-xs text-gray-500 truncate">{q.question}</p>
-                  <p className="text-green-700 font-semibold text-sm">✓ {q.answer}</p>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              {correct.map(q=>(
+                <div key={q.id} style={{background:"var(--green-ll)",borderRadius:"var(--r-md)",padding:"10px 12px",border:"1px solid rgba(22,163,74,0.15)"}}>
+                  <p style={{fontSize:12,color:"var(--ink-l)",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginBottom:3}}>{q.question}</p>
+                  <p style={{color:"var(--green)",fontWeight:700,fontSize:13}}>✓ {q.answer}</p>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        <button onClick={onContinue} className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg transition-all flex items-center justify-center gap-2">
-          <ArrowRight className="w-5 h-5"/>
-          {wrong.length > 0 ? "Continue to Next Day" : "Continue"}
+        <button onClick={onContinue} style={{...s.btn("learn",true,false,"lg"),gap:8}}>
+          <ArrowRight size={18}/> {wrong.length>0?"Continue to Next Day":"Continue"}
         </button>
       </div>
     </div>
@@ -2356,15 +2380,8 @@ function LevelAssessment({ level, onPass, onFail }) {
 
   const submit = (ans) => {
     const newA = [...answers, ans];
-    if (cur + 1 >= questions.length) {
-      setAnswers(newA);
-      setDone(true);
-    } else {
-      setAnswers(newA);
-      setCur(cur+1);
-      setInput("");
-      setShowHint(false);
-    }
+    if (cur + 1 >= questions.length) { setAnswers(newA); setDone(true); }
+    else { setAnswers(newA); setCur(cur+1); setInput(""); setShowHint(false); }
   };
 
   if (done) {
@@ -2372,36 +2389,40 @@ function LevelAssessment({ level, onPass, onFail }) {
     const pct = Math.round(correct / questions.length * 100);
     const passed = pct >= 85;
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 p-6 flex items-center justify-center">
-        <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 text-center">
-          <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-5 ${passed?"bg-green-100":"bg-red-100"}`}>
-            {passed ? <Trophy className="w-12 h-12 text-green-600"/> : <RotateCcw className="w-12 h-12 text-red-500"/>}
+      <div style={{minHeight:"100svh",background:"linear-gradient(145deg,#EDE9FE,#EFF6FF)",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px 16px"}}>
+        <div className="sci" style={{...s.card(28),maxWidth:440,width:"100%",textAlign:"center",boxShadow:"var(--shadow-xl)"}}>
+          <div style={{width:80,height:80,borderRadius:"var(--r-full)",background:passed?"var(--green-ll)":"rgba(220,38,38,0.1)",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
+            {passed?<Trophy size={36} color="var(--green)"/>:<RotateCcw size={36} color="#DC2626"/>}
           </div>
-          <h2 className="text-3xl font-bold mb-2">{passed ? "Level Complete! 🎉" : "Not Quite Yet..."}</h2>
-          <p className="text-gray-500 mb-5">{passed ? "You've mastered this level!" : "You need 85% to advance. Let's practice more!"}</p>
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className={`rounded-2xl p-4 ${passed?"bg-green-50":"bg-red-50"}`}>
-              <p className="text-3xl font-bold" style={{color:passed?"#27ae60":"#e74c3c"}}>{pct}%</p>
-              <p className="text-xs text-gray-500">Score</p>
-            </div>
-            <div className="bg-blue-50 rounded-2xl p-4">
-              <p className="text-3xl font-bold text-blue-600">{correct}/{questions.length}</p>
-              <p className="text-xs text-gray-500">Correct</p>
-            </div>
-            <div className={`rounded-2xl p-4 ${passed?"bg-purple-50":"bg-amber-50"}`}>
-              <p className="text-3xl font-bold" style={{color:passed?"#9b59b6":"#f39c12"}}>85%</p>
-              <p className="text-xs text-gray-500">Required</p>
-            </div>
+          <h2 style={{fontFamily:"'Fraunces',serif",fontSize:26,fontWeight:700,color:"var(--forest)",marginBottom:6}}>
+            {passed?"Level Complete! 🎉":"Not Quite Yet..."}
+          </h2>
+          <p style={{color:"var(--ink-l)",fontSize:14,marginBottom:20}}>
+            {passed?"You've mastered this level!":"You need 85% to advance. Let's practice more!"}
+          </p>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:20}}>
+            {[
+              {label:"Score",value:`${pct}%`,bg:passed?"var(--green-ll)":"rgba(220,38,38,0.08)",color:passed?"var(--green)":"#DC2626"},
+              {label:"Correct",value:`${correct}/${questions.length}`,bg:"var(--blue-ll)",color:"var(--blue)"},
+              {label:"Required",value:"85%",bg:passed?"var(--purple-ll)":"var(--amber-ll)",color:passed?"var(--purple)":"var(--amber)"},
+            ].map(st=>(
+              <div key={st.label} style={{background:st.bg,borderRadius:"var(--r-lg)",padding:"12px 8px",textAlign:"center"}}>
+                <p style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:800,color:st.color,lineHeight:1}}>{st.value}</p>
+                <p style={{fontSize:11,color:"var(--ink-ll)",marginTop:4,fontWeight:500}}>{st.label}</p>
+              </div>
+            ))}
           </div>
           {passed ? (
-            <button onClick={onPass} className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg flex items-center justify-center gap-2">
-              <ArrowRight className="w-5 h-5"/>Advance to Next Level
+            <button onClick={onPass} style={{...s.btn("success",true,false,"lg"),gap:8}}>
+              <ArrowRight size={18}/> Advance to Next Level
             </button>
           ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-amber-700 bg-amber-50 rounded-xl p-3">You scored {pct}%. You need {85-pct}% more to pass. Review the level again and try your best!</p>
-              <button onClick={onFail} className="w-full bg-gradient-to-r from-red-500 to-rose-600 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg flex items-center justify-center gap-2">
-                <RotateCcw className="w-5 h-5"/>Repeat Level from Start
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <div style={{background:"var(--amber-ll)",border:"1px solid var(--amber-l)",borderRadius:"var(--r-md)",padding:"10px 14px",fontSize:13,color:"var(--amber)"}}>
+                You scored {pct}%. Need {85-pct}% more to pass. Keep practicing!
+              </div>
+              <button onClick={onFail} style={{...s.btn("danger",true,false,"lg"),gap:8}}>
+                <RotateCcw size={16}/> Repeat Level from Start
               </button>
             </div>
           )}
@@ -2412,44 +2433,68 @@ function LevelAssessment({ level, onPass, onFail }) {
 
   const q = questions[cur];
   const info = LEVEL_MAP[level];
+  const pct = (cur / questions.length) * 100;
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 p-6">
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl shadow p-4 mb-4">
-          <div className="flex items-center justify-between mb-2">
+    <div style={{minHeight:"100svh",background:"linear-gradient(145deg,#EDE9FE,#EFF6FF)",padding:"16px 16px",display:"flex",flexDirection:"column",alignItems:"center"}}>
+      <div style={{width:"100%",maxWidth:560,display:"flex",flexDirection:"column",gap:12}}>
+        {/* Progress header */}
+        <div style={{...s.card(16)}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
             <div>
-              <span className="font-bold text-indigo-700">Level {level} Assessment</span>
-              <span className="text-gray-400 text-sm ml-3">Q {cur+1} of {questions.length}</span>
+              <span style={{fontWeight:700,color:"var(--purple)",fontSize:14}}>Level {level} Assessment</span>
+              <span style={{color:"var(--ink-ll)",fontSize:13,marginLeft:8}}>Q {cur+1} of {questions.length}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-amber-600 bg-amber-50 px-3 py-1 rounded-full">Need 85% to pass</span>
-              <button onClick={()=>setWb(true)} className="p-2 bg-purple-100 text-purple-700 rounded-lg"><PenTool className="w-4 h-4"/></button>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:12,fontWeight:700,color:"var(--amber)",background:"var(--amber-ll)",border:"1px solid var(--amber-l)",borderRadius:"var(--r-full)",padding:"4px 10px"}}>Need 85% to pass</span>
+              <button onClick={()=>setWb(true)} style={{width:34,height:34,background:"var(--purple-ll)",border:"none",borderRadius:"var(--r-sm)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--purple)"}}>
+                <PenTool size={15}/>
+              </button>
             </div>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div className="h-2 rounded-full bg-indigo-600 transition-all" style={{width:`${(cur/questions.length)*100}%`}}/>
+          <div style={{height:6,background:"var(--cream-dd)",borderRadius:"var(--r-full)",overflow:"hidden"}}>
+            <div style={{height:"100%",width:`${pct}%`,background:"var(--grad-learn)",borderRadius:"var(--r-full)",transition:"width .3s"}}/>
           </div>
         </div>
-        <div className="bg-white rounded-3xl shadow-xl p-7">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="px-3 py-1 rounded-full text-white text-xs font-medium" style={{background:info.color}}>{q.theme}</span>
-            <span className={`px-2 py-1 rounded-full text-xs ${q.difficulty==="easy"?"bg-green-100 text-green-700":q.difficulty==="hard"?"bg-red-100 text-red-700":"bg-yellow-100 text-yellow-700"}`}>{q.difficulty}</span>
+        {/* Question */}
+        <div style={{...s.card(24)}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+            <span style={{fontSize:12,fontWeight:700,color:"#fff",background:info.color,borderRadius:"var(--r-full)",padding:"3px 10px"}}>{q.theme}</span>
+            <span style={{fontSize:11,fontWeight:600,padding:"3px 8px",borderRadius:"var(--r-full)",
+              ...(q.difficulty==="easy"?{background:"var(--green-ll)",color:"var(--green)"}:q.difficulty==="hard"?{background:"rgba(220,38,38,0.1)",color:"#DC2626"}:{background:"var(--amber-ll)",color:"var(--amber)"})
+            }}>{q.difficulty}</span>
           </div>
-          <h2 className="text-xl font-bold mt-3 mb-6">{q.question}</h2>
+          <h2 style={{fontFamily:"'Fraunces',serif",fontSize:20,fontWeight:700,color:"var(--ink)",marginBottom:20,lineHeight:1.4}}>{q.question}</h2>
           {q.type==="multiple" ? (
-            <div className="space-y-3">
-              {q.options.map((opt,i) => (
-                <button key={i} onClick={()=>submit(opt)} className="w-full text-left px-5 py-3.5 rounded-xl border-2 border-gray-200 hover:border-indigo-500 hover:bg-indigo-50 transition-all font-medium">{opt}</button>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {q.options.map((opt,i)=>(
+                <button key={i} onClick={()=>submit(opt)} style={{
+                  padding:"14px 18px",borderRadius:"var(--r-md)",textAlign:"left",fontSize:15,fontWeight:500,
+                  background:"var(--cream)",border:"2px solid var(--cream-dd)",cursor:"pointer",
+                  fontFamily:"'Instrument Sans'",color:"var(--ink)",transition:"all .15s",
+                }}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--purple)";e.currentTarget.style.background="var(--purple-ll)";}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--cream-dd)";e.currentTarget.style.background="var(--cream)";}}>
+                  {opt}
+                </button>
               ))}
             </div>
           ) : (
-            <div className="space-y-3">
-              <input type="text" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&input.trim())submit(input.trim());}} placeholder="Type your answer…" autoFocus className="w-full px-5 py-3.5 rounded-xl border-2 border-gray-200 focus:border-indigo-500 focus:outline-none text-lg"/>
-              <div className="flex gap-3">
-                <button onClick={()=>setShowHint(!showHint)} className="px-4 py-2 bg-amber-50 text-amber-700 rounded-xl text-sm border border-amber-200 hover:bg-amber-100">💡 {showHint?"Hide":"Hint"}</button>
-                <button onClick={()=>{if(input.trim())submit(input.trim());}} disabled={!input.trim()} className="flex-1 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 disabled:opacity-40">Submit →</button>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <input type="text" value={input} onChange={e=>setInput(e.target.value)}
+                onKeyDown={e=>{if(e.key==="Enter"&&input.trim())submit(input.trim());}}
+                placeholder="Type your answer…" autoFocus
+                style={{...s.input(),fontSize:18,fontFamily:"'Fraunces',serif",fontWeight:600}}
+                onFocus={e=>e.target.style.borderColor="var(--purple)"}
+                onBlur={e=>e.target.style.borderColor="rgba(224,217,207,0.9)"}/>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={()=>setShowHint(!showHint)} style={{padding:"10px 14px",background:"var(--amber-ll)",color:"var(--amber)",border:"1px solid var(--amber-l)",borderRadius:"var(--r-md)",fontSize:13,fontWeight:600,cursor:"pointer",whiteSpace:"nowrap"}}>
+                  💡 {showHint?"Hide":"Hint"}
+                </button>
+                <button onClick={()=>{if(input.trim())submit(input.trim());}} disabled={!input.trim()} style={{...s.btn("learn",true,!input.trim()),flex:1}}>
+                  Submit →
+                </button>
               </div>
-              {showHint && <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-800">💡 {q.hint}</div>}
+              {showHint&&<div style={{background:"var(--amber-ll)",border:"1px solid var(--amber-l)",borderRadius:"var(--r-md)",padding:"10px 14px",fontSize:13,color:"var(--amber)"}}>💡 {q.hint}</div>}
             </div>
           )}
         </div>
@@ -2658,49 +2703,64 @@ function LearnApp({ studentName, startLevel, onBackToHome }) {
     const pct = (curQ / worksheetQ.length) * 100;
     const info = LEVEL_MAP[q.level];
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4">
-        <div className="max-w-2xl mx-auto">
+      <div style={{minHeight:"100svh",background:"linear-gradient(145deg,#F5F0FF,#EFF6FF)",padding:"16px 16px",display:"flex",flexDirection:"column",alignItems:"center"}}>
+        <div style={{width:"100%",maxWidth:560,display:"flex",flexDirection:"column",gap:12}}>
           {/* Header */}
-          <div className="bg-white rounded-2xl shadow p-4 mb-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{background:info.color}}>{q.level}</div>
+          <div style={{...s.card(14)}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <div style={{width:32,height:32,borderRadius:"var(--r-full)",background:info.color,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:12,fontWeight:800}}>{q.level}</div>
                 <div>
-                  <p className="font-bold text-sm text-gray-700">Day {progress.dayNumber} · {q.theme}</p>
-                  <p className="text-xs text-gray-400">Question {curQ+1} of {worksheetQ.length}</p>
+                  <p style={{fontWeight:700,fontSize:13,color:"var(--ink)"}}>Day {progress.dayNumber} · {q.theme}</p>
+                  <p style={{fontSize:12,color:"var(--ink-ll)"}}>Question {curQ+1} of {worksheetQ.length}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                {isRetryDay && curQ < worksheetQ.filter((_,i)=>i<curQ && progress.pendingRetry[`${progress.currentLevel}-${progress.dayNumber-1}`]?.includes(worksheetQ[i]?.id)).length && (
-                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full">📌 Retry</span>
-                )}
-                <button onClick={()=>setWb(true)} className="p-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200"><PenTool className="w-4 h-4"/></button>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                {isRetryDay && <span style={{fontSize:11,background:"var(--amber-ll)",color:"var(--amber)",borderRadius:"var(--r-full)",padding:"3px 8px",fontWeight:600}}>📌 Retry</span>}
+                <button onClick={()=>setWb(true)} style={{width:34,height:34,background:"var(--purple-ll)",border:"none",borderRadius:"var(--r-sm)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--purple)"}}>
+                  <PenTool size={15}/>
+                </button>
               </div>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
-              <div className="h-2.5 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 transition-all" style={{width:`${pct}%`}}/>
+            <div style={{height:6,background:"var(--cream-dd)",borderRadius:"var(--r-full)",overflow:"hidden"}}>
+              <div style={{height:"100%",width:`${pct}%`,background:"var(--grad-learn)",borderRadius:"var(--r-full)",transition:"width .3s"}}/>
             </div>
           </div>
-
           {/* Question card */}
-          <div className="bg-white rounded-3xl shadow-xl p-7">
-            <p className="text-xs text-gray-400 mb-1 uppercase tracking-wide">{q.difficulty}</p>
-            <h2 className="text-xl font-bold text-gray-800 mb-6">{q.question}</h2>
-
-            {q.type === "multiple" ? (
-              <div className="space-y-3">
-                {q.options.map((opt,i) => (
-                  <button key={i} onClick={()=>submitAnswer(opt)} className="w-full text-left px-5 py-3.5 rounded-xl border-2 border-gray-200 hover:border-purple-500 hover:bg-purple-50 transition-all font-medium text-gray-700">{opt}</button>
+          <div style={{...s.card(22)}}>
+            <p style={{fontSize:11,color:"var(--ink-ll)",fontWeight:600,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:6}}>{q.difficulty}</p>
+            <h2 style={{fontFamily:"'Fraunces',serif",fontSize:20,fontWeight:700,color:"var(--ink)",marginBottom:20,lineHeight:1.4}}>{q.question}</h2>
+            {q.type==="multiple" ? (
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                {q.options.map((opt,i)=>(
+                  <button key={i} onClick={()=>submitAnswer(opt)} style={{
+                    padding:"14px 18px",borderRadius:"var(--r-md)",textAlign:"left",fontSize:15,fontWeight:500,
+                    background:"var(--cream)",border:"2px solid var(--cream-dd)",cursor:"pointer",
+                    fontFamily:"'Instrument Sans'",color:"var(--ink)",transition:"all .15s",
+                  }}
+                  onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--purple)";e.currentTarget.style.background="var(--purple-ll)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--cream-dd)";e.currentTarget.style.background="var(--cream)";}}>
+                    {opt}
+                  </button>
                 ))}
               </div>
             ) : (
-              <div className="space-y-3">
-                <input type="text" value={inputVal} onChange={e=>setInputVal(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&inputVal.trim())submitAnswer(inputVal.trim());}} placeholder="Your answer…" autoFocus className="w-full px-5 py-3.5 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none text-xl"/>
-                <div className="flex gap-3">
-                  <button onClick={()=>setShowHint(!showHint)} className="px-4 py-2 bg-amber-50 text-amber-700 rounded-xl text-sm border border-amber-200 hover:bg-amber-100 font-medium">💡 {showHint?"Hide Hint":"Show Hint"}</button>
-                  <button onClick={()=>{if(inputVal.trim())submitAnswer(inputVal.trim());}} disabled={!inputVal.trim()} className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-bold hover:shadow-md disabled:opacity-40 transition-all">Submit →</button>
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                <input type="text" value={inputVal} onChange={e=>setInputVal(e.target.value)}
+                  onKeyDown={e=>{if(e.key==="Enter"&&inputVal.trim())submitAnswer(inputVal.trim());}}
+                  placeholder="Your answer…" autoFocus
+                  style={{...s.input(),fontSize:18,fontFamily:"'Fraunces',serif",fontWeight:600}}
+                  onFocus={e=>e.target.style.borderColor="var(--purple)"}
+                  onBlur={e=>e.target.style.borderColor="rgba(224,217,207,0.9)"}/>
+                <div style={{display:"flex",gap:8}}>
+                  <button onClick={()=>setShowHint(!showHint)} style={{padding:"10px 14px",background:"var(--amber-ll)",color:"var(--amber)",border:"1px solid var(--amber-l)",borderRadius:"var(--r-md)",fontSize:13,fontWeight:600,cursor:"pointer",whiteSpace:"nowrap"}}>
+                    💡 {showHint?"Hide Hint":"Show Hint"}
+                  </button>
+                  <button onClick={()=>{if(inputVal.trim())submitAnswer(inputVal.trim());}} disabled={!inputVal.trim()} style={{...s.btn("learn",true,!inputVal.trim()),flex:1}}>
+                    Submit →
+                  </button>
                 </div>
-                {showHint && <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-800">💡 {q.hint}</div>}
+                {showHint&&<div style={{background:"var(--amber-ll)",border:"1px solid var(--amber-l)",borderRadius:"var(--r-md)",padding:"10px 14px",fontSize:13,color:"var(--amber)"}}>💡 {q.hint}</div>}
               </div>
             )}
           </div>
@@ -2723,148 +2783,121 @@ function LearnApp({ studentName, startLevel, onBackToHome }) {
   const readyForAssessment = daysDone >= DAYS_PER_LEVEL;
 
   return (
-    <div
-      className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6"
-      style={{
-        minHeight: "100vh",
-        width: "100%",
-        padding: "24px 16px",
-        background: "linear-gradient(135deg, #F5F0FF 0%, #EFF6FF 100%)",
-      }}
-    >
-      <div className="max-w-xl mx-auto" style={{ maxWidth: 576, margin: "0 auto" }}>
+    <div style={{minHeight:"100svh",background:"linear-gradient(145deg,#F5F0FF,#EFF6FF)",padding:"16px 16px",display:"flex",flexDirection:"column",alignItems:"center"}}>
+      <div style={{width:"100%",maxWidth:520,display:"flex",flexDirection:"column",gap:14}}>
+
         {/* Header */}
-        <div
-          className="flex items-center justify-between mb-6"
-          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, gap: 12 }}
-        >
-          <div className="flex items-center gap-3" style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
-            <div
-              className="w-12 h-12 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center"
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: 9999,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-                background: "linear-gradient(135deg, #7C3AED, #2563EB)",
-              }}
-            >
-              <Brain className="w-6 h-6 text-white" style={{ width: 24, height: 24, color: "white" }} />
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12}}>
+          <div style={{display:"flex",alignItems:"center",gap:12,minWidth:0}}>
+            <div style={{width:46,height:46,borderRadius:"var(--r-full)",background:"var(--grad-learn)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"var(--shadow-learn)"}}>
+              <Brain size={22} color="#fff"/>
             </div>
-            <div style={{ minWidth: 0 }}>
-              <p className="font-bold text-gray-800" style={{ fontWeight: 800, color: "#1F2937" }}>Hi, {studentName}! 👋</p>
-              <p className="text-sm text-gray-500" style={{ fontSize: 13, color: "#6B7280" }}>{info.grade}</p>
+            <div style={{minWidth:0}}>
+              <p style={{fontWeight:800,fontSize:16,color:"var(--ink)",fontFamily:"'Instrument Sans'"}}>Hi, {studentName}! 👋</p>
+              <p style={{fontSize:12,color:"var(--ink-ll)"}}>{info.grade}</p>
             </div>
           </div>
-          <button
-            onClick={onBackToHome}
-            className="p-2 hover:bg-gray-200 rounded-xl text-gray-500"
-            style={{ padding: 8, borderRadius: 12, background: "rgba(255,255,255,0.6)", border: "1px solid rgba(0,0,0,0.06)", cursor: "pointer", color: "#6B7280", flexShrink: 0 }}
-          >
-            <Home className="w-5 h-5" style={{ width: 20, height: 20 }} />
+          <button onClick={onBackToHome} style={{width:38,height:38,borderRadius:"var(--r-md)",background:"rgba(255,255,255,0.85)",border:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--ink-l)",flexShrink:0,boxShadow:"var(--shadow-xs)"}}>
+            <Home size={18}/>
           </button>
         </div>
 
         {/* Level card */}
-        <div className="rounded-3xl text-white p-6 mb-5 shadow-xl" style={{background:`linear-gradient(135deg, ${info.color}, ${info.color}dd)`}}>
-          <div className="flex items-start justify-between mb-4">
+        <div style={{background:`linear-gradient(145deg,${info.color},${info.color}cc)`,borderRadius:"var(--r-xl)",padding:"20px 20px 16px",color:"#fff",boxShadow:"0 8px 32px rgba(0,0,0,0.18)"}}>
+          <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:14}}>
             <div>
-              <p className="text-white/70 text-sm">Current Level</p>
-              <h2 className="text-3xl font-bold">Level {level}</h2>
-              <p className="text-white/90 text-sm mt-0.5">{info.grade} · Ages {info.ageRange}</p>
+              <p style={{fontSize:12,opacity:0.7,fontWeight:500,marginBottom:4}}>Current Level</p>
+              <h2 style={{fontFamily:"'Fraunces',serif",fontSize:28,fontWeight:800,lineHeight:1,marginBottom:4}}>Level {level}</h2>
+              <p style={{fontSize:13,opacity:0.85}}>{info.grade} · Ages {info.ageRange}</p>
             </div>
-            <div className="text-right">
-              <p className="text-white/70 text-xs">Day</p>
-              <p className="text-4xl font-bold">{day}</p>
-              <p className="text-white/70 text-xs">of {DAYS_PER_LEVEL}</p>
+            <div style={{textAlign:"right"}}>
+              <p style={{fontSize:11,opacity:0.65,marginBottom:2}}>Day</p>
+              <p style={{fontFamily:"'Fraunces',serif",fontSize:40,fontWeight:800,lineHeight:1}}>{day}</p>
+              <p style={{fontSize:11,opacity:0.65}}>of {DAYS_PER_LEVEL}</p>
             </div>
           </div>
-          <div className="bg-white/20 rounded-full h-3 mb-1">
-            <div className="bg-white h-3 rounded-full transition-all" style={{width:`${levelPct}%`}}/>
+          <div style={{height:8,background:"rgba(255,255,255,0.25)",borderRadius:"var(--r-full)",overflow:"hidden",marginBottom:6}}>
+            <div style={{height:"100%",width:`${levelPct}%`,background:"rgba(255,255,255,0.9)",borderRadius:"var(--r-full)",transition:"width .8s cubic-bezier(.22,1,.36,1)"}}/>
           </div>
-          <div className="flex justify-between text-xs text-white/70">
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:11,opacity:0.7}}>
             <span>{daysDone} days completed</span><span>{levelPct}% of level done</span>
           </div>
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-3 gap-3 mb-5">
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}}>
           {[
-            { label:"Overall Accuracy", value:`${overallAcc}%`, color:"text-purple-600", bg:"bg-purple-50" },
-            { label:"Days Done", value:String(daysDone), color:"text-blue-600", bg:"bg-blue-50" },
-            { label:"Questions Done", value:totalQ > 999 ? `${(totalQ/1000).toFixed(1)}k` : String(totalQ), color:"text-green-600", bg:"bg-green-50" },
-          ].map(s=>(
-            <div key={s.label} className={`${s.bg} rounded-2xl p-4 text-center shadow-sm`}>
-              <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-              <p className="text-xs text-gray-500 mt-1">{s.label}</p>
+            {label:"Accuracy",value:`${overallAcc}%`,bg:"var(--purple-ll)",color:"var(--purple)"},
+            {label:"Days Done",value:String(daysDone),bg:"var(--blue-ll)",color:"var(--blue)"},
+            {label:"Questions",value:totalQ>999?`${(totalQ/1000).toFixed(1)}k`:String(totalQ),bg:"var(--green-ll)",color:"var(--green)"},
+          ].map(st=>(
+            <div key={st.label} style={{background:st.bg,borderRadius:"var(--r-lg)",padding:"14px 8px",textAlign:"center",boxShadow:"var(--shadow-xs)"}}>
+              <p style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:800,color:st.color,lineHeight:1}}>{st.value}</p>
+              <p style={{fontSize:11,color:"var(--ink-ll)",marginTop:5,fontWeight:500}}>{st.label}</p>
             </div>
           ))}
         </div>
 
-        {/* Today's retry notice */}
-        {(() => {
-          const prevKey = `${level}-${day-1}`;
-          const retryIds = progress.pendingRetry[prevKey] || [];
-          return retryIds.length > 0 && !todayDone ? (
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4 flex items-start gap-3">
-              <RefreshCw className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5"/>
+        {/* Retry notice */}
+        {(()=>{
+          const prevKey=`${level}-${day-1}`;
+          const retryIds=progress.pendingRetry[prevKey]||[];
+          return retryIds.length>0&&!todayDone?(
+            <div style={{background:"var(--amber-ll)",border:"1px solid var(--amber-l)",borderRadius:"var(--r-lg)",padding:"12px 16px",display:"flex",alignItems:"flex-start",gap:10}}>
+              <RefreshCw size={16} color="var(--amber)" style={{flexShrink:0,marginTop:2}}/>
               <div>
-                <p className="font-semibold text-amber-800 text-sm">📌 {retryIds.length} questions from yesterday included</p>
-                <p className="text-xs text-amber-600">These are questions you missed — let's master them today!</p>
+                <p style={{fontWeight:700,color:"var(--amber)",fontSize:13,marginBottom:2}}>📌 {retryIds.length} questions from yesterday included</p>
+                <p style={{fontSize:12,color:"var(--amber)",opacity:0.8}}>Let's master these missed questions today!</p>
               </div>
             </div>
-          ) : null;
+          ):null;
         })()}
 
-        {/* Action button */}
+        {/* Action */}
         {readyForAssessment ? (
-          <div className="bg-white rounded-2xl shadow p-5 mb-4">
-            <div className="text-center mb-4">
-              <Trophy className="w-12 h-12 text-amber-500 mx-auto mb-2"/>
-              <h3 className="text-xl font-bold">Level {level} Complete!</h3>
-              <p className="text-gray-500 text-sm">You've finished all 60 days. Take the assessment test to advance.</p>
-            </div>
-            <button onClick={()=>setView("assessment")} className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg flex items-center justify-center gap-2">
-              <Award className="w-5 h-5"/>Take Level {level} Assessment
+          <div style={{...s.card(20),textAlign:"center"}}>
+            <Trophy size={40} color="var(--gold)" style={{margin:"0 auto 10px"}}/>
+            <h3 style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:18,color:"var(--forest)",marginBottom:6}}>Level {level} Complete!</h3>
+            <p style={{color:"var(--ink-l)",fontSize:13,marginBottom:16}}>You've finished all 60 days. Take the assessment to advance.</p>
+            <button onClick={()=>setView("assessment")} style={{...s.btn("gold",true,false,"lg"),gap:8}}>
+              <Award size={18}/> Take Level {level} Assessment
             </button>
           </div>
         ) : todayDone ? (
-          <div className="bg-green-50 border border-green-200 rounded-2xl p-5 text-center mb-4">
-            <CheckCircle className="w-10 h-10 text-green-500 mx-auto mb-2"/>
-            <h3 className="font-bold text-green-800">Today's worksheet done! ✅</h3>
-            <p className="text-sm text-green-600">Score: {Math.round(todayDone.correct/todayDone.total*100)}% · {todayDone.correct}/{todayDone.total} correct</p>
-            <p className="text-xs text-gray-400 mt-1">Come back tomorrow for Day {day+1}!</p>
+          <div style={{background:"var(--green-ll)",border:"1px solid rgba(22,163,74,0.2)",borderRadius:"var(--r-lg)",padding:"20px",textAlign:"center"}}>
+            <CheckCircle size={36} color="var(--green)" style={{margin:"0 auto 10px"}}/>
+            <h3 style={{fontWeight:700,color:"var(--green)",fontSize:15,marginBottom:4}}>Today's worksheet done! ✅</h3>
+            <p style={{fontSize:13,color:"var(--green)",opacity:0.8,marginBottom:4}}>Score: {Math.round(todayDone.correct/todayDone.total*100)}% · {todayDone.correct}/{todayDone.total} correct</p>
+            <p style={{fontSize:12,color:"var(--ink-ll)"}}>Come back tomorrow for Day {day+1}!</p>
           </div>
         ) : (
-          <button onClick={startDay} className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 rounded-xl font-bold text-xl hover:shadow-xl transform hover:scale-105 transition-all flex items-center justify-center gap-3 mb-4">
-            <Play className="w-6 h-6"/>Start Day {day} · 50 Questions
+          <button onClick={startDay} style={{...s.btn("learn",true,false,"lg"),gap:10,fontSize:17}}>
+            <Play size={20}/> Start Day {day} · 50 Questions
           </button>
         )}
 
         {/* Recent days */}
-        {daysDone > 0 && (
-          <div className="bg-white rounded-2xl shadow p-5">
-            <h3 className="font-bold text-gray-700 mb-3 flex items-center gap-2"><Calendar className="w-4 h-4"/>Recent Days</h3>
-            <div className="space-y-2">
+        {daysDone>0&&(
+          <div style={{...s.card(18)}}>
+            <h3 style={{fontWeight:700,color:"var(--ink-m)",fontSize:14,display:"flex",alignItems:"center",gap:6,marginBottom:12}}>
+              <Calendar size={15} color="var(--ink-l)"/> Recent Days
+            </h3>
+            <div style={{display:"flex",flexDirection:"column",gap:0}}>
               {Array.from({length:Math.min(7,daysDone)},(_,i)=>{
-                const d = daysDone - i;
-                const dk = `${level}-${d}`;
-                const data = progress.completedDays[dk];
-                if (!data) return null;
-                const acc = Math.round(data.correct/data.total*100);
-                return (
-                  <div key={dk} className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
-                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-xs font-bold text-gray-500">{d}</div>
-                    <div className="flex-1">
-                      <div className="w-full bg-gray-100 rounded-full h-2">
-                        <div className={`h-2 rounded-full ${acc>=80?"bg-green-400":acc>=60?"bg-yellow-400":"bg-red-400"}`} style={{width:`${acc}%`}}/>
-                      </div>
+                const d2=daysDone-i;
+                const dk=`${level}-${d2}`;
+                const data=progress.completedDays[dk];
+                if(!data)return null;
+                const acc=Math.round(data.correct/data.total*100);
+                const accColor=acc>=80?"var(--green)":acc>=60?"var(--amber)":"#DC2626";
+                return(
+                  <div key={dk} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:i<Math.min(6,daysDone-1)?"1px solid var(--cream-d)":"none"}}>
+                    <div style={{width:30,height:30,background:"var(--cream)",borderRadius:"var(--r-sm)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:"var(--ink-l)",flexShrink:0}}>{d2}</div>
+                    <div style={{flex:1,height:6,background:"var(--cream-dd)",borderRadius:"var(--r-full)",overflow:"hidden"}}>
+                      <div style={{height:"100%",width:`${acc}%`,background:accColor,borderRadius:"var(--r-full)",transition:"width .5s"}}/>
                     </div>
-                    <span className={`text-sm font-semibold w-12 text-right ${acc>=80?"text-green-600":acc>=60?"text-yellow-600":"text-red-500"}`}>{acc}%</span>
-                    {data.wrongIds?.length > 0 && <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">{data.wrongIds.length} retry</span>}
+                    <span style={{fontSize:13,fontWeight:700,color:accColor,width:36,textAlign:"right"}}>{acc}%</span>
+                    {data.wrongIds?.length>0&&<span style={{fontSize:11,color:"var(--amber)",background:"var(--amber-ll)",borderRadius:"var(--r-full)",padding:"2px 7px",whiteSpace:"nowrap"}}>{data.wrongIds.length} retry</span>}
                   </div>
                 );
               })}
