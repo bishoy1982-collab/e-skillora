@@ -24,8 +24,68 @@ function getInitialPage(): Page {
   return "landing";
 }
 
+function PendingSetup() {
+  const [loading, setLoading] = useState(false);
+  const { logout } = useAuth();
+
+  const handleSetup = async () => {
+    setLoading(true);
+    try {
+      const res = await apiRequest("POST", "/api/stripe/checkout", {});
+      const { url } = await res.json();
+      if (url) window.location.href = url;
+    } catch {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{
+      minHeight: "100vh", background: "#F7F3ED",
+      display: "flex", alignItems: "center", justifyContent: "center", padding: 24,
+      fontFamily: "'Instrument Sans', sans-serif",
+    }}>
+      <div style={{
+        background: "#fff", borderRadius: 24, padding: "40px 36px",
+        maxWidth: 420, width: "100%", textAlign: "center",
+        boxShadow: "0 8px 40px rgba(28,58,47,0.12)",
+      }}>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>🎓</div>
+        <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 24, fontWeight: 700, color: "#1C3A2F", marginBottom: 8 }}>
+          One last step!
+        </h2>
+        <p style={{ color: "#6B6B6B", fontSize: 15, marginBottom: 28, lineHeight: 1.6 }}>
+          Set up your payment method to activate your 3-day free trial. You won't be charged until the trial ends.
+        </p>
+        <button
+          onClick={handleSetup}
+          disabled={loading}
+          style={{
+            width: "100%", background: "#1C3A2F", color: "#fff",
+            border: "none", borderRadius: 14, padding: "15px",
+            fontSize: 16, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer",
+            opacity: loading ? 0.7 : 1, marginBottom: 12,
+            fontFamily: "'Instrument Sans', sans-serif",
+          }}
+        >
+          {loading ? "Redirecting..." : "Activate Free Trial →"}
+        </button>
+        <button
+          onClick={() => logout()}
+          style={{
+            background: "none", border: "none", color: "#9A9A9A",
+            fontSize: 13, cursor: "pointer", fontFamily: "'Instrument Sans', sans-serif",
+          }}
+        >
+          Sign out
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function AppRouter() {
-  const { user, loading, hasAccess, refreshUser } = useAuth();
+  const { user, loading, hasAccess } = useAuth();
   const [page, setPage] = useState<Page>(getInitialPage);
 
   // Update URL when page changes
@@ -58,24 +118,6 @@ function AppRouter() {
     }
   }, [user, loading, page]);
 
-  // Refresh subscription status when entering app (e.g. returning from Stripe checkout)
-  useEffect(() => {
-    if (page === "app" && user && user.subscriptionStatus !== "active") {
-      refreshUser();
-    }
-  }, [page]);
-
-  // Redirect pending users to Stripe checkout (signed up but didn't complete payment)
-  useEffect(() => {
-    if (!loading && user && user.subscriptionStatus === "pending") {
-      apiRequest("POST", "/api/stripe/checkout", {})
-        .then(res => res.json())
-        .then(({ url }) => { if (url) window.location.href = url; })
-        .catch(() => {});
-    }
-  }, [user, loading]);
-
-
   if (page === "admin") return <AdminPage />;
 
   if (loading) {
@@ -84,11 +126,11 @@ function AppRouter() {
         minHeight: "100vh", background: "#F7F3ED",
         display: "flex", alignItems: "center", justifyContent: "center",
       }}>
-        <div style={{ textAlign: "center" }}>
+        <div>
           <div style={{
             width: 40, height: 40, border: "3px solid #E0D9CF",
             borderTopColor: "#1C3A2F", borderRadius: "50%",
-            animation: "spin 0.8s linear infinite", margin: "0 auto 12px",
+            animation: "spin 0.8s linear infinite", margin: "0 auto",
           }} />
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
@@ -106,8 +148,10 @@ function AppRouter() {
 
   // App page
   if (page === "app") {
+    // Pending users need to complete Stripe checkout — show inline prompt, no auto-redirect
+    if (user?.subscriptionStatus === "pending") return <PendingSetup />;
+
     const status = user?.subscriptionStatus;
-    const needsPaywall = !hasAccess && status !== "trial";
     const paywallReason = status === "expired" || status === "cancelled" || status === "past_due"
       ? status : null;
 
