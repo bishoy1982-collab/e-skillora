@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Brain, ArrowRight, Eye, EyeOff, AlertCircle, CheckCircle, ChevronLeft, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { apiRequest } from "@/lib/queryClient";
 
 const G_FONT = `https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,800&family=Instrument+Sans:wght@400;500;600;700&display=swap`;
 
@@ -43,7 +44,10 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
     setLoading(true);
     try {
       await signup(email, name, password);
-      onNavigate("app");
+      // Immediately redirect to Stripe checkout to collect card for 3-day trial
+      const res = await apiRequest("POST", "/api/stripe/checkout", {});
+      const { url } = await res.json();
+      window.location.href = url;
     } catch (err: any) {
       const msg = err?.message || "";
       if (msg.includes("409") || msg.includes("already exists")) {
@@ -232,7 +236,7 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
                 minHeight: 52,
               }}
             >
-              {loading ? "Creating account..." : <> Start Free Trial <ArrowRight size={18} /> </>}
+              {loading ? "Setting up your trial..." : <> Start Free Trial <ArrowRight size={18} /> </>}
             </button>
           </form>
 

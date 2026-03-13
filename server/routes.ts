@@ -48,7 +48,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
 
       const passwordHash = await bcrypt.hash(password, 12);
-      const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
 
       let stripeCustomerId: string | undefined;
       try {
@@ -58,7 +57,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         console.error("Stripe customer creation failed:", e);
       }
 
-      const user = await storage.createUser({ email, name, passwordHash, trialEndsAt });
+      const user = await storage.createUser({ email, name, passwordHash });
       if (stripeCustomerId) {
         await storage.updateUser(user.id, { stripeCustomerId });
       }
@@ -219,11 +218,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         sessionParams.customer_email = user.email;
       }
 
-      // Only add trial if user hasn't trialed before
-      if (user.subscriptionStatus === "trial" || user.subscriptionStatus === "expired") {
-        sessionParams.subscription_data = {
-          trial_period_days: user.subscriptionStatus === "trial" ? TRIAL_DAYS : 0,
-        };
+      // Add trial for new users (pending = just signed up, no Stripe subscription yet)
+      if (user.subscriptionStatus === "pending") {
+        sessionParams.subscription_data = { trial_period_days: TRIAL_DAYS };
       }
 
       const session = await stripe.checkout.sessions.create(sessionParams);
@@ -276,10 +273,14 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const session = event.data.object as Stripe.Checkout.Session;
           const userId = session.metadata?.userId;
           if (userId && session.subscription) {
+            const sub = await stripe.subscriptions.retrieve(session.subscription as string);
+            const status = sub.status === "trialing" ? "trial" : "active";
+            const trialEndsAt = sub.trial_end ? new Date(sub.trial_end * 1000) : null;
             await storage.updateUser(userId, {
               stripeSubscriptionId: session.subscription as string,
               stripeCustomerId: session.customer as string,
-              subscriptionStatus: "active",
+              subscriptionStatus: status,
+              trialEndsAt,
             });
           }
           break;

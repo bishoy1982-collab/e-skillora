@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { apiRequest } from "@/lib/queryClient";
 
-export type SubscriptionStatus = "trial" | "active" | "expired" | "cancelled" | "past_due" | null;
+export type SubscriptionStatus = "pending" | "trial" | "active" | "expired" | "cancelled" | "past_due" | null;
 
 export interface AuthUser {
   id: string;

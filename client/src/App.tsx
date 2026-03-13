@@ -8,6 +8,7 @@ import ResetPasswordPage from "./pages/reset-password";
 import PaywallModal from "./components/PaywallModal";
 import TrialBanner from "./components/TrialBanner";
 import ESkillora from "./components/ESkillora-v3";
+import { apiRequest } from "./lib/queryClient";
 
 type Page = "landing" | "login" | "signup" | "app" | "success" | "reset-password";
 
@@ -61,6 +62,16 @@ function AppRouter() {
       refreshUser();
     }
   }, [page]);
+
+  // Redirect pending users to Stripe checkout (signed up but didn't complete payment)
+  useEffect(() => {
+    if (!loading && user && user.subscriptionStatus === "pending") {
+      apiRequest("POST", "/api/stripe/checkout", {})
+        .then(res => res.json())
+        .then(({ url }) => { if (url) window.location.href = url; })
+        .catch(() => {});
+    }
+  }, [user, loading]);
 
 
   if (loading) {

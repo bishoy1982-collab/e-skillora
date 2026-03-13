@@ -10,7 +10,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByStripeCustomerId(customerId: string): Promise<User | undefined>;
   getUserByPasswordResetToken(token: string): Promise<User | undefined>;
-  createUser(data: { email: string; name: string; passwordHash: string; trialEndsAt: Date }): Promise<User>;
+  createUser(data: { email: string; name: string; passwordHash: string; trialEndsAt?: Date | null }): Promise<User>;
   updateUser(id: string, data: Partial<User>): Promise<User>;
   createSession(data: { userId: string; subject: string; grade: number; topic: string }): Promise<Session>;
   updateSession(id: string, data: Partial<Session>): Promise<Session>;
@@ -39,13 +39,13 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createUser(data: { email: string; name: string; passwordHash: string; trialEndsAt: Date }): Promise<User> {
+  async createUser(data: { email: string; name: string; passwordHash: string; trialEndsAt?: Date | null }): Promise<User> {
     const [user] = await db.insert(users).values({
       email: data.email.toLowerCase(),
       name: data.name,
       passwordHash: data.passwordHash,
-      trialEndsAt: data.trialEndsAt,
-      subscriptionStatus: "trial",
+      trialEndsAt: data.trialEndsAt ?? null,
+      subscriptionStatus: "pending",
     }).returning();
     return user;
   }
