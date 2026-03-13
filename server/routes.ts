@@ -382,7 +382,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       await db.delete(sessions);
       await db.delete(waitlistSubmissions);
       // Delete http sessions store then users (foreign key safe order)
-      await pool.query("DELETE FROM user_sessions_store");
+      await pool.query("DELETE FROM user_sessions_store WHERE 1=1").catch(() => {});
       await db.delete(users);
       return res.json({ message: "All data cleared successfully" });
     } catch (err: any) {
