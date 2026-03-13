@@ -392,6 +392,88 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  // ─── ADMIN ANALYTICS ─────────────────────────────────────────
+
+  app.get("/api/admin/metrics", async (req, res) => {
+    const secret = req.headers["x-admin-secret"];
+    if (!secret || secret !== process.env.ADMIN_SECRET) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    try {
+      const allUsers = await db.select().from(users);
+
+      const now = new Date();
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const startOfWeek = new Date(startOfToday);
+      startOfWeek.setDate(startOfToday.getDate() - startOfToday.getDay());
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      const total = allUsers.length;
+      const pending = allUsers.filter(u => u.subscriptionStatus === "pending").length;
+      const trial = allUsers.filter(u => u.subscriptionStatus === "trial").length;
+      const active = allUsers.filter(u => u.subscriptionStatus === "active").length;
+      const expired = allUsers.filter(u => u.subscriptionStatus === "expired").length;
+      const cancelled = allUsers.filter(u => u.subscriptionStatus === "cancelled").length;
+      const pastDue = allUsers.filter(u => u.subscriptionStatus === "past_due").length;
+      const withStripe = allUsers.filter(u => !!u.stripeSubscriptionId).length;
+
+      const mrr = active * 9;
+      const trialConversionRate = withStripe > 0
+        ? Math.round((active / withStripe) * 1000) / 10
+        : 0;
+      const churnCount = expired + cancelled;
+
+      const newToday = allUsers.filter(u => u.createdAt && new Date(u.createdAt) >= startOfToday).length;
+      const newThisWeek = allUsers.filter(u => u.createdAt && new Date(u.createdAt) >= startOfWeek).length;
+      const newThisMonth = allUsers.filter(u => u.createdAt && new Date(u.createdAt) >= startOfMonth).length;
+
+      // Build daily signups for last 14 days
+      const dailySignups: { date: string; count: number }[] = [];
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date(startOfToday);
+        d.setDate(startOfToday.getDate() - i);
+        const next = new Date(d);
+        next.setDate(d.getDate() + 1);
+        const dateStr = d.toISOString().slice(0, 10);
+        const count = allUsers.filter(u => {
+          if (!u.createdAt) return false;
+          const created = new Date(u.createdAt);
+          return created >= d && created < next;
+        }).length;
+        dailySignups.push({ date: dateStr, count });
+      }
+
+      // Recent 20 users
+      const recentUsers = [...allUsers]
+        .sort((a, b) => {
+          const at = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const bt = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return bt - at;
+        })
+        .slice(0, 20)
+        .map(u => ({
+          id: u.id,
+          email: u.email,
+          name: u.name,
+          subscriptionStatus: u.subscriptionStatus,
+          trialEndsAt: u.trialEndsAt,
+          createdAt: u.createdAt,
+          hasStripe: !!u.stripeSubscriptionId,
+        }));
+
+      return res.json({
+        funnel: { total, pending, trial, active, expired, cancelled, pastDue, withStripe },
+        business: { mrr, trialConversionRate, churnCount },
+        growth: { newToday, newThisWeek, newThisMonth },
+        dailySignups,
+        recentUsers,
+      });
+    } catch (err: any) {
+      console.error("Admin metrics error:", err);
+      return res.status(500).json({ message: err.message });
+    }
+  });
+
   // ─── WAITLIST ────────────────────────────────────────────────
 
   app.post("/api/waitlist", async (req, res) => {

@@ -5,12 +5,13 @@ import LoginPage from "./pages/login";
 import SignupPage from "./pages/signup";
 import SuccessPage from "./pages/success";
 import ResetPasswordPage from "./pages/reset-password";
+import AdminPage from "./pages/admin";
 import PaywallModal from "./components/PaywallModal";
 import TrialBanner from "./components/TrialBanner";
 import ESkillora from "./components/ESkillora-v3";
 import { apiRequest } from "./lib/queryClient";
 
-type Page = "landing" | "login" | "signup" | "app" | "success" | "reset-password";
+type Page = "landing" | "login" | "signup" | "app" | "success" | "reset-password" | "admin";
 
 function getInitialPage(): Page {
   const path = window.location.pathname;
@@ -19,6 +20,7 @@ function getInitialPage(): Page {
   if (path === "/signup") return "signup";
   if (path === "/app") return "app";
   if (path === "/reset-password") return "reset-password";
+  if (path === "/admin") return "admin";
   return "landing";
 }
 
@@ -30,7 +32,7 @@ function AppRouter() {
   useEffect(() => {
     const paths: Record<Page, string> = {
       landing: "/", login: "/login", signup: "/signup",
-      app: "/app", success: "/success", "reset-password": "/reset-password",
+      app: "/app", success: "/success", "reset-password": "/reset-password", admin: "/admin",
     };
     window.history.pushState({}, "", paths[page]);
   }, [page]);
@@ -73,6 +75,8 @@ function AppRouter() {
     }
   }, [user, loading]);
 
+
+  if (page === "admin") return <AdminPage />;
 
   if (loading) {
     return (
