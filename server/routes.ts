@@ -64,7 +64,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
 
       (req.session as any).userId = user.id;
-      await new Promise<void>((resolve, reject) => req.session.save((err) => err ? reject(err) : resolve()));
       return res.status(201).json({
         id: user.id, email: user.email, name: user.name,
         subscriptionStatus: user.subscriptionStatus, trialEndsAt: user.trialEndsAt,
@@ -100,7 +99,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
 
       (req.session as any).userId = user.id;
-      await new Promise<void>((resolve, reject) => req.session.save((err) => err ? reject(err) : resolve()));
       return res.json({
         id: user.id, email: user.email, name: user.name,
         subscriptionStatus: user.subscriptionStatus, trialEndsAt: user.trialEndsAt,
