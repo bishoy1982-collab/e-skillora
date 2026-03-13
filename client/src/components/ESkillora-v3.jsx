@@ -1116,7 +1116,7 @@ function OverviewTab({ app }) {
 
       {/* Children cards */}
       {(app?.children||[]).map((child,i)=>{
-        const prog = (() => { try { const v = localStorage.getItem(`skillora-progress-${child.name}`); return v ? JSON.parse(v) : null; } catch { return null; } })();
+        const prog = (() => { try { const v = localStorage.getItem(`skillora-progress-${child.id}`); return v ? JSON.parse(v) : null; } catch { return null; } })();
         const daysCompleted = Object.keys(prog?.completedDays||{}).filter(k=>k.startsWith(prog?.currentLevel||child.level)).length;
         const totalAcc = (() => {
           const days = Object.values(prog?.completedDays||{});
@@ -1243,10 +1243,20 @@ function PlanTab({ app, planData }) {
     try {
       const { apiRequest } = await import("@/lib/queryClient");
       const res = await apiRequest("POST", "/api/stripe/portal", {});
+      if (!res.ok) {
+        const data = await res.json().catch(()=>({}));
+        if (res.status === 400) {
+          setError("No billing account found. Please subscribe first using the Subscribe button above.");
+        } else {
+          setError(data.message || "Failed to open billing portal. Please try again.");
+        }
+        setLoading(false);
+        return;
+      }
       const { url } = await res.json();
       window.location.href = url;
     } catch (err) {
-      setError("Unable to open billing portal. Please ensure you have an active subscription.");
+      setError("Failed to open billing portal. Please try again.");
       setLoading(false);
     }
   };
@@ -1558,6 +1568,92 @@ export function ChildPlacement({ child, onComplete }) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// ④b ELA PLACEMENT TEST
+// ─────────────────────────────────────────────────────────────
+function ELAPlacement({ child, questions, startLevel, onComplete }) {
+  const N = questions.length || 8;
+  const [cur, setCur] = useState(0);
+  const [answers, setAnswers] = useState([]);
+  const [input, setInput] = useState("");
+  const [done, setDone] = useState(false);
+
+  const submit = (ans) => {
+    const a = [...answers, ans];
+    if (cur + 1 >= questions.length) { setAnswers(a); setDone(true); }
+    else { setAnswers(a); setCur(cur + 1); setInput(""); }
+  };
+
+  if (done) {
+    const lo = LEVEL_ORDER;
+    const correct = questions.filter((q, i) => answers[i] === q.answer).length;
+    const pct = correct / questions.length;
+    const idx = lo.indexOf(startLevel);
+    const assigned = pct >= 0.8 ? lo[Math.min(idx+1, lo.length-1)] : pct >= 0.5 ? startLevel : lo[Math.max(idx-1, 0)];
+    const lInfo = ELA_LEVEL_MAP[assigned] || { grade: "Grade" };
+    return (
+      <div style={{ minHeight:"100vh", background:"var(--forest)", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+        <div className="sci" style={{ maxWidth:420, width:"100%" }}>
+          <div style={{...s.card(36), textAlign:"center"}}>
+            <div className="pop" style={{ fontSize:72, marginBottom:4 }}>📚</div>
+            <h2 style={{ fontFamily:"'Fraunces',serif", fontSize:28, fontWeight:700, color:"var(--forest)", marginBottom:8 }}>Reading level found!</h2>
+            <p style={{ color:"var(--ink-l)", fontSize:15, marginBottom:24 }}>We found your perfect Reading starting level!</p>
+            <div style={{ background:"var(--sage-ll)", borderRadius:"var(--r-lg)", padding:"20px 28px", marginBottom:28 }}>
+              <p style={{ fontSize:13, color:"var(--ink-l)", marginBottom:4 }}>Your reading level</p>
+              <p style={{ fontFamily:"'Fraunces',serif", fontSize:48, fontWeight:800, color:"var(--forest)" }}>Level {assigned}</p>
+              <p style={{ fontSize:15, color:"var(--forest)", fontWeight:600 }}>{lInfo.grade}</p>
+            </div>
+            <Btn onClick={() => onComplete(assigned)} full size="lg" v="gold"><Play size={20}/> Start Reading! 📚</Btn>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const q = questions[cur] || {};
+  return (
+    <div style={{ minHeight:"100vh", background:"#1C2A6B", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <div style={{ maxWidth:480, width:"100%" }}>
+        <div className="afu" style={{ textAlign:"center", marginBottom:24 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:10, justifyContent:"center", marginBottom:12 }}>
+            {child?.avatar && <div style={{ width:44, height:44, background:child.avatarBg, borderRadius:14, display:"flex", alignItems:"center", justifyContent:"center", fontSize:24 }}>{child.avatar}</div>}
+            <p style={{ color:"var(--cream)", fontFamily:"'Fraunces',serif", fontSize:18, fontWeight:600 }}>Reading check-in, {child?.name}!</p>
+          </div>
+          <p style={{ color:"rgba(255,255,255,0.6)", fontSize:14 }}>This helps us find your reading level</p>
+          <div style={{ display:"flex", gap:6, justifyContent:"center", marginTop:16 }}>
+            {questions.map((_,i) => (
+              <div key={i} style={{ width:28, height:5, borderRadius:3, transition:"background .3s",
+                background: i<cur?"var(--gold)": i===cur?"var(--cream)":"rgba(255,255,255,0.2)" }}/>
+            ))}
+          </div>
+        </div>
+        <div className="sci" style={s.card(28)}>
+          <p style={{ fontSize:13, color:"var(--ink-ll)", marginBottom:4 }}>Question {cur+1} of {questions.length}</p>
+          <h2 style={{ fontFamily:"'Fraunces',serif", fontSize:20, fontWeight:700, color:"var(--forest)", marginBottom:24 }}>{q.question}</h2>
+          {q.type === "multiple" ? (
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              {(q.options||[]).map((opt,i) => (
+                <button key={i} onClick={() => submit(opt)} style={{
+                  padding:"15px 20px", borderRadius:"var(--r-md)", textAlign:"left", fontSize:15, fontWeight:500,
+                  background:"var(--cream)", border:"2px solid var(--cream-dd)", cursor:"pointer",
+                  fontFamily:"'Instrument Sans'", color:"var(--ink)", transition:"all .15s",
+                }}>{opt}</button>
+              ))}
+            </div>
+          ) : (
+            <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+              <input type="text" value={input} onChange={e=>setInput(e.target.value)}
+                onKeyDown={e=>{if(e.key==="Enter"&&input.trim())submit(input.trim());}} autoFocus placeholder="Type your answer…"
+                style={{...s.input(), fontSize:20, fontFamily:"'Fraunces',serif", fontWeight:700}}/>
+              <Btn onClick={()=>{if(input.trim())submit(input.trim());}} full disabled={!input.trim()}>Next <ArrowRight size={16}/></Btn>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // ⑤ CHILD CELEBRATION
 // ─────────────────────────────────────────────────────────────
 export function CelebrationOverlay({ score, total, wrongCount, onContinue }) {
@@ -1635,7 +1731,7 @@ const ELA_LEVEL_MAP = {
       themes:["Connotation & Denotation","Central Idea","Argument & Evidence","Literary Devices","Comma Rules","Persuasive Writing"] },
   H:{ grade:"Grade 7", ageRange:"12–13", color:"#009688",
       themes:["Word Choice & Tone","Textual Analysis","Bias & Perspective","Complex Sentences","MLA Basics","Expository Writing"] },
-  I:{ grade:"Grade 8 / Pre-Algebra Level", ageRange:"13–14", color:"#4caf50",
+  I:{ grade:"Grade 8", ageRange:"13–14", color:"#4caf50",
       themes:["Advanced Vocabulary","Rhetoric & Appeals","Poetry Analysis","Semicolons & Colons","Research Writing","Literary Analysis"] },
   J:{ grade:"High School 1", ageRange:"14–15", color:"#8bc34a",
       themes:["SAT Vocabulary","Analyzing Arguments","Shakespeare Basics","Complex Grammar","Essay Structure","Critical Reading"] },
@@ -3378,15 +3474,16 @@ function LevelAssessment({ level, onPass, onFail }) {
 // ─────────────────────────────────────────────────────────────
 // 10. MAIN LEARN APP (worksheet engine)
 // ─────────────────────────────────────────────────────────────
-function LearnApp({ studentName, startLevel, onBackToHome }) {
+function LearnApp({ studentName, startLevel, onBackToHome, childData }) {
   const DAILY_Q = 50;
   const DAYS_PER_LEVEL = 60; // 60 days × 50 questions = 3000 per level
 
   const [subject, setSubject] = useState("math"); // "math" | "ela"
 
+  const childKey = childData?.id || studentName;
   const getProgressKey = (subj) => subj === "ela"
-    ? `skillora-progress-${studentName}-ela`
-    : `skillora-progress-${studentName}`;
+    ? `skillora-progress-${childKey}-ela`
+    : `skillora-progress-${childKey}`;
 
   const defaultProgress = {
     currentLevel: startLevel,
@@ -3414,10 +3511,16 @@ function LearnApp({ studentName, startLevel, onBackToHome }) {
   const save = (newProg) => { setProgress(newProg); saveState(getProgressKey(subject), newProg); };
 
   const handleSubjectChange = (newSubject) => {
-    const prog = loadState(getProgressKey(newSubject), defaultProgress);
+    const prog = loadState(getProgressKey(newSubject), null);
     setSubject(newSubject);
-    setProgress(prog);
-    setView("dashboard");
+    if (newSubject === "ela" && !prog) {
+      // No ELA progress yet — run placement
+      setProgress(defaultProgress);
+      setView("ela_placement");
+    } else {
+      setProgress(prog || defaultProgress);
+      setView("dashboard");
+    }
   };
 
   const activeLevelMap = subject === "ela" ? ELA_LEVEL_MAP : LEVEL_MAP;
@@ -3575,6 +3678,31 @@ function LearnApp({ studentName, startLevel, onBackToHome }) {
   };
 
   // ── VIEWS ──────────────────────────────────────────────
+  if (view === "ela_placement") {
+    const elaPlacementQuestions = (() => {
+      const lo = LEVEL_ORDER;
+      const idx = lo.indexOf(startLevel);
+      const levels = [lo[Math.max(0,idx-1)], startLevel, lo[Math.min(lo.length-1,idx+1)]];
+      const pool = [];
+      levels.forEach(lv => {
+        const qs = generateELAQuestions(lv);
+        pool.push(...qs.slice(0, 3));
+      });
+      return shuffle(pool).slice(0, 8);
+    })();
+    return <ELAPlacement
+      child={{ name: studentName, avatar: childData?.avatar, avatarBg: childData?.avatarBg }}
+      questions={elaPlacementQuestions}
+      startLevel={startLevel}
+      onComplete={(level) => {
+        const newProg = { currentLevel: level, dayNumber: 1, completedDays: {}, levelAttempt: {}, levelQuestions: {}, pendingRetry: {}, seenThemes: {} };
+        saveState(getProgressKey("ela"), newProg);
+        setProgress(newProg);
+        setView("dashboard");
+      }}
+    />;
+  }
+
   if (view === "concept") return <ConceptIntro theme={pendingTheme} onStart={handleConceptDone}/>;
 
   if (view === "results") return (
@@ -3864,7 +3992,7 @@ export default function App() {
   // ── 3. Child profile tapped
   const handleChildEnter = (child) => {
     setActiveChild(child);
-    const prog = LS.get(`skillora-progress-${child.name}`, null);
+    const prog = LS.get(`skillora-progress-${child.id}`, null);
     // Check if placement has been done
     const appData = getApp();
     const childRecord = appData?.children?.find(c => c.id === child.id);
@@ -3884,7 +4012,7 @@ export default function App() {
       );
       setApp(appData);
       // Init progress
-      LS.set(`skillora-progress-${activeChild.name}`, {
+      LS.set(`skillora-progress-${activeChild.id}`, {
         currentLevel: level, dayNumber: 1,
         completedDays: {}, levelAttempt: {}, levelQuestions: {},
         pendingRetry: {}, seenThemes: {},

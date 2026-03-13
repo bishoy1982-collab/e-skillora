@@ -22,7 +22,7 @@ function getInitialPage(): Page {
 }
 
 function AppRouter() {
-  const { user, loading, hasAccess } = useAuth();
+  const { user, loading, hasAccess, refreshUser } = useAuth();
   const [page, setPage] = useState<Page>(getInitialPage);
 
   // Update URL when page changes
@@ -54,6 +54,13 @@ function AppRouter() {
       setPage("landing");
     }
   }, [user, loading, page]);
+
+  // Refresh subscription status when entering app (e.g. returning from Stripe checkout)
+  useEffect(() => {
+    if (page === "app" && user && user.subscriptionStatus !== "active") {
+      refreshUser();
+    }
+  }, [page]);
 
 
   if (loading) {
