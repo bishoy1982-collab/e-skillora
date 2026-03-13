@@ -1,7 +1,9 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { db, pool } from "./db";
 import { insertUserSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } from "@shared/schema";
+import { users, sessions, waitlistSubmissions } from "@shared/schema";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import Stripe from "stripe";
@@ -62,6 +64,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
 
       (req.session as any).userId = user.id;
+      await new Promise<void>((resolve, reject) => req.session.save((err) => err ? reject(err) : resolve()));
       return res.status(201).json({
         id: user.id, email: user.email, name: user.name,
         subscriptionStatus: user.subscriptionStatus, trialEndsAt: user.trialEndsAt,
@@ -97,6 +100,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
 
       (req.session as any).userId = user.id;
+      await new Promise<void>((resolve, reject) => req.session.save((err) => err ? reject(err) : resolve()));
       return res.json({
         id: user.id, email: user.email, name: user.name,
         subscriptionStatus: user.subscriptionStatus, trialEndsAt: user.trialEndsAt,
@@ -366,6 +370,26 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     } catch (err) {
       console.error("AI chat error:", err);
       return res.status(500).json({ message: "AI tutor error" });
+    }
+  });
+
+  // ─── ADMIN: CLEAR ALL DATA (protected by ADMIN_SECRET env var) ──
+
+  app.post("/api/admin/clear-db", async (req, res) => {
+    const secret = process.env.ADMIN_SECRET;
+    if (!secret || req.headers["x-admin-secret"] !== secret) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    try {
+      await db.delete(sessions);
+      await db.delete(waitlistSubmissions);
+      // Delete http sessions store then users (foreign key safe order)
+      await pool.query("DELETE FROM user_sessions_store");
+      await db.delete(users);
+      return res.json({ message: "All data cleared successfully" });
+    } catch (err: any) {
+      console.error("Clear DB error:", err);
+      return res.status(500).json({ message: err.message });
     }
   });
 

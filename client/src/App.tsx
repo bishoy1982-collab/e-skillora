@@ -55,10 +55,12 @@ function AppRouter() {
     }
   }, [user, loading, page]);
 
-  // Refresh subscription status whenever navigating to app
+  // Refresh subscription status when returning from Stripe success page
   useEffect(() => {
-    if (page === "app" && user) {
-      refreshUser();
+    if (page === "app" && user?.subscriptionStatus === "trial") {
+      // Small delay to avoid race condition with newly created sessions
+      const t = setTimeout(() => refreshUser(), 500);
+      return () => clearTimeout(t);
     }
   }, [page]);
 
