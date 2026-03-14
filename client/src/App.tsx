@@ -64,7 +64,14 @@ function PendingSetup() {
         setLoading(false);
       }
     } catch (err: any) {
-      setError(err?.message || "Something went wrong. Please try again.");
+      const msg: string = err?.message || "";
+      if (msg.startsWith("401")) {
+        // Session expired — redirect to login to get a fresh session
+        await logout();
+        window.location.href = "/login";
+        return;
+      }
+      setError(msg || "Something went wrong. Please try again.");
       setLoading(false);
     }
   };

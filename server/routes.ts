@@ -253,8 +253,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         sessionParams.customer_email = user.email;
       }
 
-      // Add trial for new users (pending = just signed up, no Stripe subscription yet)
-      if (user.subscriptionStatus === "pending") {
+      // Add trial if user has no active Stripe subscription yet
+      const noStripeSubscription = !user.stripeSubscriptionId;
+      if (noStripeSubscription) {
         sessionParams.subscription_data = { trial_period_days: TRIAL_DAYS };
       }
 
