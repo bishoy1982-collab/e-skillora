@@ -692,9 +692,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       return res.status(400).json({ message: "Send { confirm: 'CONFIRM' } to proceed" });
     }
     try {
+      // Delete sessions separately since the table may not exist yet
+      await pool.query(`DELETE FROM user_sessions_store`).catch(() => {});
       await pool.query(`
         TRUNCATE TABLE
-          user_sessions_store,
           app_sessions,
           child_streaks,
           custom_questions,
