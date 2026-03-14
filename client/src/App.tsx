@@ -48,15 +48,23 @@ const PENDING_PLANS = [
 function PendingSetup() {
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<"1child" | "2child">("1child");
+  const [error, setError] = useState("");
   const { logout } = useAuth();
 
   const handleSetup = async () => {
     setLoading(true);
+    setError("");
     try {
       const res = await apiRequest("POST", "/api/stripe/checkout", { planType: selected });
       const { url } = await res.json();
-      if (url) window.location.href = url;
-    } catch {
+      if (url) {
+        window.location.href = url;
+      } else {
+        setError("No checkout URL returned. Please try again.");
+        setLoading(false);
+      }
+    } catch (err: any) {
+      setError(err?.message || "Something went wrong. Please try again.");
       setLoading(false);
     }
   };
@@ -116,6 +124,16 @@ function PendingSetup() {
             );
           })}
         </div>
+
+        {error && (
+          <div style={{
+            background: "rgba(232,96,76,0.08)", border: "1px solid rgba(232,96,76,0.25)",
+            borderRadius: 12, padding: "12px 14px", marginBottom: 16,
+            color: "#E8604C", fontSize: 13, lineHeight: 1.5,
+          }}>
+            {error}
+          </div>
+        )}
 
         <button
           onClick={handleSetup}
