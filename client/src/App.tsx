@@ -26,14 +26,34 @@ function getInitialPage(): Page {
   return "landing";
 }
 
+const PENDING_PLANS = [
+  {
+    id: "1child" as const,
+    label: "1 Child",
+    price: "$10.99",
+    desc: "1 child · All 12 grade levels · AI tutor",
+    color: "#2A5240",
+    badge: null as string | null,
+  },
+  {
+    id: "2child" as const,
+    label: "2 Children",
+    price: "$14.99",
+    desc: "2 children · All 12 grade levels · AI tutor",
+    color: "#1C3A2F",
+    badge: "Best Value",
+  },
+];
+
 function PendingSetup() {
   const [loading, setLoading] = useState(false);
+  const [selected, setSelected] = useState<"1child" | "2child">("1child");
   const { logout } = useAuth();
 
   const handleSetup = async () => {
     setLoading(true);
     try {
-      const res = await apiRequest("POST", "/api/stripe/checkout", {});
+      const res = await apiRequest("POST", "/api/stripe/checkout", { planType: selected });
       const { url } = await res.json();
       if (url) window.location.href = url;
     } catch {
@@ -48,35 +68,75 @@ function PendingSetup() {
       fontFamily: "'Instrument Sans', sans-serif",
     }}>
       <div style={{
-        background: "#fff", borderRadius: 24, padding: "40px 36px",
-        maxWidth: 420, width: "100%", textAlign: "center",
+        background: "#fff", borderRadius: 24, padding: "40px 32px",
+        maxWidth: 440, width: "100%",
         boxShadow: "0 8px 40px rgba(28,58,47,0.12)",
       }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>🎓</div>
-        <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 24, fontWeight: 700, color: "#1C3A2F", marginBottom: 8 }}>
-          One last step!
+        <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: 26, fontWeight: 700, color: "#1C3A2F", marginBottom: 6 }}>
+          Choose your plan
         </h2>
-        <p style={{ color: "#6B6B6B", fontSize: 15, marginBottom: 28, lineHeight: 1.6 }}>
-          Set up your payment method to activate your 3-day free trial. You won't be charged until the trial ends.
+        <p style={{ color: "#6B6B6B", fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>
+          Try free for <strong>3 days</strong> · Cancel anytime · You won't be charged until the trial ends.
         </p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
+          {PENDING_PLANS.map(plan => {
+            const active = selected === plan.id;
+            return (
+              <button
+                key={plan.id}
+                onClick={() => setSelected(plan.id)}
+                style={{
+                  position: "relative", textAlign: "left", padding: "18px 20px",
+                  borderRadius: 16, cursor: "pointer", transition: "all .2s",
+                  background: active ? plan.color : "#F7F3ED",
+                  border: `2px solid ${active ? plan.color : "#E0D9CF"}`,
+                  fontFamily: "'Instrument Sans', sans-serif",
+                }}
+              >
+                {plan.badge && (
+                  <span style={{
+                    position: "absolute", top: -10, right: 14,
+                    background: "#C9973A", color: "#1C3A2F",
+                    fontSize: 11, fontWeight: 700, padding: "3px 10px",
+                    borderRadius: 9999,
+                  }}>{plan.badge}</span>
+                )}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div>
+                    <p style={{ fontFamily: "'Fraunces', serif", fontSize: 18, fontWeight: 700, color: active ? "#fff" : "#1C3A2F", marginBottom: 3 }}>{plan.label}</p>
+                    <p style={{ fontSize: 13, color: active ? "rgba(255,255,255,0.7)" : "#9A9A9A" }}>{plan.desc}</p>
+                  </div>
+                  <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12 }}>
+                    <span style={{ fontFamily: "'Fraunces', serif", fontSize: 28, fontWeight: 700, color: active ? "#E5B96A" : "#1C3A2F" }}>{plan.price}</span>
+                    <span style={{ fontSize: 12, color: active ? "rgba(255,255,255,0.6)" : "#9A9A9A" }}>/mo</span>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
         <button
           onClick={handleSetup}
           disabled={loading}
           style={{
-            width: "100%", background: "#1C3A2F", color: "#fff",
+            width: "100%", background: "linear-gradient(145deg, #1C3A2F, #2A5240)", color: "#fff",
             border: "none", borderRadius: 14, padding: "15px",
             fontSize: 16, fontWeight: 700, cursor: loading ? "not-allowed" : "pointer",
-            opacity: loading ? 0.7 : 1, marginBottom: 12,
+            opacity: loading ? 0.7 : 1, marginBottom: 14,
             fontFamily: "'Instrument Sans', sans-serif",
+            boxShadow: "0 8px 24px rgba(28,58,47,0.2)",
           }}
         >
-          {loading ? "Redirecting..." : "Activate Free Trial →"}
+          {loading ? "Redirecting to Stripe..." : "Start Free Trial →"}
         </button>
         <button
           onClick={() => logout()}
           style={{
-            background: "none", border: "none", color: "#9A9A9A",
-            fontSize: 13, cursor: "pointer", fontFamily: "'Instrument Sans', sans-serif",
+            display: "block", margin: "0 auto", background: "none", border: "none",
+            color: "#9A9A9A", fontSize: 13, cursor: "pointer",
+            fontFamily: "'Instrument Sans', sans-serif",
           }}
         >
           Sign out

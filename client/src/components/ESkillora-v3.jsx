@@ -759,7 +759,7 @@ function OB_Done({ data, onStart }) {
 
 // Onboarding wrapper
 export function OnboardingFlow({ onComplete }) {
-  const STEPS = 6;
+  const STEPS = 4;
   const [step, setStep] = useState(0);
   const [d, setD] = useState({});
   const merge = (extra, next) => { setD(prev=>({...prev,...extra})); setStep(next); };
@@ -767,13 +767,11 @@ export function OnboardingFlow({ onComplete }) {
   return (
     <Shell>
       <StepDots total={STEPS} current={step}/>
-      {step===0 && <OB_Account onNext={v=>merge(v,1)}/>}
-      {step===1 && <OB_Plan onNext={v=>merge(v,2)}/>}
-      {step===2 && <OB_Payment plan={d.plan} onNext={()=>merge({},3)}/>}
-      {step===3 && <OB_Children plan={d.plan} onNext={v=>merge(v,4)}/>}
-      {step===4 && <OB_Pin onNext={v=>merge(v,5)}/>}
-      {step===5 && <OB_Done data={d} onStart={()=>onComplete(d)}/>}
-      {step>0 && step<5 && (
+      {step===0 && <OB_Plan onNext={v=>merge(v,1)}/>}
+      {step===1 && <OB_Children plan={d.plan} onNext={v=>merge(v,2)}/>}
+      {step===2 && <OB_Pin onNext={v=>merge(v,3)}/>}
+      {step===3 && <OB_Done data={d} onStart={()=>onComplete(d)}/>}
+      {step>0 && step<3 && (
         <button onClick={()=>setStep(step-1)} style={{ display:"flex", alignItems:"center", gap:6, margin:"16px auto 0", color:"var(--ink-l)", background:"none", border:"none", fontSize:14, cursor:"pointer", fontFamily:"'Instrument Sans'" }}>
           <ChevronLeft size={16}/> Back
         </button>
@@ -4456,7 +4454,7 @@ export default function App() {
   // ── 1. Onboarding complete
   const handleOnboardingDone = (formData) => {
     const app = initApp(
-      formData.email, formData.password, formData.pin,
+      "", "", formData.pin,
       formData.plan, formData.children || []
     );
     setApp(app);
