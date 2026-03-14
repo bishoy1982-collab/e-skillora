@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, boolean, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -26,6 +26,16 @@ export const sessions = pgTable("app_sessions", {
   aiUsedThisSession: boolean("ai_used_this_session").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
+
+export const childStreaks = pgTable("child_streaks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  childId: text("child_id").notNull(),
+  currentStreak: integer("current_streak").default(0),
+  longestStreak: integer("longest_streak").default(0),
+  lastPracticeDate: text("last_practice_date"), // YYYY-MM-DD
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (t) => [unique("child_streaks_user_child").on(t.userId, t.childId)]);
 
 export const waitlistSubmissions = pgTable("waitlist_submissions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -66,3 +76,4 @@ export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type InsertWaitlist = z.infer<typeof insertWaitlistSchema>;
 export type WaitlistSubmission = typeof waitlistSubmissions.$inferSelect;
+export type ChildStreak = typeof childStreaks.$inferSelect;

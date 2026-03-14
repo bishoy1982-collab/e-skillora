@@ -75,6 +75,24 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Ensure child_streaks table exists (safe CREATE IF NOT EXISTS)
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS child_streaks (
+        id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id VARCHAR NOT NULL REFERENCES users(id),
+        child_id TEXT NOT NULL,
+        current_streak INTEGER DEFAULT 0,
+        longest_streak INTEGER DEFAULT 0,
+        last_practice_date TEXT,
+        updated_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(user_id, child_id)
+      )
+    `);
+  } catch (e) {
+    console.error("Migration warning (child_streaks):", e);
+  }
+
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {

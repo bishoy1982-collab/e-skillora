@@ -1,9 +1,9 @@
 import {
   type User, type InsertWaitlist, type WaitlistSubmission,
-  type Session, waitlistSubmissions, users, sessions
+  type Session, type ChildStreak, waitlistSubmissions, users, sessions, childStreaks
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
   getUserById(id: string): Promise<User | undefined>;
@@ -16,6 +16,8 @@ export interface IStorage {
   updateSession(id: string, data: Partial<Session>): Promise<Session>;
   createWaitlistSubmission(submission: InsertWaitlist): Promise<WaitlistSubmission>;
   getWaitlistSubmissions(): Promise<WaitlistSubmission[]>;
+  getChildStreak(userId: string, childId: string): Promise<ChildStreak | undefined>;
+  upsertChildStreak(userId: string, childId: string, todayDate: string): Promise<ChildStreak>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -72,6 +74,37 @@ export class DatabaseStorage implements IStorage {
 
   async getWaitlistSubmissions(): Promise<WaitlistSubmission[]> {
     return await db.select().from(waitlistSubmissions);
+  }
+
+  async getChildStreak(userId: string, childId: string): Promise<ChildStreak | undefined> {
+    const [row] = await db.select().from(childStreaks)
+      .where(and(eq(childStreaks.userId, userId), eq(childStreaks.childId, childId)));
+    return row;
+  }
+
+  async upsertChildStreak(userId: string, childId: string, todayDate: string): Promise<ChildStreak> {
+    const existing = await this.getChildStreak(userId, childId);
+    if (!existing) {
+      const [row] = await db.insert(childStreaks).values({
+        userId, childId, currentStreak: 1, longestStreak: 1, lastPracticeDate: todayDate,
+      }).returning();
+      return row;
+    }
+    const last = existing.lastPracticeDate;
+    if (last === todayDate) return existing; // Already practiced today
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().slice(0, 10);
+
+    const newStreak = last === yesterdayStr ? (existing.currentStreak || 0) + 1 : 1;
+    const newLongest = Math.max(existing.longestStreak || 0, newStreak);
+
+    const [row] = await db.update(childStreaks)
+      .set({ currentStreak: newStreak, longestStreak: newLongest, lastPracticeDate: todayDate, updatedAt: new Date() })
+      .where(and(eq(childStreaks.userId, userId), eq(childStreaks.childId, childId)))
+      .returning();
+    return row;
   }
 }
 

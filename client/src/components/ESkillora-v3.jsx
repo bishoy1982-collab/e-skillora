@@ -12,7 +12,7 @@ import {
   RefreshCw, Star, Calendar, Lightbulb, ArrowRight, Trophy,
   RotateCcw, Eye, EyeOff, Settings, Users, CreditCard, LogOut,
   Shield, Clock, Check, Edit2, Minus, Mail, Bell, Award,
-  TrendingUp, Target, Zap, AlertCircle, HelpCircle
+  TrendingUp, Target, Zap, AlertCircle, HelpCircle, Flame, Sparkles
 } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────
@@ -89,6 +89,9 @@ input:-webkit-autofill,input:-webkit-autofill:focus{transition:background-color 
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 @keyframes slideUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:none}}
 @keyframes bounceIn{0%{opacity:0;transform:scale(.6)}60%{transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+@keyframes streakPop{0%{transform:scale(1)}40%{transform:scale(1.3)}70%{transform:scale(0.9)}100%{transform:scale(1)}}
+@keyframes masteryGlow{0%,100%{box-shadow:0 0 20px rgba(201,151,58,0.4)}50%{box-shadow:0 0 40px rgba(201,151,58,0.8)}}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--cream-dd);border-radius:999px}
@@ -1101,6 +1104,17 @@ function OverviewTab({ app }) {
   const hour = new Date().getHours();
   const greeting = hour<12?"Good morning":hour<17?"Good afternoon":"Good evening";
   const emoji = hour<12?"☀️":hour<17?"🌤️":"🌙";
+  const [streaks, setStreaks] = useState({});
+
+  useEffect(() => {
+    const children = app?.children || [];
+    children.forEach(child => {
+      fetch(`/api/streaks/${encodeURIComponent(child.id)}`)
+        .then(r => r.json())
+        .then(d => { if (d?.currentStreak != null) setStreaks(prev => ({...prev, [child.id]: d.currentStreak})); })
+        .catch(() => {});
+    });
+  }, [app?.children?.length]);
 
   return (
     <div style={{padding:"20px 20px 8px",display:"flex",flexDirection:"column",gap:20}}>
@@ -1109,7 +1123,7 @@ function OverviewTab({ app }) {
         <div>
           <p style={{fontSize:13,color:"var(--ink-ll)",fontWeight:500,marginBottom:2}}>{greeting} {emoji}</p>
           <h1 style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:22,color:"var(--forest)",letterSpacing:"-0.02em"}}>
-            Your Dashboard
+            Parent Dashboard
           </h1>
         </div>
       </div>
@@ -1117,14 +1131,43 @@ function OverviewTab({ app }) {
       {/* Children cards */}
       {(app?.children||[]).map((child,i)=>{
         const prog = (() => { try { const v = localStorage.getItem(`skillora-progress-${child.id}`); return v ? JSON.parse(v) : null; } catch { return null; } })();
+        const allDays = Object.values(prog?.completedDays||{});
         const daysCompleted = Object.keys(prog?.completedDays||{}).filter(k=>k.startsWith(prog?.currentLevel||child.level)).length;
-        const totalAcc = (() => {
-          const days = Object.values(prog?.completedDays||{});
-          if (!days.length) return null;
-          const tot = days.reduce((a,d)=>a+(d.total||0),0);
-          const cor = days.reduce((a,d)=>a+(d.correct||0),0);
-          return tot>0?Math.round(cor/tot*100):null;
-        })();
+
+        // Accuracy this week vs last week
+        const now = new Date();
+        const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7);
+        const twoWeeksAgo = new Date(now); twoWeeksAgo.setDate(now.getDate() - 14);
+        const thisWeekDays = allDays.filter(d=>d.date && new Date(d.date)>=weekAgo);
+        const lastWeekDays = allDays.filter(d=>d.date && new Date(d.date)>=twoWeeksAgo && new Date(d.date)<weekAgo);
+        const accThisWeek = thisWeekDays.length ? Math.round(thisWeekDays.reduce((s,d)=>s+d.correct,0)/thisWeekDays.reduce((s,d)=>s+d.total,0)*100) : null;
+        const accLastWeek = lastWeekDays.length ? Math.round(lastWeekDays.reduce((s,d)=>s+d.correct,0)/lastWeekDays.reduce((s,d)=>s+d.total,0)*100) : null;
+        const accDelta = accThisWeek!=null && accLastWeek!=null ? accThisWeek - accLastWeek : null;
+
+        // Struggling skills (wrong 2+ times = appears in wrongIds of 2+ days)
+        const wrongCounts = {};
+        allDays.forEach(d => { (d.wrongIds||[]).forEach(id => { wrongCounts[id] = (wrongCounts[id]||0) + 1; }); });
+        const strugglingIds = Object.entries(wrongCounts).filter(([,c])=>c>=2).map(([id])=>id);
+        // Get themes from question IDs (format: LEVEL-INDEX)
+        const strugglingThemes = [...new Set(strugglingIds.map(id => {
+          const level = id.split("-")[0];
+          const levelQs = prog?.levelQuestions?.[level] || [];
+          const q = levelQs.find(q => q.id === id);
+          return q?.theme;
+        }).filter(Boolean))].slice(0, 4);
+
+        // Time spent today and this week (in minutes)
+        const today = now.toISOString().slice(0,10);
+        const todayDays = allDays.filter(d=>d.date&&d.date.slice(0,10)===today);
+        const minsToday = todayDays.reduce((s,d)=>s+(d.mins||0),0);
+        const minsWeek = thisWeekDays.reduce((s,d)=>s+(d.mins||0),0);
+
+        // Level progress
+        const currentLevel = prog?.currentLevel || child.level;
+        const levelPct = Math.round(daysCompleted / 60 * 100);
+        const nextLevel = LEVEL_ORDER[LEVEL_ORDER.indexOf(currentLevel)+1];
+
+        const childStreak = streaks[child.id] || 0;
 
         return (
           <div key={child.id} className="sci" style={{animationDelay:`${i*0.1}s`}}>
@@ -1136,34 +1179,61 @@ function OverviewTab({ app }) {
                 </div>
                 <div style={{flex:1}}>
                   <div style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:18,color:"#fff"}}>{child.name}</div>
-                  <div style={{fontSize:12,color:"rgba(255,255,255,0.6)",marginTop:2}}>Age {child.age} · Level {prog?.currentLevel||child.level}</div>
+                  <div style={{fontSize:12,color:"rgba(255,255,255,0.6)",marginTop:2}}>Age {child.age} · Level {currentLevel}</div>
                 </div>
-                <span style={{...s.tag("cream"),fontSize:10}}>
-                  {gradeLabel(child.age)}
-                </span>
+                <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
+                  <span style={{...s.tag("cream"),fontSize:10}}>{gradeLabel(child.age)}</span>
+                  {childStreak > 0 && (
+                    <div style={{display:"flex",alignItems:"center",gap:4,background:"rgba(255,107,53,0.9)",borderRadius:"var(--r-full)",padding:"3px 8px"}}>
+                      <Flame size={12} color="#fff"/>
+                      <span style={{fontSize:12,fontWeight:800,color:"#fff"}}>{childStreak} day streak</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Progress Bar */}
-              <div style={{padding:"0 20px"}}>
-                <div style={{height:5,background:"rgba(28,58,47,0.08)",borderRadius:"var(--r-full)",overflow:"hidden",margin:"0"}}>
-                  <div style={{height:"100%",width:`${Math.min(100,Math.round(daysCompleted/60*100))}%`,background:"var(--grad-gold)",borderRadius:"var(--r-full)",transition:"width .8s cubic-bezier(.22,1,.36,1)"}}/>
+              {/* Level progress bar */}
+              <div style={{padding:"12px 20px 0"}}>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"var(--ink-ll)",marginBottom:4}}>
+                  <span>Level {currentLevel} progress</span>
+                  <span>{levelPct}% → {nextLevel ? `Level ${nextLevel}` : "Final Level"}</span>
+                </div>
+                <div style={{height:6,background:"rgba(28,58,47,0.08)",borderRadius:"var(--r-full)",overflow:"hidden"}}>
+                  <div style={{height:"100%",width:`${Math.min(100,levelPct)}%`,background:"var(--grad-gold)",borderRadius:"var(--r-full)",transition:"width .8s cubic-bezier(.22,1,.36,1)"}}/>
                 </div>
               </div>
 
-              {/* Stats */}
-              <div style={{padding:"14px 20px",display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+              {/* Stats grid */}
+              <div style={{padding:"12px 20px",display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:8}}>
                 {[
-                  {label:"Days Done",value:daysCompleted||0,icon:"📅",color:"var(--forest)"},
-                  {label:"Accuracy",value:totalAcc!=null?`${totalAcc}%`:"—",icon:"🎯",color:totalAcc>=80?"var(--green)":totalAcc>=60?"var(--amber)":"var(--coral)"},
-                  {label:"Level",value:prog?.currentLevel||child.level,icon:"⭐",color:"var(--gold)"},
+                  {label:"This Week",value:accThisWeek!=null?`${accThisWeek}%`:"—",sub:accDelta!=null?(accDelta>=0?`▲${accDelta}%`:`▼${Math.abs(accDelta)}%`):"",color:accThisWeek>=80?"var(--green)":accThisWeek>=60?"var(--amber)":"var(--coral)"},
+                  {label:"Days Done",value:daysCompleted||0,sub:"this level",color:"var(--forest)"},
+                  {label:"Today",value:minsToday>0?`${minsToday}m`:"—",sub:minsWeek>0?`${minsWeek}m week`:"",color:"var(--blue)"},
+                  {label:"Streak",value:childStreak>0?`${childStreak}🔥`:"0",sub:"days",color:"#FF6B35"},
                 ].map(stat=>(
-                  <div key={stat.label} style={{textAlign:"center",background:"var(--cream)",borderRadius:"var(--r-md)",padding:"10px 6px"}}>
-                    <div style={{fontSize:18,lineHeight:1,marginBottom:4}}>{stat.icon}</div>
-                    <div style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:17,color:stat.color,lineHeight:1}}>{stat.value}</div>
-                    <div style={{fontSize:10,color:"var(--ink-ll)",marginTop:3,fontWeight:500}}>{stat.label}</div>
+                  <div key={stat.label} style={{textAlign:"center",background:"var(--cream)",borderRadius:"var(--r-md)",padding:"8px 4px"}}>
+                    <div style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:16,color:stat.color,lineHeight:1}}>{stat.value}</div>
+                    {stat.sub&&<div style={{fontSize:9,color:stat.sub.startsWith("▲")?"var(--green)":stat.sub.startsWith("▼")?"var(--coral)":"var(--ink-ll)",marginTop:2,fontWeight:600}}>{stat.sub}</div>}
+                    <div style={{fontSize:9,color:"var(--ink-ll)",marginTop:2,fontWeight:500}}>{stat.label}</div>
                   </div>
                 ))}
               </div>
+
+              {/* Struggling skills */}
+              {strugglingThemes.length > 0 && (
+                <div style={{padding:"0 20px 14px"}}>
+                  <p style={{fontSize:11,fontWeight:700,color:"var(--coral)",marginBottom:6,display:"flex",alignItems:"center",gap:4}}>
+                    <AlertCircle size={11}/> Needs practice:
+                  </p>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                    {strugglingThemes.map(t=>(
+                      <span key={t} style={{fontSize:10,background:"rgba(232,96,76,0.1)",color:"var(--coral)",borderRadius:"var(--r-full)",padding:"3px 8px",fontWeight:600,border:"1px solid rgba(232,96,76,0.2)"}}>
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
             </div>
           </div>
@@ -1464,85 +1534,154 @@ function SettingsTab({ app, onLogout, refresh }) {
 // ④ CHILD PLACEMENT QUIZ (5–8 questions)
 // ─────────────────────────────────────────────────────────────
 export function ChildPlacement({ child, onComplete }) {
-  const N = 8;
-  // We need LEVEL_ORDER and generateLevelQuestions from the engine below
-  // They'll be available in the same file scope
-  const startLvl = getStartLevel(parseInt(child.age));
-  const [questions] = useState(()=>{
-    const lo = typeof LEVEL_ORDER!=="undefined" ? LEVEL_ORDER : ["A","B","C","D","E","F","G","H","I","J","K","L"];
-    const idx = lo.indexOf(startLvl);
-    const levels = [lo[Math.max(0,idx-1)], startLvl, lo[Math.min(lo.length-1,idx+1)]];
-    const pool = [];
-    levels.forEach(lv => {
-      const qs = typeof generateLevelQuestions==="function" ? generateLevelQuestions(lv) : [];
-      pool.push(...qs.slice(0,4));
-    });
-    return typeof shuffle==="function" ? shuffle(pool).slice(0,N) : pool.slice(0,N);
-  });
-  const [cur, setCur] = useState(0);
-  const [answers, setAnswers] = useState([]);
+  // 12-question adaptive placement starting at Grade 3 (Level D)
+  const LO = ["A","B","C","D","E","F","G","H","I","J","K","L"];
+  const START_LEVEL = "D"; // Grade 3
+  const TOTAL_Q = 12;
+
+  const [currentLevelIdx, setCurrentLevelIdx] = useState(LO.indexOf(START_LEVEL));
+  const [consecutiveCorrect, setConsecutiveCorrect] = useState(0);
+  const [consecutiveWrong, setConsecutiveWrong] = useState(0);
+  const [levelScores, setLevelScores] = useState({}); // levelIdx → {correct, total}
+  const [history, setHistory] = useState([]); // [{level, correct}]
+  const [answered, setAnswered] = useState(0);
   const [input, setInput] = useState("");
   const [done, setDone] = useState(false);
+  const [placedLevel, setPlacedLevel] = useState(null);
 
-  const submit = (ans) => {
-    const a = [...answers, ans];
-    if (cur+1>=questions.length) { setAnswers(a); setDone(true); }
-    else { setAnswers(a); setCur(cur+1); setInput(""); }
+  const [currentQ, setCurrentQ] = useState(() => {
+    const qs = typeof generateLevelQuestions==="function" ? generateLevelQuestions(LO[LO.indexOf(START_LEVEL)]) : [];
+    const pool = typeof shuffle==="function" ? shuffle(qs) : qs;
+    return pool.find(q=>q.type==="multiple") || pool[0];
+  });
+
+  const getNextQuestion = (levelIdx) => {
+    const level = LO[Math.max(0, Math.min(LO.length-1, levelIdx))];
+    const qs = typeof generateLevelQuestions==="function" ? generateLevelQuestions(level) : [];
+    const pool = typeof shuffle==="function" ? shuffle(qs) : qs;
+    // Prefer multiple choice for placement
+    return pool.find(q=>q.type==="multiple") || pool[0];
   };
 
-  if (done) {
-    const lo = typeof LEVEL_ORDER!=="undefined"?LEVEL_ORDER:["A","B","C","D","E","F","G","H","I","J","K","L"];
-    const correct = questions.filter((q,i)=>typeof isCorrect==="function"&&isCorrect(answers[i],q.answer)||answers[i]===q.answer).length;
-    const pct = correct/questions.length;
-    const idx = lo.indexOf(startLvl);
-    const assigned = pct>=0.8 ? lo[Math.min(idx+1,lo.length-1)] : pct>=0.5 ? startLvl : lo[Math.max(idx-1,0)];
-    const lInfo = typeof LEVEL_MAP!=="undefined" ? LEVEL_MAP[assigned] : { grade:"Math" };
+  const handleAnswer = (ans) => {
+    const correct = typeof isCorrect==="function" ? isCorrect(ans, currentQ.answer) : ans===currentQ.answer;
+    const newAnswered = answered + 1;
+    const newHistory = [...history, { levelIdx: currentLevelIdx, correct }];
+
+    // Update level scores
+    const prevScore = levelScores[currentLevelIdx] || {correct:0, total:0};
+    const newLevelScores = {
+      ...levelScores,
+      [currentLevelIdx]: { correct: prevScore.correct + (correct?1:0), total: prevScore.total + 1 }
+    };
+    setLevelScores(newLevelScores);
+    setHistory(newHistory);
+    setInput("");
+
+    if (newAnswered >= TOTAL_Q) {
+      // Determine placement: find the highest level where they scored ≥ 60%
+      let bestLevel = 0; // default to A
+      for (let idx = 0; idx < LO.length; idx++) {
+        const sc = newLevelScores[idx];
+        if (sc && sc.total > 0 && sc.correct/sc.total >= 0.6) {
+          bestLevel = idx;
+        }
+      }
+      setPlacedLevel(LO[bestLevel]);
+      setDone(true);
+      return;
+    }
+
+    // Adaptive logic
+    let nextLevelIdx = currentLevelIdx;
+    let newCC = consecutiveCorrect;
+    let newCW = consecutiveWrong;
+
+    if (correct) {
+      newCC++;
+      newCW = 0;
+      if (newCC >= 2) {
+        // 2 correct in a row → go harder
+        nextLevelIdx = Math.min(LO.length - 1, currentLevelIdx + 1);
+        newCC = 0;
+      }
+    } else {
+      newCW++;
+      newCC = 0;
+      if (newCW >= 2) {
+        // 2 wrong in a row → go easier
+        nextLevelIdx = Math.max(0, currentLevelIdx - 1);
+        newCW = 0;
+      }
+    }
+
+    setConsecutiveCorrect(newCC);
+    setConsecutiveWrong(newCW);
+    setCurrentLevelIdx(nextLevelIdx);
+    setAnswered(newAnswered);
+    setCurrentQ(getNextQuestion(nextLevelIdx));
+  };
+
+  if (done && placedLevel) {
+    const lInfo = typeof LEVEL_MAP!=="undefined" ? LEVEL_MAP[placedLevel] : { grade:"" };
+    const totalCorrect = Object.values(levelScores).reduce((s,v)=>s+v.correct,0);
+    const totalAnswered = Object.values(levelScores).reduce((s,v)=>s+v.total,0);
+    const pct = totalAnswered > 0 ? Math.round(totalCorrect/totalAnswered*100) : 0;
     return (
       <div style={{ minHeight:"100vh", background:"var(--forest)", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-        <div className="sci" style={{ maxWidth:420, width:"100%" }}>
+        <div className="sci" style={{ maxWidth:440, width:"100%" }}>
           <div style={{...s.card(36), textAlign:"center"}}>
             <div className="pop" style={{ fontSize:72, marginBottom:4 }}>🎯</div>
-            <h2 style={{ fontFamily:"'Fraunces',serif", fontSize:28, fontWeight:700, color:"var(--forest)", marginBottom:8 }}>Great job, {child.name}!</h2>
-            <p style={{ color:"var(--ink-l)", fontSize:15, marginBottom:24 }}>We found your perfect starting level!</p>
-            <div style={{ background:"var(--sage-ll)", borderRadius:"var(--r-lg)", padding:"20px 28px", marginBottom:28 }}>
+            <h2 style={{ fontFamily:"'Fraunces',serif", fontSize:28, fontWeight:700, color:"var(--forest)", marginBottom:8 }}>
+              Great job, {child.name}!
+            </h2>
+            <p style={{ color:"var(--ink-l)", fontSize:15, marginBottom:24 }}>
+              We tested {TOTAL_Q} questions across multiple levels and found your perfect starting point!
+            </p>
+            <div style={{ background:"var(--sage-ll)", borderRadius:"var(--r-lg)", padding:"20px 28px", marginBottom:16 }}>
               <p style={{ fontSize:13, color:"var(--ink-l)", marginBottom:4 }}>Your starting level</p>
-              <p style={{ fontFamily:"'Fraunces',serif", fontSize:48, fontWeight:800, color:"var(--forest)" }}>Level {assigned}</p>
+              <p style={{ fontFamily:"'Fraunces',serif", fontSize:48, fontWeight:800, color:"var(--forest)" }}>Level {placedLevel}</p>
               <p style={{ fontSize:15, color:"var(--forest)", fontWeight:600 }}>{lInfo?.grade||""}</p>
             </div>
-            <Btn onClick={()=>onComplete(assigned)} full size="lg" v="gold"><Play size={20}/> Start Learning! 🚀</Btn>
+            <div style={{ background:"var(--blue-ll)", borderRadius:"var(--r-md)", padding:"10px 16px", marginBottom:24, fontSize:13, color:"var(--blue)", lineHeight:1.5 }}>
+              📊 You answered {totalCorrect} of {TOTAL_Q} questions correctly ({pct}%).
+              {pct >= 80 ? " Excellent performance!" : pct >= 60 ? " Good effort!" : " We'll help you build from here!"}
+            </div>
+            <Btn onClick={()=>onComplete(placedLevel)} full size="lg" v="gold">
+              <Play size={20}/> Start Learning! 🚀
+            </Btn>
           </div>
         </div>
       </div>
     );
   }
 
-  const q = questions[cur] || {};
+  const q = currentQ || {};
+  const progressPct = Math.round(answered / TOTAL_Q * 100);
+
   return (
     <div style={{ minHeight:"100vh", background:"var(--forest)", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <div style={{ maxWidth:480, width:"100%" }}>
         {/* Header */}
         <div className="afu" style={{ textAlign:"center", marginBottom:24 }}>
           <div style={{ display:"flex", alignItems:"center", gap:10, justifyContent:"center", marginBottom:12 }}>
-            <div style={{ width:44,height:44, background:child.avatarBg, borderRadius:14, display:"flex", alignItems:"center", justifyContent:"center", fontSize:24 }}>{child.avatar}</div>
-            <p style={{ color:"var(--cream)", fontFamily:"'Fraunces',serif", fontSize:18, fontWeight:600 }}>Quick check-in, {child.name}!</p>
+            <div style={{ width:44,height:44, background:child.avatarBg||"#8BAF94", borderRadius:14, display:"flex", alignItems:"center", justifyContent:"center", fontSize:24 }}>{child.avatar}</div>
+            <p style={{ color:"var(--cream)", fontFamily:"'Fraunces',serif", fontSize:18, fontWeight:600 }}>Placement Test, {child.name}!</p>
           </div>
-          <p style={{ color:"var(--sage)", fontSize:14 }}>This helps us find your perfect level</p>
-          {/* Progress dots */}
-          <div style={{ display:"flex", gap:6, justifyContent:"center", marginTop:16 }}>
-            {questions.map((_,i)=>(
-              <div key={i} style={{ width:28, height:5, borderRadius:3, transition:"background .3s",
-                background: i<cur?"var(--gold)": i===cur?"var(--cream)":"rgba(255,255,255,0.2)" }}/>
-            ))}
+          <p style={{ color:"var(--sage)", fontSize:14 }}>12 adaptive questions to find your perfect level</p>
+          {/* Progress bar */}
+          <div style={{ marginTop:16, height:6, background:"rgba(255,255,255,0.15)", borderRadius:"var(--r-full)", overflow:"hidden" }}>
+            <div style={{ height:"100%", width:`${progressPct}%`, background:"var(--gold)", borderRadius:"var(--r-full)", transition:"width .3s" }}/>
           </div>
+          <p style={{ fontSize:12, color:"rgba(255,255,255,0.5)", marginTop:6 }}>Question {answered+1} of {TOTAL_Q} · Level {LO[currentLevelIdx]}</p>
         </div>
 
         <div className="sci" style={s.card(28)}>
-          <p style={{ fontSize:13, color:"var(--ink-ll)", marginBottom:4 }}>Question {cur+1} of {questions.length}</p>
           <h2 style={{ fontFamily:"'Fraunces',serif", fontSize:22, fontWeight:700, color:"var(--forest)", marginBottom:24 }}>{q.question}</h2>
           {q.type==="multiple" ? (
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
               {(q.options||[]).map((opt,i)=>(
-                <button key={i} onClick={()=>submit(opt)} style={{
+                <button key={i} onClick={()=>handleAnswer(opt)} style={{
                   padding:"15px 20px", borderRadius:"var(--r-md)", textAlign:"left", fontSize:16, fontWeight:500,
                   background:"var(--cream)", border:"2px solid var(--cream-dd)", cursor:"pointer",
                   fontFamily:"'Instrument Sans'", color:"var(--ink)", transition:"all .15s",
@@ -1555,10 +1694,12 @@ export function ChildPlacement({ child, onComplete }) {
           ) : (
             <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
               <input type="text" value={input} onChange={e=>setInput(e.target.value)}
-                onKeyDown={e=>{if(e.key==="Enter"&&input.trim())submit(input.trim());}} autoFocus placeholder="Type your answer…"
+                onKeyDown={e=>{if(e.key==="Enter"&&input.trim())handleAnswer(input.trim());}} autoFocus placeholder="Type your answer…"
                 style={{...s.input(), fontSize:22, fontFamily:"'Fraunces',serif", fontWeight:700 }}
                 onFocus={e=>e.target.style.borderColor="var(--forest)"} onBlur={e=>e.target.style.borderColor="var(--cream-dd)"}/>
-              <Btn onClick={()=>{if(input.trim())submit(input.trim());}} full disabled={!input.trim()}>Next <ArrowRight size={16}/></Btn>
+              <Btn onClick={()=>{if(input.trim())handleAnswer(input.trim());}} full disabled={!input.trim()}>
+                Next <ArrowRight size={16}/>
+              </Btn>
             </div>
           )}
         </div>
@@ -3239,6 +3380,143 @@ function ConceptIntro({ theme, onStart }) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// AI EXPLANATION PANEL (shown inline after wrong answer)
+// ─────────────────────────────────────────────────────────────
+function AIExplanationPanel({ question, wrongAnswer, attempts, aiText, loading, onTryAgain, onSkip }) {
+  const isStep = attempts >= 2;
+  return (
+    <div className="sci2" style={{
+      background: isStep
+        ? "linear-gradient(145deg,#EDE9FE,#DBEAFE)"
+        : "linear-gradient(145deg,#FEF3C7,#FFF7ED)",
+      border: `2px solid ${isStep ? "#A78BFA" : "#FCD34D"}`,
+      borderRadius: "var(--r-xl)",
+      padding: "20px",
+      display: "flex",
+      flexDirection: "column",
+      gap: 14,
+    }}>
+      {/* Header */}
+      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+        <div style={{
+          width:36, height:36, borderRadius:"var(--r-full)",
+          background: isStep ? "var(--purple)" : "var(--amber)",
+          display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0,
+        }}>
+          {isStep ? <Sparkles size={18} color="#fff"/> : <Lightbulb size={18} color="#fff"/>}
+        </div>
+        <div>
+          <p style={{ fontWeight:700, fontSize:14, color: isStep ? "var(--purple)" : "var(--amber)", lineHeight:1 }}>
+            {isStep ? "Let me break it down step-by-step" : "Oops! Here's what happened"}
+          </p>
+          <p style={{ fontSize:11, color:"var(--ink-ll)", marginTop:2 }}>Your answer: <strong>{wrongAnswer}</strong></p>
+        </div>
+      </div>
+
+      {/* AI explanation */}
+      <div style={{
+        background:"rgba(255,255,255,0.85)",
+        borderRadius:"var(--r-lg)",
+        padding:"14px 16px",
+        fontSize:14,
+        color:"var(--ink-m)",
+        lineHeight:1.65,
+        minHeight: 52,
+        display:"flex",
+        alignItems: loading ? "center" : "flex-start",
+        gap:8,
+      }}>
+        {loading ? (
+          <>
+            <div style={{ width:16, height:16, border:"2px solid var(--purple-l)", borderTopColor:"var(--purple)", borderRadius:"50%", animation:"spin .7s linear infinite", flexShrink:0 }}/>
+            <span style={{ color:"var(--ink-ll)", fontStyle:"italic" }}>Thinking of the best way to explain this…</span>
+          </>
+        ) : (
+          aiText || question.explanation
+        )}
+      </div>
+
+      {!loading && !isStep && question.hint && (
+        <div style={{ background:"rgba(201,151,58,0.1)", border:"1px solid var(--gold-l)", borderRadius:"var(--r-md)", padding:"10px 14px", fontSize:13, color:"var(--gold)" }}>
+          💡 Hint: {question.hint}
+        </div>
+      )}
+
+      {/* Action buttons */}
+      <div style={{ display:"flex", gap:10 }}>
+        <button onClick={onTryAgain} style={{
+          ...s.btn("learn", true, false, "md"),
+          flex:2,
+        }}>
+          ↩ Try Again
+        </button>
+        <button onClick={onSkip} style={{
+          ...s.btn("ghost", false, false, "md"),
+          flex:1,
+          color:"var(--ink-ll)",
+          fontSize:13,
+        }}>
+          Skip →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// MASTERY CELEBRATION OVERLAY
+// ─────────────────────────────────────────────────────────────
+function MasteryCelebration({ level, nextLevel, onContinue }) {
+  const confetti = Array.from({length:20}, (_,i) => ({
+    id:i,
+    left: `${Math.random()*100}%`,
+    color: ["#C9973A","#E8604C","#7C3AED","#16A34A","#2563EB"][i%5],
+    delay: `${Math.random()*1.5}s`,
+    size: 8 + Math.random()*8,
+  }));
+  return (
+    <div style={{
+      position:"fixed", inset:0, zIndex:999,
+      background:"rgba(28,58,47,0.85)",
+      display:"flex", alignItems:"center", justifyContent:"center",
+      backdropFilter:"blur(8px)",
+    }}>
+      {confetti.map(c => (
+        <div key={c.id} style={{
+          position:"absolute", top:-20, left:c.left,
+          width:c.size, height:c.size,
+          borderRadius: c.id%2===0 ? "50%" : "2px",
+          background:c.color,
+          animation:`confettiFall 3s ${c.delay} ease-in forwards`,
+        }}/>
+      ))}
+      <div className="pop" style={{
+        background:"white", borderRadius:"var(--r-2xl)",
+        padding:"40px 32px", maxWidth:380, width:"90%",
+        textAlign:"center",
+        animation:"masteryGlow 2s ease-in-out infinite",
+      }}>
+        <div style={{ fontSize:64, marginBottom:8, animation:"streakPop .5s ease" }}>🏆</div>
+        <h2 style={{ fontFamily:"'Fraunces',serif", fontSize:28, fontWeight:800, color:"var(--forest)", marginBottom:8 }}>
+          Level {level} Mastered!
+        </h2>
+        <p style={{ color:"var(--ink-l)", fontSize:15, marginBottom:24, lineHeight:1.5 }}>
+          You scored 80%+ and unlocked <strong>Level {nextLevel}</strong>!
+          That's incredible work. 🎉
+        </p>
+        <div style={{ background:"var(--sage-ll)", borderRadius:"var(--r-lg)", padding:"16px", marginBottom:24 }}>
+          <p style={{ fontSize:12, color:"var(--ink-ll)", marginBottom:4 }}>Advancing to</p>
+          <p style={{ fontFamily:"'Fraunces',serif", fontSize:40, fontWeight:800, color:"var(--forest)", lineHeight:1 }}>Level {nextLevel}</p>
+        </div>
+        <button onClick={onContinue} style={{ ...s.btn("gold", true, false, "lg"), gap:8 }}>
+          <Play size={18}/> Start Level {nextLevel}!
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // 8. WORKSHEET RESULTS SCREEN
 // ─────────────────────────────────────────────────────────────
 function WorksheetResults({ questions, answers, dayNumber, onContinue, isRetry }) {
@@ -3354,7 +3632,7 @@ function LevelAssessment({ level, onPass, onFail }) {
   if (done) {
     const correct = questions.filter((q,i) => isCorrect(answers[i], q.answer)).length;
     const pct = Math.round(correct / questions.length * 100);
-    const passed = pct >= 85;
+    const passed = pct >= 80;
     return (
       <div style={{minHeight:"100svh",background:"linear-gradient(145deg,#EDE9FE,#EFF6FF)",display:"flex",alignItems:"center",justifyContent:"center",padding:"20px 16px"}}>
         <div className="sci" style={{...s.card(28),maxWidth:440,width:"100%",textAlign:"center",boxShadow:"var(--shadow-xl)"}}>
@@ -3365,13 +3643,13 @@ function LevelAssessment({ level, onPass, onFail }) {
             {passed?"Level Complete! 🎉":"Not Quite Yet..."}
           </h2>
           <p style={{color:"var(--ink-l)",fontSize:14,marginBottom:20}}>
-            {passed?"You've mastered this level!":"You need 85% to advance. Let's practice more!"}
+            {passed?"You've mastered this level!":"You need 80% to advance. Let's practice more!"}
           </p>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:20}}>
             {[
               {label:"Score",value:`${pct}%`,bg:passed?"var(--green-ll)":"rgba(220,38,38,0.08)",color:passed?"var(--green)":"#DC2626"},
               {label:"Correct",value:`${correct}/${questions.length}`,bg:"var(--blue-ll)",color:"var(--blue)"},
-              {label:"Required",value:"85%",bg:passed?"var(--purple-ll)":"var(--amber-ll)",color:passed?"var(--purple)":"var(--amber)"},
+              {label:"Required",value:"80%",bg:passed?"var(--purple-ll)":"var(--amber-ll)",color:passed?"var(--purple)":"var(--amber)"},
             ].map(st=>(
               <div key={st.label} style={{background:st.bg,borderRadius:"var(--r-lg)",padding:"12px 8px",textAlign:"center"}}>
                 <p style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:800,color:st.color,lineHeight:1}}>{st.value}</p>
@@ -3386,7 +3664,7 @@ function LevelAssessment({ level, onPass, onFail }) {
           ) : (
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               <div style={{background:"var(--amber-ll)",border:"1px solid var(--amber-l)",borderRadius:"var(--r-md)",padding:"10px 14px",fontSize:13,color:"var(--amber)"}}>
-                You scored {pct}%. Need {85-pct}% more to pass. Keep practicing!
+                You scored {pct}%. Need {80-pct}% more to pass. Keep practicing!
               </div>
               <button onClick={onFail} style={{...s.btn("danger",true,false,"lg"),gap:8}}>
                 <RotateCcw size={16}/> Repeat Level from Start
@@ -3412,7 +3690,7 @@ function LevelAssessment({ level, onPass, onFail }) {
               <span style={{color:"var(--ink-ll)",fontSize:13,marginLeft:8}}>Q {cur+1} of {questions.length}</span>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:12,fontWeight:700,color:"var(--amber)",background:"var(--amber-ll)",border:"1px solid var(--amber-l)",borderRadius:"var(--r-full)",padding:"4px 10px"}}>Need 85% to pass</span>
+              <span style={{fontSize:12,fontWeight:700,color:"var(--amber)",background:"var(--amber-ll)",border:"1px solid var(--amber-l)",borderRadius:"var(--r-full)",padding:"4px 10px"}}>Need 80% to pass</span>
               <button onClick={()=>setWb(true)} style={{width:34,height:34,background:"var(--purple-ll)",border:"none",borderRadius:"var(--r-sm)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--purple)"}}>
                 <PenTool size={15}/>
               </button>
@@ -3508,6 +3786,51 @@ function LearnApp({ studentName, startLevel, onBackToHome, childData }) {
   const [pendingTheme, setPendingTheme] = useState(null);
   const [isRetryDay, setIsRetryDay] = useState(false);
 
+  // AI Explanation Engine state
+  const [wrongAttempts, setWrongAttempts] = useState({}); // questionId → count
+  const [pendingWrong, setPendingWrong] = useState(null); // {question, wrongAnswer} | null
+  const [aiExplain, setAiExplain] = useState(null); // {loading, text} | null
+
+  // Streak & session tracking
+  const [streak, setStreak] = useState(0);
+  const sessionStartRef = useRef(null);
+
+  // Mastery celebration
+  const [masteryCelebration, setMasteryCelebration] = useState(null); // {level, nextLevel} | null
+
+  // Load streak on mount / child change
+  useEffect(() => {
+    const childId = childData?.id;
+    if (!childId) return;
+    fetch(`/api/streaks/${encodeURIComponent(childId)}`)
+      .then(r => r.json())
+      .then(d => { if (d?.currentStreak != null) setStreak(d.currentStreak); })
+      .catch(() => {});
+  }, [childData?.id]);
+
+  const fetchAIExplanation = async (question, wrongAnswer, isSecondAttempt) => {
+    setAiExplain({ loading: true, text: null });
+    const systemPrompt = `You are a warm, encouraging math tutor for K-12 students. When a student gets a question wrong:
+- Be kind and supportive, never discouraging
+- ${isSecondAttempt ? "Give a clear step-by-step breakdown to guide them" : "Briefly explain why their answer was incorrect and give a helpful hint"}
+- Keep it concise (2-4 sentences)
+- NEVER reveal the exact answer directly`;
+    const userMsg = isSecondAttempt
+      ? `Question: "${question.question}"\nCorrect answer concept: ${question.explanation}\nStudent answered: "${wrongAnswer}" (2nd wrong attempt). Give a step-by-step breakdown without revealing the answer.`
+      : `Question: "${question.question}"\nStudent answered: "${wrongAnswer}"\nCorrect answer is: ${question.answer}\nExplain why they're wrong and guide them with a hint. Don't say the exact answer.`;
+    try {
+      const res = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [{ role: "user", content: userMsg }], systemPrompt }),
+      });
+      const data = await res.json();
+      setAiExplain({ loading: false, text: data.text || question.explanation });
+    } catch {
+      setAiExplain({ loading: false, text: question.explanation });
+    }
+  };
+
   const save = (newProg) => { setProgress(newProg); saveState(getProgressKey(subject), newProg); };
 
   const handleSubjectChange = (newSubject) => {
@@ -3583,9 +3906,11 @@ function LearnApp({ studentName, startLevel, onBackToHome, childData }) {
       setPendingTheme(result.theme);
       setView("concept");
     } else {
+      sessionStartRef.current = Date.now();
       setIsRetryDay(result.retryCount > 0);
       setWorksheetQ(result.questions);
       setCurQ(0); setAnswers([]); setInputVal(""); setShowHint(false);
+      setWrongAttempts({}); setPendingWrong(null); setAiExplain(null);
       setView("worksheet");
     }
   };
@@ -3599,23 +3924,60 @@ function LearnApp({ studentName, startLevel, onBackToHome, childData }) {
     save(newProg);
     setPendingTheme(null);
     // Now build the worksheet
+    sessionStartRef.current = Date.now();
     const result = buildDailyWorksheet(newProg);
     setIsRetryDay((result.retryCount || 0) > 0);
     setWorksheetQ(result.questions || []);
     setCurQ(0); setAnswers([]); setInputVal(""); setShowHint(false);
+    setWrongAttempts({}); setPendingWrong(null); setAiExplain(null);
     setView("worksheet");
   };
 
   const submitAnswer = (ans) => {
+    const q = worksheetQ[curQ];
+    const correct = isCorrect(ans, q.answer);
+
+    if (!correct) {
+      // Wrong answer — show AI explanation, don't advance
+      const attempts = (wrongAttempts[q.id] || 0) + 1;
+      setWrongAttempts(prev => ({ ...prev, [q.id]: attempts }));
+      setPendingWrong({ question: q, wrongAnswer: ans });
+      setAiExplain(null);
+      fetchAIExplanation(q, ans, attempts >= 2);
+      setInputVal("");
+      return;
+    }
+
+    // Correct — advance
     const newA = [...answers, ans];
+    setPendingWrong(null);
+    setAiExplain(null);
+    setInputVal("");
+    setShowHint(false);
     if (curQ + 1 >= worksheetQ.length) {
       setAnswers(newA);
       setView("results");
     } else {
       setAnswers(newA);
-      setCurQ(curQ+1);
-      setInputVal("");
-      setShowHint(false);
+      setCurQ(curQ + 1);
+    }
+  };
+
+  const skipQuestion = () => {
+    // Record the wrong answer and advance
+    const q = worksheetQ[curQ];
+    const wrongAns = pendingWrong?.wrongAnswer || "";
+    const newA = [...answers, wrongAns];
+    setPendingWrong(null);
+    setAiExplain(null);
+    setInputVal("");
+    setShowHint(false);
+    if (curQ + 1 >= worksheetQ.length) {
+      setAnswers(newA);
+      setView("results");
+    } else {
+      setAnswers(newA);
+      setCurQ(curQ + 1);
     }
   };
 
@@ -3627,16 +3989,33 @@ function LearnApp({ studentName, startLevel, onBackToHome, childData }) {
     // Collect wrong question IDs for retry tomorrow
     const wrongIds = worksheetQ.filter((q,i) => !isCorrect(answers[i], q.answer)).map(q => q.id);
     const correct = worksheetQ.length - wrongIds.length;
+    const sessionMins = sessionStartRef.current
+      ? Math.round((Date.now() - sessionStartRef.current) / 60000)
+      : 0;
 
     const newProg = {
       ...progress,
       completedDays: {
         ...progress.completedDays,
-        [dayKey]: { correct, total: worksheetQ.length, wrongIds }
+        [dayKey]: { correct, total: worksheetQ.length, wrongIds, date: new Date().toISOString(), mins: sessionMins }
       },
       pendingRetry: { ...progress.pendingRetry, [dayKey]: wrongIds },
       dayNumber: day + 1,
     };
+
+    // Update streak in DB
+    const childId = childData?.id;
+    if (childId) {
+      const today = new Date().toISOString().slice(0, 10);
+      fetch("/api/streaks/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ childId }),
+      })
+        .then(r => r.json())
+        .then(d => { if (d?.currentStreak != null) setStreak(d.currentStreak); })
+        .catch(() => {});
+    }
 
     // Check if level is complete (60 days done)
     if (day >= DAYS_PER_LEVEL) {
@@ -3658,7 +4037,11 @@ function LearnApp({ studentName, startLevel, onBackToHome, childData }) {
       pendingRetry: {},
     };
     save(newProg);
-    setView("dashboard");
+    if (nextLevel !== progress.currentLevel) {
+      setMasteryCelebration({ level: progress.currentLevel, nextLevel });
+    } else {
+      setView("dashboard");
+    }
   };
 
   const handleAssessmentFail = () => {
@@ -3703,6 +4086,14 @@ function LearnApp({ studentName, startLevel, onBackToHome, childData }) {
     />;
   }
 
+  if (masteryCelebration) {
+    return <MasteryCelebration
+      level={masteryCelebration.level}
+      nextLevel={masteryCelebration.nextLevel}
+      onContinue={() => { setMasteryCelebration(null); setView("dashboard"); }}
+    />;
+  }
+
   if (view === "concept") return <ConceptIntro theme={pendingTheme} onStart={handleConceptDone}/>;
 
   if (view === "results") return (
@@ -3743,10 +4134,24 @@ function LearnApp({ studentName, startLevel, onBackToHome, childData }) {
             </div>
           </div>
           {/* Question card */}
-          <div style={{...s.card(22)}}>
+          <div style={{...s.card(22), opacity: pendingWrong ? 0.7 : 1, transition:"opacity .2s"}}>
             <p style={{fontSize:11,color:"var(--ink-ll)",fontWeight:600,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:6}}>{q.difficulty}</p>
             <h2 style={{fontFamily:"'Fraunces',serif",fontSize:20,fontWeight:700,color:"var(--ink)",marginBottom:20,lineHeight:1.4}}>{q.question}</h2>
-            {q.type==="multiple" ? (
+            {pendingWrong ? (
+              // Showing AI explanation — display answer choices disabled
+              <div style={{display:"flex",flexDirection:"column",gap:8,pointerEvents:"none",opacity:0.5}}>
+                {q.type==="multiple" ? q.options.map((opt,i) => (
+                  <div key={i} style={{
+                    padding:"14px 18px",borderRadius:"var(--r-md)",fontSize:15,fontWeight:500,
+                    background: opt===pendingWrong.wrongAnswer ? "rgba(232,96,76,0.12)" : "var(--cream)",
+                    border: `2px solid ${opt===pendingWrong.wrongAnswer ? "var(--coral)" : "var(--cream-dd)"}`,
+                    color:"var(--ink)",
+                  }}>{opt}</div>
+                )) : (
+                  <div style={{...s.input(),fontSize:18,fontFamily:"'Fraunces',serif",fontWeight:600,padding:"14px 16px",color:"var(--coral)"}}>{pendingWrong.wrongAnswer}</div>
+                )}
+              </div>
+            ) : q.type==="multiple" ? (
               <div style={{display:"flex",flexDirection:"column",gap:10}}>
                 {q.options.map((opt,i)=>(
                   <button key={i} onClick={()=>submitAnswer(opt)} style={{
@@ -3780,6 +4185,23 @@ function LearnApp({ studentName, startLevel, onBackToHome, childData }) {
               </div>
             )}
           </div>
+
+          {/* AI Explanation Panel — shown after wrong answer */}
+          {pendingWrong && aiExplain !== undefined && (
+            <AIExplanationPanel
+              question={pendingWrong.question}
+              wrongAnswer={pendingWrong.wrongAnswer}
+              attempts={wrongAttempts[pendingWrong.question.id] || 1}
+              aiText={aiExplain?.text}
+              loading={aiExplain?.loading ?? true}
+              onTryAgain={() => {
+                setPendingWrong(null);
+                setAiExplain(null);
+                setInputVal("");
+              }}
+              onSkip={skipQuestion}
+            />
+          )}
         </div>
         <Whiteboard open={wb} onClose={()=>setWb(false)}/>
       </div>
@@ -3813,9 +4235,24 @@ function LearnApp({ studentName, startLevel, onBackToHome, childData }) {
               <p style={{fontSize:12,color:"var(--ink-ll)"}}>{info.grade}</p>
             </div>
           </div>
-          <button onClick={onBackToHome} style={{width:38,height:38,borderRadius:"var(--r-md)",background:"rgba(255,255,255,0.85)",border:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--ink-l)",flexShrink:0,boxShadow:"var(--shadow-xs)"}}>
-            <Home size={18}/>
-          </button>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            {/* Streak badge */}
+            {streak > 0 && (
+              <div style={{
+                display:"flex",alignItems:"center",gap:5,
+                background:"linear-gradient(135deg,#FF6B35,#FF8C00)",
+                borderRadius:"var(--r-full)",padding:"6px 12px",
+                boxShadow:"0 4px 16px rgba(255,107,53,0.35)",
+                animation:"streakPop .5s ease",
+              }}>
+                <Flame size={16} color="#fff"/>
+                <span style={{fontWeight:800,fontSize:15,color:"#fff",fontFamily:"'Fraunces',serif"}}>{streak}</span>
+              </div>
+            )}
+            <button onClick={onBackToHome} style={{width:38,height:38,borderRadius:"var(--r-md)",background:"rgba(255,255,255,0.85)",border:"1px solid rgba(0,0,0,0.07)",display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"var(--ink-l)",flexShrink:0,boxShadow:"var(--shadow-xs)"}}>
+              <Home size={18}/>
+            </button>
+          </div>
         </div>
 
         {/* Subject selector */}
@@ -3866,6 +4303,47 @@ function LearnApp({ studentName, startLevel, onBackToHome, childData }) {
             </div>
           ))}
         </div>
+
+        {/* Mastery Gate — 80% threshold progress bar */}
+        {totalQ > 0 && (
+          <div style={{...s.card(16)}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+              <div style={{display:"flex",alignItems:"center",gap:6}}>
+                <Target size={15} color={overallAcc>=80?"var(--green)":"var(--amber)"}/>
+                <span style={{fontWeight:700,fontSize:13,color:"var(--ink-m)"}}>Level Mastery Gate</span>
+              </div>
+              <span style={{
+                fontSize:12,fontWeight:700,
+                color:overallAcc>=80?"var(--green)":"var(--amber)",
+                background:overallAcc>=80?"var(--green-ll)":"var(--amber-ll)",
+                borderRadius:"var(--r-full)",padding:"3px 10px",
+              }}>{overallAcc>=80?"✓ On Track":"Need 80%"}</span>
+            </div>
+            <div style={{position:"relative",height:10,background:"var(--cream-dd)",borderRadius:"var(--r-full)",overflow:"visible",marginBottom:8}}>
+              <div style={{
+                height:"100%",
+                width:`${Math.min(100,overallAcc)}%`,
+                background:overallAcc>=80?"var(--grad-success)":"linear-gradient(90deg,#F59E0B,#D97706)",
+                borderRadius:"var(--r-full)",
+                transition:"width .8s cubic-bezier(.22,1,.36,1)",
+              }}/>
+              {/* 80% marker */}
+              <div style={{
+                position:"absolute",top:-4,left:"80%",
+                width:3,height:18,background:"var(--forest)",borderRadius:2,
+              }}/>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"var(--ink-ll)"}}>
+              <span>Your accuracy: <strong style={{color:overallAcc>=80?"var(--green)":"var(--amber)"}}>{overallAcc}%</strong></span>
+              <span>🎯 Goal: 80% to advance</span>
+            </div>
+            {overallAcc < 80 && totalQ >= 50 && (
+              <div style={{marginTop:8,padding:"8px 12px",background:"rgba(217,119,6,0.08)",borderRadius:"var(--r-md)",fontSize:12,color:"var(--amber)"}}>
+                Keep going! You need {80-overallAcc}% more accuracy to unlock Level {LEVEL_ORDER[LEVEL_ORDER.indexOf(level)+1]||"next"}.
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Retry notice */}
         {(()=>{

@@ -351,7 +351,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         },
         body: JSON.stringify({
           model: "claude-haiku-4-5-20251001",
-          max_tokens: 220,
+          max_tokens: 450,
           system: systemPrompt,
           messages,
         }),
@@ -369,6 +369,36 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     } catch (err) {
       console.error("AI chat error:", err);
       return res.status(500).json({ message: "AI tutor error" });
+    }
+  });
+
+  // ─── STREAK ROUTES ───────────────────────────────────────────
+
+  // Update streak when a child completes a practice day
+  app.post("/api/streaks/update", requireAuth, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const { childId } = req.body;
+      if (!childId) return res.status(400).json({ message: "childId required" });
+      const today = new Date().toISOString().slice(0, 10);
+      const streak = await storage.upsertChildStreak(userId, childId, today);
+      return res.json(streak);
+    } catch (err) {
+      console.error("Streak update error:", err);
+      return res.status(500).json({ message: "Failed to update streak" });
+    }
+  });
+
+  // Get streak for a child
+  app.get("/api/streaks/:childId", requireAuth, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const { childId } = req.params;
+      const streak = await storage.getChildStreak(userId, childId);
+      return res.json(streak || { currentStreak: 0, longestStreak: 0, lastPracticeDate: null });
+    } catch (err) {
+      console.error("Streak fetch error:", err);
+      return res.status(500).json({ message: "Failed to fetch streak" });
     }
   });
 
