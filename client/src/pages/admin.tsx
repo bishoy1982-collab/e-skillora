@@ -547,6 +547,8 @@ function Dashboard({ password }: { password: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [now, setNow] = useState(new Date());
+  const [wiping, setWiping] = useState(false);
+  const [wipeMsg, setWipeMsg] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -576,6 +578,30 @@ function Dashboard({ password }: { password: string }) {
   function signOut() {
     sessionStorage.removeItem("admin_secret");
     window.location.reload();
+  }
+
+  async function wipeDb() {
+    const input = window.prompt(
+      '⚠️  This will permanently delete ALL users, sessions, streaks, and questions.\n\nType "CONFIRM" to proceed:'
+    );
+    if (input !== "CONFIRM") return;
+    setWiping(true);
+    setWipeMsg("");
+    try {
+      const res = await fetch("/api/admin/wipe-db", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Admin-Secret": password },
+        body: JSON.stringify({ confirm: "CONFIRM" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      setWipeMsg("✓ Database wiped. All data cleared.");
+      setMetrics(null);
+    } catch (e: any) {
+      setWipeMsg(`Error: ${e.message}`);
+    } finally {
+      setWiping(false);
+    }
   }
 
   const dateStr = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
@@ -634,6 +660,18 @@ function Dashboard({ password }: { password: string }) {
             ↻ Refresh
           </button>
           <button
+            onClick={wipeDb}
+            disabled={wiping}
+            style={{
+              background: "rgba(185,28,28,0.25)", color: "#FCA5A5",
+              border: "1px solid rgba(185,28,28,0.4)",
+              borderRadius: 6, padding: "6px 14px", fontSize: 13,
+              cursor: wiping ? "not-allowed" : "pointer", opacity: wiping ? 0.6 : 1,
+            }}
+          >
+            {wiping ? "Wiping…" : "⚠ Wipe DB"}
+          </button>
+          <button
             onClick={signOut}
             style={{
               background: "transparent", color: "rgba(255,255,255,0.7)",
@@ -646,6 +684,16 @@ function Dashboard({ password }: { password: string }) {
           </button>
         </div>
       </div>
+
+      {wipeMsg && (
+        <div style={{
+          background: wipeMsg.startsWith("Error") ? "#FEE2E2" : "#DCFCE7",
+          color: wipeMsg.startsWith("Error") ? "#B91C1C" : "#15803D",
+          padding: "12px 32px", fontSize: 14, fontWeight: 600, textAlign: "center",
+        }}>
+          {wipeMsg}
+        </div>
+      )}
 
       {/* Main Content */}
       <div style={{ maxWidth: 1300, margin: "0 auto", padding: "28px 24px", display: "flex", flexDirection: "column", gap: 20 }}>

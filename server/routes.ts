@@ -686,5 +686,33 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  // POST /api/admin/wipe-db — requires ADMIN_SECRET + confirmation token "CONFIRM"
+  app.post("/api/admin/wipe-db", requireAdmin, async (req, res) => {
+    if (req.body?.confirm !== "CONFIRM") {
+      return res.status(400).json({ message: "Send { confirm: 'CONFIRM' } to proceed" });
+    }
+    try {
+      await pool.query(`
+        TRUNCATE TABLE
+          user_sessions_store,
+          app_sessions,
+          child_streaks,
+          custom_questions,
+          waitlist_submissions,
+          users
+        CASCADE
+      `);
+      await pool.query(`
+        INSERT INTO app_config (key, value) VALUES ('daily_q', '50'), ('days_per_level', '60')
+        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+      `);
+      console.log("⚠️  Database wiped by admin");
+      return res.json({ ok: true, message: "All data wiped and config re-seeded." });
+    } catch (err: any) {
+      console.error("Wipe DB error:", err);
+      return res.status(500).json({ message: err.message });
+    }
+  });
+
   return httpServer;
 }
