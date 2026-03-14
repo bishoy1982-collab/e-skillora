@@ -78,6 +78,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
 
       (req.session as any).userId = user.id;
+      await new Promise<void>((resolve, reject) => req.session.save(e => e ? reject(e) : resolve()));
       return res.status(201).json({
         id: user.id, email: user.email, name: user.name,
         subscriptionStatus: user.subscriptionStatus, trialEndsAt: user.trialEndsAt,
@@ -99,6 +100,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       // Hardcoded test account — never hits the DB
       if (email.toLowerCase() === TEST_EMAIL && password === TEST_PASSWORD) {
         (req.session as any).userId = TEST_USER_ID;
+        await new Promise<void>((resolve, reject) => req.session.save(e => e ? reject(e) : resolve()));
         return res.json(TEST_USER);
       }
 
@@ -119,6 +121,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
 
       (req.session as any).userId = user.id;
+      await new Promise<void>((resolve, reject) => req.session.save(e => e ? reject(e) : resolve()));
       return res.json({
         id: user.id, email: user.email, name: user.name,
         subscriptionStatus: user.subscriptionStatus, trialEndsAt: user.trialEndsAt,
