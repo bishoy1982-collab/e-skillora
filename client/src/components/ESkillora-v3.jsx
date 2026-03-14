@@ -123,9 +123,8 @@ function getAvatarOptions(age) {
 }
 
 const PLANS = [
-  { id:"starter", label:"Starter", price:9,  cap:1, desc:"1 child · All 12 levels", badge:null,         color:"var(--sage)",   dark:"var(--forest)" },
-  { id:"family",  label:"Family",  price:15, cap:2, desc:"2 children · Everything", badge:"Most Popular", color:"var(--forest)", dark:"var(--cream)" },
-  { id:"pro",     label:"Pro",     price:22, cap:2, desc:"2 children + analytics",  badge:null,          color:"var(--gold)",   dark:"var(--forest)" },
+  { id:"1child",  label:"1 Child",    price:10.99, cap:1, desc:"1 child · All 12 levels · AI tutor",   badge:null,          color:"var(--sage)",   dark:"var(--forest)" },
+  { id:"2child",  label:"2 Children", price:14.99, cap:2, desc:"2 children · All 12 levels · AI tutor", badge:"Best Value",  color:"var(--forest)", dark:"var(--cream)" },
 ];
 
 function getStartLevel(age) {
@@ -397,11 +396,11 @@ function OB_Account({ onNext }) {
 
 // Step 2 — Plan
 function OB_Plan({ onNext }) {
-  const [sel, setSel] = useState("family");
+  const [sel, setSel] = useState("1child");
   return (
     <div className="afu" style={s.card(36)}>
       <h1 style={{ fontFamily:"'Fraunces',serif", fontSize:30, fontWeight:700, color:"var(--forest)", marginBottom:6 }}>Choose a plan</h1>
-      <p style={{ color:"var(--ink-l)", fontSize:15, marginBottom:28 }}>Try free for <strong>3 days</strong> · Cancel anytime</p>
+      <p style={{ color:"var(--ink-l)", fontSize:15, marginBottom:28 }}>Try free for <strong>3 days</strong> · From $10.99/mo · Cancel anytime</p>
 
       <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:28 }}>
         {PLANS.map(p => {

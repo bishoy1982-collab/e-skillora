@@ -24,8 +24,29 @@ interface SignupPageProps {
   onNavigate: (page: "landing" | "login" | "app") => void;
 }
 
+const PLANS = [
+  {
+    id: "1child" as const,
+    label: "1 Child",
+    price: "$10.99",
+    desc: "Perfect for one learner",
+    features: ["1 child profile", "All 12 grade levels", "AI tutor & explanations", "Daily streaks & progress"],
+    color: "#2A5240",
+  },
+  {
+    id: "2child" as const,
+    label: "2 Children",
+    price: "$14.99",
+    desc: "Great for siblings",
+    features: ["2 child profiles", "All 12 grade levels", "AI tutor & explanations", "Daily streaks & progress"],
+    badge: "Best Value",
+    color: "#1C3A2F",
+  },
+];
+
 export default function SignupPage({ onNavigate }: SignupPageProps) {
   const { signup } = useAuth();
+  const [selectedPlan, setSelectedPlan] = useState<"1child" | "2child">("1child");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -44,8 +65,7 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
     setLoading(true);
     try {
       await signup(email, name, password);
-      // Immediately redirect to Stripe checkout to collect card for 3-day trial
-      const res = await apiRequest("POST", "/api/stripe/checkout", {});
+      const res = await apiRequest("POST", "/api/stripe/checkout", { planType: selectedPlan });
       const { url } = await res.json();
       window.location.href = url;
     } catch (err: any) {
@@ -114,7 +134,7 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
           backdropFilter: "blur(8px)",
         }}>
           <Star size={12} fill="#E5B96A" color="#E5B96A" />
-          3 DAYS FREE · THEN FROM $9/MONTH
+          3 DAYS FREE · THEN FROM $10.99/MONTH
         </div>
 
         {/* Card */}
@@ -131,9 +151,57 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
           }}>
             Create your account
           </h1>
-          <p style={{ color: "#9A9A9A", fontSize: 14, marginBottom: 24, lineHeight: 1.5 }}>
+          <p style={{ color: "#9A9A9A", fontSize: 14, marginBottom: 20, lineHeight: 1.5 }}>
             Start your child's free 3-day trial today
           </p>
+
+          {/* Plan selector */}
+          <div style={{ marginBottom: 24 }}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "#6B6B6B", marginBottom: 10, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+              Choose your plan
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              {PLANS.map(plan => {
+                const active = selectedPlan === plan.id;
+                return (
+                  <button
+                    key={plan.id}
+                    type="button"
+                    onClick={() => setSelectedPlan(plan.id)}
+                    style={{
+                      position: "relative",
+                      padding: "14px 12px",
+                      borderRadius: 14,
+                      border: `2px solid ${active ? plan.color : "rgba(224,217,207,0.9)"}`,
+                      background: active ? plan.color : "rgba(255,255,255,0.85)",
+                      cursor: "pointer",
+                      textAlign: "left" as const,
+                      transition: "all 0.15s",
+                      fontFamily: "'Instrument Sans', sans-serif",
+                    }}
+                  >
+                    {plan.badge && (
+                      <span style={{
+                        position: "absolute", top: -9, right: 8,
+                        background: "#C9973A", color: "#1C3A2F",
+                        fontSize: 9, fontWeight: 800, padding: "2px 8px",
+                        borderRadius: 9999, letterSpacing: "0.03em",
+                      }}>{plan.badge}</span>
+                    )}
+                    <p style={{ fontSize: 13, fontWeight: 700, color: active ? "#fff" : "#1C3A2F", marginBottom: 2 }}>
+                      {plan.label}
+                    </p>
+                    <p style={{ fontFamily: "'Fraunces', serif", fontSize: 20, fontWeight: 800, color: active ? "#E5B96A" : "#1C3A2F", lineHeight: 1 }}>
+                      {plan.price}<span style={{ fontSize: 11, fontWeight: 400, color: active ? "rgba(255,255,255,0.65)" : "#9A9A9A" }}>/mo</span>
+                    </p>
+                    <p style={{ fontSize: 11, color: active ? "rgba(255,255,255,0.7)" : "#9A9A9A", marginTop: 3 }}>
+                      {plan.desc}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           {error && (
             <div style={{
@@ -248,7 +316,7 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
             {[
               "3 days completely free",
               "Full access to all 12 grade levels",
-              "Cancel before trial ends — no charge",
+              `Then from $10.99/month — cancel anytime`,
             ].map((item) => (
               <div key={item} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <CheckCircle size={15} color="#16A34A" />

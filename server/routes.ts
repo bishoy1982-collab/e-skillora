@@ -13,8 +13,22 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 const PRICE_ID = process.env.STRIPE_PRICE_ID!;
+const PRICE_ID_1_CHILD = process.env.STRIPE_PRICE_ID_1_CHILD || process.env.STRIPE_PRICE_ID!;
+const PRICE_ID_2_CHILD = process.env.STRIPE_PRICE_ID_2_CHILD || process.env.STRIPE_PRICE_ID!;
 const TRIAL_DAYS = 3;
 const APP_URL = process.env.APP_URL || "https://e-skillora.com";
+
+// Hardcoded internal test account — bypasses DB and Stripe entirely
+const TEST_EMAIL = "bishoy@e-skillora.org";
+const TEST_PASSWORD = "kingbishoy";
+const TEST_USER_ID = "TEST_ADMIN";
+const TEST_USER = {
+  id: TEST_USER_ID,
+  email: TEST_EMAIL,
+  name: "Bishoy (Admin)",
+  subscriptionStatus: "active",
+  trialEndsAt: null,
+};
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
 
 function requireAuth(req: Request, res: Response, next: Function) {
@@ -81,6 +95,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
       const { email, password } = parsed.data;
 
+      // Hardcoded test account — never hits the DB
+      if (email.toLowerCase() === TEST_EMAIL && password === TEST_PASSWORD) {
+        (req.session as any).userId = TEST_USER_ID;
+        return res.json(TEST_USER);
+      }
+
       const user = await storage.getUserByEmail(email);
       if (!user) {
         return res.status(401).json({ message: "Invalid email or password" });
@@ -110,6 +130,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
   app.get("/api/auth/me", requireAuth, async (req, res) => {
     try {
+      // Test account never hits the DB
+      if ((req.session as any).userId === TEST_USER_ID) {
+        return res.json(TEST_USER);
+      }
+
       const user = await storage.getUserById((req.session as any).userId);
       if (!user) {
         (req.session as any).userId = null;
@@ -194,6 +219,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
   // Create checkout session with 3-day trial (card required upfront)
   app.post("/api/stripe/checkout", requireAuth, async (req, res) => {
     try {
+      // Test account should never reach Stripe
+      if ((req.session as any).userId === TEST_USER_ID) {
+        return res.status(400).json({ message: "Test account does not need a subscription" });
+      }
+
       const user = await storage.getUserById((req.session as any).userId);
       if (!user) return res.status(401).json({ message: "Unauthorized" });
 
@@ -202,9 +232,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         return res.status(400).json({ message: "You already have an active subscription" });
       }
 
+      // Select price based on plan type
+      const planType = req.body?.planType; // "1child" | "2child"
+      const selectedPrice = planType === "2child" ? PRICE_ID_2_CHILD : PRICE_ID_1_CHILD;
+
       const sessionParams: Stripe.Checkout.SessionCreateParams = {
         payment_method_types: ["card"],
-        line_items: [{ price: PRICE_ID, quantity: 1 }],
+        line_items: [{ price: selectedPrice, quantity: 1 }],
         mode: "subscription",
         success_url: `${APP_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${APP_URL}/app`,
