@@ -3,7 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db, pool } from "./db";
 import { insertUserSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } from "@shared/schema";
-import { users, sessions, waitlistSubmissions } from "@shared/schema";
+import { users, sessions, waitlistSubmissions, customQuestions, appConfig } from "@shared/schema";
+import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import Stripe from "stripe";
@@ -534,6 +535,131 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       });
     } catch (err: any) {
       console.error("Admin metrics error:", err);
+      return res.status(500).json({ message: err.message });
+    }
+  });
+
+  // ─── PUBLIC CONFIG ───────────────────────────────────────────
+
+  app.get("/api/config", async (req, res) => {
+    try {
+      const rows = await db.select().from(appConfig);
+      const cfg: Record<string, string> = {};
+      for (const r of rows) cfg[r.key] = r.value;
+      return res.json({ daily_q: parseInt(cfg.daily_q || "50"), days_per_level: parseInt(cfg.days_per_level || "60") });
+    } catch (err: any) {
+      return res.json({ daily_q: 50, days_per_level: 60 });
+    }
+  });
+
+  // ─── ADMIN QUESTION MANAGEMENT ───────────────────────────────
+
+  function requireAdmin(req: Request, res: Response, next: Function) {
+    const secret = req.headers["x-admin-secret"];
+    if (!process.env.ADMIN_SECRET || secret !== process.env.ADMIN_SECRET) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    next();
+  }
+
+  // GET /api/admin/questions?level=A&subject=math
+  app.get("/api/admin/questions", requireAdmin, async (req, res) => {
+    try {
+      const { level, subject } = req.query as { level?: string; subject?: string };
+      let query = db.select().from(customQuestions);
+      const rows = await query;
+      const filtered = rows.filter(r =>
+        (!level || r.level === level) &&
+        (!subject || r.subject === subject)
+      );
+      return res.json(filtered);
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
+    }
+  });
+
+  // POST /api/admin/questions
+  app.post("/api/admin/questions", requireAdmin, async (req, res) => {
+    try {
+      const { level, subject, theme, difficulty, type, question, options, answer, hint, explanation, overrideId } = req.body;
+      if (!level || !question || !answer) return res.status(400).json({ message: "level, question, answer required" });
+      const [row] = await db.insert(customQuestions).values({
+        level, subject: subject || "math", theme, difficulty: difficulty || "medium",
+        type: type || "input", question, options, answer, hint, explanation, overrideId,
+      }).returning();
+      return res.status(201).json(row);
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
+    }
+  });
+
+  // PUT /api/admin/questions/:id
+  app.put("/api/admin/questions/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { level, subject, theme, difficulty, type, question, options, answer, hint, explanation, overrideId } = req.body;
+      const [row] = await db.update(customQuestions)
+        .set({ level, subject, theme, difficulty, type, question, options, answer, hint, explanation, overrideId, updatedAt: new Date() })
+        .where(eq(customQuestions.id, id))
+        .returning();
+      if (!row) return res.status(404).json({ message: "Not found" });
+      return res.json(row);
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
+    }
+  });
+
+  // DELETE /api/admin/questions/:id
+  app.delete("/api/admin/questions/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await db.delete(customQuestions).where(eq(customQuestions.id, id));
+      return res.json({ ok: true });
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
+    }
+  });
+
+  // POST /api/admin/questions/bulk — import array of questions
+  app.post("/api/admin/questions/bulk", requireAdmin, async (req, res) => {
+    try {
+      const items: any[] = req.body;
+      if (!Array.isArray(items) || items.length === 0) return res.status(400).json({ message: "Send an array of questions" });
+      const inserted = await db.insert(customQuestions).values(
+        items.map(q => ({
+          level: q.level, subject: q.subject || "math", theme: q.theme,
+          difficulty: q.difficulty || "medium", type: q.type || "input",
+          question: q.question, options: q.options, answer: q.answer,
+          hint: q.hint, explanation: q.explanation, overrideId: q.overrideId,
+        }))
+      ).returning();
+      return res.status(201).json({ inserted: inserted.length });
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
+    }
+  });
+
+  // GET /api/admin/config
+  app.get("/api/admin/config", requireAdmin, async (req, res) => {
+    try {
+      const rows = await db.select().from(appConfig);
+      const cfg: Record<string, string> = {};
+      for (const r of rows) cfg[r.key] = r.value;
+      return res.json(cfg);
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
+    }
+  });
+
+  // PUT /api/admin/config  { key: string, value: string }
+  app.put("/api/admin/config", requireAdmin, async (req, res) => {
+    try {
+      const { key, value } = req.body;
+      if (!key || value === undefined) return res.status(400).json({ message: "key and value required" });
+      await db.insert(appConfig).values({ key, value: String(value) })
+        .onConflictDoUpdate({ target: appConfig.key, set: { value: String(value), updatedAt: new Date() } });
+      return res.json({ ok: true, key, value });
+    } catch (err: any) {
       return res.status(500).json({ message: err.message });
     }
   });

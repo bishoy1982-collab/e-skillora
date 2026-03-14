@@ -611,6 +611,17 @@ function Dashboard({ password }: { password: string }) {
             <div style={{ fontSize: 13, color: "#FFFFFF", fontWeight: 500 }}>{dateStr}</div>
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{timeStr}</div>
           </div>
+          <a
+            href="/questions-admin"
+            style={{
+              background: "rgba(255,255,255,0.12)", color: "#FFFFFF",
+              border: "1px solid rgba(255,255,255,0.2)",
+              borderRadius: 6, padding: "6px 14px", fontSize: 13,
+              cursor: "pointer", textDecoration: "none",
+            }}
+          >
+            Question Manager
+          </a>
           <button
             onClick={load}
             style={{

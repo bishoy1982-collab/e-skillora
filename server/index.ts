@@ -75,7 +75,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Ensure child_streaks table exists (safe CREATE IF NOT EXISTS)
+  // Ensure additional tables exist (safe CREATE IF NOT EXISTS)
   try {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS child_streaks (
@@ -89,8 +89,38 @@ app.use((req, res, next) => {
         UNIQUE(user_id, child_id)
       )
     `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS custom_questions (
+        id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+        level TEXT NOT NULL,
+        subject TEXT NOT NULL DEFAULT 'math',
+        theme TEXT,
+        difficulty TEXT DEFAULT 'medium',
+        type TEXT NOT NULL DEFAULT 'input',
+        question TEXT NOT NULL,
+        options TEXT,
+        answer TEXT NOT NULL,
+        hint TEXT,
+        explanation TEXT,
+        override_id TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS app_config (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    // Seed default config values
+    await pool.query(`
+      INSERT INTO app_config (key, value) VALUES ('daily_q', '50'), ('days_per_level', '60')
+      ON CONFLICT (key) DO NOTHING
+    `);
   } catch (e) {
-    console.error("Migration warning (child_streaks):", e);
+    console.error("Migration warning:", e);
   }
 
   await registerRoutes(httpServer, app);

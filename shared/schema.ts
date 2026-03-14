@@ -37,6 +37,29 @@ export const childStreaks = pgTable("child_streaks", {
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (t) => [unique("child_streaks_user_child").on(t.userId, t.childId)]);
 
+export const customQuestions = pgTable("custom_questions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  level: text("level").notNull(),
+  subject: text("subject").notNull().default("math"), // math | ela
+  theme: text("theme"),
+  difficulty: text("difficulty").default("medium"),
+  type: text("type").notNull().default("input"), // multiple | input
+  question: text("question").notNull(),
+  options: text("options"), // JSON array string for multiple choice
+  answer: text("answer").notNull(),
+  hint: text("hint"),
+  explanation: text("explanation"),
+  overrideId: text("override_id"), // if set, replaces the generated question with this ID
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const appConfig = pgTable("app_config", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const waitlistSubmissions = pgTable("waitlist_submissions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -77,3 +100,5 @@ export type Session = typeof sessions.$inferSelect;
 export type InsertWaitlist = z.infer<typeof insertWaitlistSchema>;
 export type WaitlistSubmission = typeof waitlistSubmissions.$inferSelect;
 export type ChildStreak = typeof childStreaks.$inferSelect;
+export type CustomQuestion = typeof customQuestions.$inferSelect;
+export type AppConfig = typeof appConfig.$inferSelect;
