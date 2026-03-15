@@ -343,10 +343,32 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
 
         {/* Footer */}
         <footer style={{
-          borderTop: "1px solid #E0D9CF", padding: "24px 20px",
-          textAlign: "center", fontSize: 13, color: "#9A9A9A",
+          borderTop: "1px solid #E0D9CF", padding: "32px 20px",
+          textAlign: "center", background: "#fff",
         }}>
-          &copy; {new Date().getFullYear()} e-Skillora · E-Skillora LLC · All rights reserved.
+          <div style={{ display: "flex", justifyContent: "center", gap: 24, flexWrap: "wrap", marginBottom: 14 }}>
+            <button
+              onClick={() => onNavigate("contact")}
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#6B6B6B", fontFamily: "'Instrument Sans', sans-serif" }}
+            >
+              Contact Us
+            </button>
+            <button
+              onClick={() => onNavigate("terms")}
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#6B6B6B", fontFamily: "'Instrument Sans', sans-serif" }}
+            >
+              Terms &amp; Conditions
+            </button>
+            <a
+              href="mailto:contact@eskillor.org"
+              style={{ fontSize: 13, color: "#6B6B6B", textDecoration: "none", fontFamily: "'Instrument Sans', sans-serif" }}
+            >
+              contact@eskillor.org
+            </a>
+          </div>
+          <p style={{ fontSize: 12, color: "#BCBCBC", fontFamily: "'Instrument Sans', sans-serif" }}>
+            &copy; {new Date().getFullYear()} E-Skillora LLC · All rights reserved.
+          </p>
         </footer>
       </div>
     </>

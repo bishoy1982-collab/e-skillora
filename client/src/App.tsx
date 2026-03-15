@@ -7,12 +7,14 @@ import SuccessPage from "./pages/success";
 import ResetPasswordPage from "./pages/reset-password";
 import AdminPage from "./pages/admin";
 import QuestionsAdminPage from "./pages/questions-admin";
+import ContactPage from "./pages/contact";
+import TermsPage from "./pages/terms";
 import PaywallModal from "./components/PaywallModal";
 import TrialBanner from "./components/TrialBanner";
 import ESkillora from "./components/ESkillora-v3";
 import { apiRequest } from "./lib/queryClient";
 
-type Page = "landing" | "login" | "signup" | "app" | "success" | "reset-password" | "admin" | "questions-admin";
+type Page = "landing" | "login" | "signup" | "app" | "success" | "reset-password" | "admin" | "questions-admin" | "contact" | "terms";
 
 function getInitialPage(): Page {
   const path = window.location.pathname;
@@ -23,6 +25,8 @@ function getInitialPage(): Page {
   if (path === "/reset-password") return "reset-password";
   if (path === "/admin") return "admin";
   if (path === "/questions-admin") return "questions-admin";
+  if (path === "/contact") return "contact";
+  if (path === "/terms") return "terms";
   return "landing";
 }
 
@@ -180,6 +184,7 @@ function AppRouter() {
     const paths: Record<Page, string> = {
       landing: "/", login: "/login", signup: "/signup",
       app: "/app", success: "/success", "reset-password": "/reset-password", admin: "/admin", "questions-admin": "/questions-admin",
+      contact: "/contact", terms: "/terms",
     };
     window.history.pushState({}, "", paths[page]);
   }, [page]);
@@ -233,6 +238,8 @@ function AppRouter() {
   if (page === "signup") return <SignupPage onNavigate={(p) => navigate(p as Page)} />;
   if (page === "success") return <SuccessPage onNavigate={() => navigate("app")} />;
   if (page === "reset-password") return <ResetPasswordPage onNavigate={() => navigate("login")} />;
+  if (page === "contact") return <ContactPage onNavigate={(p) => navigate(p as Page)} />;
+  if (page === "terms") return <TermsPage onNavigate={(p) => navigate(p as Page)} />;
 
   // App page
   if (page === "app") {
