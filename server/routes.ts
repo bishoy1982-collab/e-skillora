@@ -256,10 +256,13 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         sessionParams.customer_email = user.email;
       }
 
+      // Founder test account always gets a 100-year trial (never charged)
+      const isFounder = user.email.toLowerCase() === "founder@founder.com";
+
       // Add trial if user has no active Stripe subscription yet
       const noStripeSubscription = !user.stripeSubscriptionId;
-      if (noStripeSubscription) {
-        sessionParams.subscription_data = { trial_period_days: TRIAL_DAYS };
+      if (isFounder || noStripeSubscription) {
+        sessionParams.subscription_data = { trial_period_days: isFounder ? 36500 : TRIAL_DAYS };
       }
 
       const session = await stripe.checkout.sessions.create(sessionParams);

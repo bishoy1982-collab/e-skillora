@@ -90,7 +90,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             boxShadow: "0 2px 8px rgba(28,58,47,0.08)",
           }}>
             <Star size={12} fill="#C9973A" color="#C9973A" />
-            3-DAY FREE TRIAL · THEN FROM $9/MONTH
+            3-DAY FREE TRIAL · THEN FROM $9.99/MONTH
           </div>
 
           <h1 className="fade-up d1" style={{
@@ -294,11 +294,15 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
               ALL FEATURES INCLUDED
             </div>
             <div style={{ marginBottom: 8 }}>
+              <span style={{ fontSize: 13, color: "#8BAF94", marginRight: 4 }}>from</span>
               <span style={{ fontFamily: "'Fraunces', serif", fontSize: 48, fontWeight: 800, color: "white", letterSpacing: "-0.03em" }}>
-                $9
+                $9.99
               </span>
               <span style={{ fontSize: 15, color: "#8BAF94", marginLeft: 4 }}>/month</span>
             </div>
+            <p style={{ color: "#8BAF94", fontSize: 13, marginBottom: 4 }}>
+              1 child · $9.99/mo &nbsp;·&nbsp; 2 children · $14.99/mo
+            </p>
             <p style={{ color: "#8BAF94", fontSize: 14, marginBottom: 28 }}>
               Start with a 3-day free trial. Cancel anytime.
             </p>

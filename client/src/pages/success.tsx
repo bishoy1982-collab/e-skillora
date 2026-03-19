@@ -26,9 +26,10 @@ export default function SuccessPage({ onNavigate }: SuccessPageProps) {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []);
 
-  // Stop polling once subscription is active
+  // Stop polling once subscription is confirmed (trial or active)
   useEffect(() => {
-    if (user?.subscriptionStatus === "active" && timerRef.current) {
+    const status = user?.subscriptionStatus;
+    if ((status === "active" || status === "trial") && timerRef.current) {
       clearInterval(timerRef.current);
     }
   }, [user?.subscriptionStatus]);
@@ -68,22 +69,31 @@ export default function SuccessPage({ onNavigate }: SuccessPageProps) {
         }}>
           You're all set! 🎉
         </h1>
-        <p style={{ color: "#6B6B6B", fontSize: 17, maxWidth: 420, lineHeight: 1.6, marginBottom: 36 }}>
-          Your subscription is active. Your child can start learning right now — all 12 grade levels unlocked.
-        </p>
-
-        <button
-          onClick={() => onNavigate("app")}
-          style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            fontFamily: "'Instrument Sans', sans-serif", fontWeight: 700,
-            fontSize: 17, background: "#1C3A2F", color: "white",
-            border: "none", borderRadius: 14, padding: "16px 32px",
-            cursor: "pointer", transition: "all 0.2s",
-          }}
-        >
-          Start Learning <ArrowRight size={18} />
-        </button>
+        {(() => {
+          const confirmed = user?.subscriptionStatus === "active" || user?.subscriptionStatus === "trial";
+          return (
+            <>
+              <p style={{ color: "#6B6B6B", fontSize: 17, maxWidth: 420, lineHeight: 1.6, marginBottom: 36 }}>
+                {confirmed
+                  ? "Your subscription is active. Your child can start learning right now — all 12 grade levels unlocked."
+                  : "Confirming your subscription, just a moment…"}
+              </p>
+              <button
+                onClick={() => onNavigate("app")}
+                disabled={!confirmed}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  fontFamily: "'Instrument Sans', sans-serif", fontWeight: 700,
+                  fontSize: 17, background: confirmed ? "#1C3A2F" : "#9A9A9A", color: "white",
+                  border: "none", borderRadius: 14, padding: "16px 32px",
+                  cursor: confirmed ? "pointer" : "not-allowed", transition: "all 0.2s",
+                }}
+              >
+                {confirmed ? <><span>Start Learning</span><ArrowRight size={18} /></> : "Please wait…"}
+              </button>
+            </>
+          );
+        })()}
       </div>
     </>
   );
