@@ -196,9 +196,9 @@ function AppRouter() {
     return () => window.removeEventListener("popstate", handler);
   }, []);
 
-  // Redirect logged-in users away from auth pages
+  // Redirect logged-in users away from landing/auth pages to app
   useEffect(() => {
-    if (!loading && user && (page === "login" || page === "signup")) {
+    if (!loading && user && (page === "landing" || page === "login" || page === "signup")) {
       setPage("app");
     }
   }, [user, loading, page]);
