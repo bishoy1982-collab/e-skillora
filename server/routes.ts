@@ -273,6 +273,44 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  // Confirm checkout session and sync subscription status (called from /success page)
+  app.post("/api/stripe/confirm-session", requireAuth, async (req, res) => {
+    try {
+      const user = await storage.getUserById((req.session as any).userId);
+      if (!user) return res.status(401).json({ message: "Unauthorized" });
+
+      const { sessionId } = req.body;
+      if (!sessionId) return res.status(400).json({ message: "Missing sessionId" });
+
+      const session = await stripe.checkout.sessions.retrieve(sessionId, {
+        expand: ["subscription"],
+      });
+
+      // Verify this session belongs to this user
+      if (session.metadata?.userId !== user.id) {
+        return res.status(403).json({ message: "Session does not belong to this user" });
+      }
+
+      const sub = session.subscription as Stripe.Subscription | null;
+      if (sub) {
+        const status = sub.status === "trialing" ? "trial" : "active";
+        const trialEndsAt = sub.trial_end ? new Date(sub.trial_end * 1000) : null;
+        await storage.updateUser(user.id, {
+          stripeSubscriptionId: sub.id,
+          stripeCustomerId: session.customer as string,
+          subscriptionStatus: status,
+          trialEndsAt,
+        });
+        return res.json({ status });
+      }
+
+      return res.json({ status: user.subscriptionStatus });
+    } catch (err: any) {
+      console.error("Confirm session error:", err);
+      return res.status(500).json({ message: "Failed to confirm session" });
+    }
+  });
+
   // Get subscription management portal
   app.post("/api/stripe/portal", requireAuth, async (req, res) => {
     try {
