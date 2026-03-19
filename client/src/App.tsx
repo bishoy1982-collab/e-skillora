@@ -186,7 +186,9 @@ function AppRouter() {
       app: "/app", success: "/success", "reset-password": "/reset-password", admin: "/admin", "questions-admin": "/questions-admin",
       contact: "/contact", terms: "/terms",
     };
-    window.history.pushState({}, "", paths[page]);
+    // Preserve query params for the success page (Stripe puts session_id there)
+    const search = page === "success" ? window.location.search : "";
+    window.history.pushState({}, "", paths[page] + search);
   }, [page]);
 
   // Handle browser back/forward
