@@ -91,6 +91,15 @@ app.use((req, res, next) => {
     `);
     // Schema migrations — add missing columns safely
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS plan_type TEXT`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS beta_tester BOOLEAN DEFAULT false`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS beta_granted_at TIMESTAMP`);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS beta_invites (
+        id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+        email TEXT NOT NULL UNIQUE,
+        granted_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
     await pool.query(`
       CREATE TABLE IF NOT EXISTS children (
         id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),

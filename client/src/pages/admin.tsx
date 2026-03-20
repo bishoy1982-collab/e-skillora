@@ -40,6 +40,77 @@ interface RecentUser {
   hasStripe: boolean;
 }
 
+// ─── Grant Beta Card ──────────────────────────────────────────────────────────
+
+function GrantBetaCard({ password }: { password: string }) {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<{ ok: boolean; message: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function handleGrant(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setLoading(true);
+    setStatus(null);
+    try {
+      const res = await fetch("/api/admin/grant-beta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Admin-Secret": password },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const data = await res.json();
+      setStatus({ ok: res.ok, message: data.message });
+      if (res.ok) setEmail("");
+    } catch (e: any) {
+      setStatus({ ok: false, message: e.message });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Card>
+      <SectionTitle>Grant Beta Trial</SectionTitle>
+      <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 16 }}>
+        Grants a 30-day free trial and sends a welcome email. Works for existing accounts and pre-grants for users who haven't signed up yet.
+      </p>
+      <form onSubmit={handleGrant} style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <input
+          type="email"
+          placeholder="beta@example.com"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+          style={{
+            flex: 1, minWidth: 240, padding: "9px 14px", fontSize: 14,
+            border: `1.5px solid ${BORDER}`, borderRadius: 6, outline: "none", color: "#111827",
+          }}
+        />
+        <button
+          type="submit"
+          disabled={loading || !email.trim()}
+          style={{
+            padding: "9px 20px", background: loading ? "#9CA3AF" : DARK_GREEN,
+            color: "#fff", border: "none", borderRadius: 6, fontSize: 14,
+            fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", whiteSpace: "nowrap",
+          }}
+        >
+          {loading ? "Sending…" : "Grant 30-Day Trial"}
+        </button>
+      </form>
+      {status && (
+        <div style={{
+          marginTop: 12, padding: "8px 14px", borderRadius: 6, fontSize: 13, fontWeight: 500,
+          background: status.ok ? "#DCFCE7" : "#FEE2E2",
+          color: status.ok ? "#15803D" : "#B91C1C",
+        }}>
+          {status.ok ? "✓ " : "✗ "}{status.message}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 interface AdminChild {
   name: string;
   age: number | null;
@@ -57,6 +128,7 @@ interface AdminUser {
   stripeCustomerId: string | null;
   trialEndsAt: string | null;
   createdAt: string | null;
+  betaTester: boolean | null;
   children: AdminChild[];
 }
 
@@ -505,7 +577,16 @@ function UsersTable({ users, password }: { users: AdminUser[]; password: string 
                       {isOpen ? "▾" : "▸"}
                     </td>
                     <td style={{ padding: "10px 12px", color: "#374151", fontFamily: "monospace", fontSize: 12 }}>{u.email}</td>
-                    <td style={{ padding: "10px 12px", fontWeight: 600, color: "#111827" }}>{u.name || "—"}</td>
+                    <td style={{ padding: "10px 12px", fontWeight: 600, color: "#111827" }}>
+                      {u.name || "—"}
+                      {u.betaTester && (
+                        <span style={{
+                          marginLeft: 7, fontSize: 10, fontWeight: 700, letterSpacing: "0.04em",
+                          background: "#EDE9FE", color: "#6D28D9", borderRadius: 4, padding: "2px 6px",
+                          verticalAlign: "middle",
+                        }}>BETA</span>
+                      )}
+                    </td>
                     <td style={{ padding: "10px 12px", color: "#6B7280" }}>
                       {u.planType === "2child" ? "2 Children" : u.planType === "1child" ? "1 Child" : "—"}
                     </td>
@@ -876,7 +957,10 @@ function Dashboard({ password }: { password: string }) {
             {/* Row 4: Daily Signups Chart */}
             <DailySignupsChart data={metrics.dailySignups} />
 
-            {/* Row 5: All Users */}
+            {/* Row 5: Grant Beta */}
+            <GrantBetaCard password={password} />
+
+            {/* Row 6: All Users */}
             <UsersTable users={allUsers} password={password} />
 
             {/* Footer */}

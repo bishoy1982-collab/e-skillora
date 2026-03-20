@@ -15,6 +15,8 @@ export const users = pgTable("users", {
   planType: text("plan_type"), // "1child" | "2child"
   passwordResetToken: text("password_reset_token"),
   passwordResetExpires: timestamp("password_reset_expires"),
+  betaTester: boolean("beta_tester").default(false),
+  betaGrantedAt: timestamp("beta_granted_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -59,6 +61,12 @@ export const appConfig = pgTable("app_config", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const betaInvites = pgTable("beta_invites", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull().unique(),
+  grantedAt: timestamp("granted_at").defaultNow(),
 });
 
 export const children = pgTable("children", {
@@ -114,3 +122,4 @@ export type ChildStreak = typeof childStreaks.$inferSelect;
 export type CustomQuestion = typeof customQuestions.$inferSelect;
 export type AppConfig = typeof appConfig.$inferSelect;
 export type Child = typeof children.$inferSelect;
+export type BetaInvite = typeof betaInvites.$inferSelect;

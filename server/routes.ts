@@ -3,7 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db, pool } from "./db";
 import { insertUserSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } from "@shared/schema";
-import { users, sessions, waitlistSubmissions, customQuestions, appConfig, children } from "@shared/schema";
+import { users, sessions, waitlistSubmissions, customQuestions, appConfig, children, betaInvites } from "@shared/schema";
+import { sendBetaWelcomeEmail, sendPasswordResetEmail } from "./email";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
@@ -90,15 +91,27 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       }
 
       const user = await storage.createUser({ email, name, passwordHash });
-      if (stripeCustomerId) {
-        await storage.updateUser(user.id, { stripeCustomerId });
+
+      // Check if this email has a pre-granted beta invite
+      const [betaInvite] = await db.select().from(betaInvites).where(eq(betaInvites.email, email.toLowerCase()));
+      const updateData: Record<string, any> = {};
+      if (stripeCustomerId) updateData.stripeCustomerId = stripeCustomerId;
+      if (betaInvite) {
+        updateData.betaTester = true;
+        updateData.betaGrantedAt = betaInvite.grantedAt;
+        updateData.subscriptionStatus = "trial";
+        updateData.trialEndsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        await db.delete(betaInvites).where(eq(betaInvites.email, email.toLowerCase()));
       }
+      const finalUser = Object.keys(updateData).length > 0
+        ? await storage.updateUser(user.id, updateData)
+        : user;
 
       (req.session as any).userId = user.id;
       await new Promise<void>((resolve, reject) => req.session.save(e => e ? reject(e) : resolve()));
       return res.status(201).json({
-        id: user.id, email: user.email, name: user.name,
-        subscriptionStatus: user.subscriptionStatus, trialEndsAt: user.trialEndsAt,
+        id: finalUser.id, email: finalUser.email, name: finalUser.name,
+        subscriptionStatus: finalUser.subscriptionStatus, trialEndsAt: finalUser.trialEndsAt,
       });
     } catch (err: any) {
       console.error("Signup error:", err);
@@ -200,10 +213,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         passwordResetExpires: expires,
       });
       const resetUrl = `${APP_URL}/reset-password?token=${token}`;
-      // TODO: send email with resetUrl (e.g. SendGrid, Resend, nodemailer). For now log in dev.
-      if (process.env.NODE_ENV !== "production") {
-        console.log("[dev] Password reset link:", resetUrl);
-      }
+      await sendPasswordResetEmail(email, resetUrl);
       return res.json({ message: "If an account exists for this email, you will receive a password reset link." });
     } catch (err: any) {
       console.error("Forgot password error:", err);
@@ -794,6 +804,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         stripeCustomerId: u.stripeCustomerId,
         trialEndsAt: u.trialEndsAt,
         createdAt: u.createdAt,
+        betaTester: u.betaTester,
         children: (childrenByUserId[u.id] || []).map(c => ({
           name: c.name,
           age: c.age,
@@ -805,6 +816,54 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       return res.json(result);
     } catch (err: any) {
       console.error("Admin users error:", err);
+      return res.status(500).json({ message: err.message });
+    }
+  });
+
+  // ─── BETA TRIAL GRANT ────────────────────────────────────────
+
+  app.post("/api/admin/grant-beta", requireAdmin, async (req, res) => {
+    const { email } = req.body;
+    if (!email || !email.includes("@")) {
+      return res.status(400).json({ message: "Valid email required" });
+    }
+    const normalizedEmail = email.trim().toLowerCase();
+    const trialEndsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    try {
+      const existing = await storage.getUserByEmail(normalizedEmail);
+
+      if (existing) {
+        // Existing user — update in place
+        await storage.updateUser(existing.id, {
+          betaTester: true,
+          betaGrantedAt: new Date(),
+          subscriptionStatus: "trial",
+          trialEndsAt,
+        });
+      } else {
+        // No account yet — upsert into beta_invites
+        await db.insert(betaInvites)
+          .values({ email: normalizedEmail })
+          .onConflictDoUpdate({ target: betaInvites.email, set: { grantedAt: new Date() } });
+      }
+
+      // Send welcome email (non-fatal)
+      try {
+        await sendBetaWelcomeEmail(normalizedEmail);
+      } catch (emailErr) {
+        console.error("Beta email send failed:", emailErr);
+      }
+
+      return res.json({
+        ok: true,
+        userExists: !!existing,
+        message: existing
+          ? `Trial extended and email sent to ${normalizedEmail}`
+          : `Invite recorded and email sent to ${normalizedEmail}`,
+      });
+    } catch (err: any) {
+      console.error("Grant beta error:", err);
       return res.status(500).json({ message: err.message });
     }
   });
