@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { db, pool } from "./db";
 import { insertUserSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } from "@shared/schema";
 import { users, sessions, waitlistSubmissions, customQuestions, appConfig, children, betaInvites } from "@shared/schema";
-import { sendBetaWelcomeEmail, sendPasswordResetEmail } from "./email";
+import { sendBetaGrantedNotification, sendPasswordResetEmail } from "./email";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
@@ -848,11 +848,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           .onConflictDoUpdate({ target: betaInvites.email, set: { grantedAt: new Date() } });
       }
 
-      // Send welcome email (non-fatal)
+      // Notify Bishoy to follow up personally (non-fatal)
       try {
-        await sendBetaWelcomeEmail(normalizedEmail);
+        await sendBetaGrantedNotification(normalizedEmail);
       } catch (emailErr) {
-        console.error("Beta email send failed:", emailErr);
+        console.error("Beta notification email failed:", emailErr);
       }
 
       return res.json({
