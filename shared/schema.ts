@@ -12,6 +12,7 @@ export const users = pgTable("users", {
   stripeSubscriptionId: text("stripe_subscription_id"),
   subscriptionStatus: text("subscription_status").default("trial"), // trial | active | expired | cancelled | past_due
   trialEndsAt: timestamp("trial_ends_at"),
+  planType: text("plan_type"), // "1child" | "2child"
   passwordResetToken: text("password_reset_token"),
   passwordResetExpires: timestamp("password_reset_expires"),
   createdAt: timestamp("created_at").defaultNow(),

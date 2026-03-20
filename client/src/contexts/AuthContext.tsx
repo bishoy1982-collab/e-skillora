@@ -9,6 +9,7 @@ export interface AuthUser {
   name: string;
   subscriptionStatus: SubscriptionStatus;
   trialEndsAt: string | null;
+  planType: "1child" | "2child" | null;
 }
 
 interface AuthContextType {

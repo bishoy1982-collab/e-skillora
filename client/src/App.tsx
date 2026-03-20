@@ -10,7 +10,6 @@ import QuestionsAdminPage from "./pages/questions-admin";
 import ContactPage from "./pages/contact";
 import TermsPage from "./pages/terms";
 import PaywallModal from "./components/PaywallModal";
-import TrialBanner from "./components/TrialBanner";
 import ESkillora from "./components/ESkillora-v3";
 import { apiRequest } from "./lib/queryClient";
 
@@ -254,7 +253,6 @@ function AppRouter() {
 
     return (
       <div style={{ position: "relative" }}>
-        <TrialBanner />
         {paywallReason && (
           <PaywallModal reason={paywallReason as "expired" | "cancelled" | "past_due"} />
         )}

@@ -758,12 +758,32 @@ function OB_Done({ data, onStart }) {
 }
 
 // Onboarding wrapper
-export function OnboardingFlow({ onComplete }) {
-  const STEPS = 4;
+export function OnboardingFlow({ onComplete, plan: preselectedPlan }) {
+  // If plan is already known (user selected it in PendingSetup/Stripe), skip the plan step
+  const skipPlan = !!preselectedPlan;
+  const STEPS = skipPlan ? 3 : 4;
   const [step, setStep] = useState(0);
-  const [d, setD] = useState({});
+  const [d, setD] = useState(() => skipPlan ? { plan: preselectedPlan } : {});
   const merge = (extra, next) => { setD(prev=>({...prev,...extra})); setStep(next); };
 
+  if (skipPlan) {
+    // Steps: 0=Children, 1=Pin, 2=Done
+    return (
+      <Shell>
+        <StepDots total={STEPS} current={step}/>
+        {step===0 && <OB_Children plan={preselectedPlan} onNext={v=>merge(v,1)}/>}
+        {step===1 && <OB_Pin onNext={v=>merge(v,2)}/>}
+        {step===2 && <OB_Done data={d} onStart={()=>onComplete(d)}/>}
+        {step>0 && step<2 && (
+          <button onClick={()=>setStep(step-1)} style={{ display:"flex", alignItems:"center", gap:6, margin:"16px auto 0", color:"var(--ink-l)", background:"none", border:"none", fontSize:14, cursor:"pointer", fontFamily:"'Instrument Sans'" }}>
+            <ChevronLeft size={16}/> Back
+          </button>
+        )}
+      </Shell>
+    );
+  }
+
+  // Legacy path: no pre-selected plan (fallback for old users or edge cases)
   return (
     <Shell>
       <StepDots total={STEPS} current={step}/>
@@ -4528,7 +4548,7 @@ export default function App() {
   // ── Render ────────────────────────────────────────
   return (
     <>
-      {screen === "onboarding"       && <OnboardingFlow onComplete={handleOnboardingDone}/>}
+      {screen === "onboarding"       && <OnboardingFlow onComplete={handleOnboardingDone} plan={authUser?.planType ?? null}/>}
       {screen === "login"            && <LoginScreen onParentLogin={handleParentLogin} onChildEnter={handleChildEnter}/>}
       {screen === "parent_dash"      && <ParentDashboard onLogout={handleLogout} onFullLogout={handleFullLogout}/>}
       {screen === "child_placement"  && activeChild && <ChildPlacement child={activeChild} onComplete={handlePlacementDone}/>}

@@ -153,6 +153,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       return res.json({
         id: user.id, email: user.email, name: user.name,
         subscriptionStatus: user.subscriptionStatus, trialEndsAt: user.trialEndsAt,
+        planType: user.planType ?? null,
       });
     } catch (err) {
       return res.status(500).json({ message: "Failed to fetch user" });
@@ -264,6 +265,9 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       if (isFounder || noStripeSubscription) {
         sessionParams.subscription_data = { trial_period_days: isFounder ? 730 : TRIAL_DAYS };
       }
+
+      // Save planType immediately so onboarding can skip the plan step
+      await storage.updateUser(user.id, { planType: planType === "2child" ? "2child" : "1child" });
 
       const session = await stripe.checkout.sessions.create(sessionParams);
       return res.json({ url: session.url });
