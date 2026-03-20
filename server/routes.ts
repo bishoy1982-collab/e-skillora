@@ -32,6 +32,23 @@ const TEST_USER = {
 };
 const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
 
+const FOUNDER_EMAIL = "founder@founder.com";
+const FOUNDER_PASSWORD = process.env.FOUNDER_PASSWORD || "Foundernow";
+
+async function seedFounderAccount() {
+  try {
+    const existing = await storage.getUserByEmail(FOUNDER_EMAIL);
+    if (!existing) {
+      const hash = await bcrypt.hash(FOUNDER_PASSWORD, 10);
+      const founder = await storage.createUser({ email: FOUNDER_EMAIL, name: "Founder", passwordHash: hash });
+      await storage.updateUser(founder.id, { subscriptionStatus: "active" });
+      console.log("✓ Founder account seeded");
+    }
+  } catch (e) {
+    console.error("Failed to seed founder account:", e);
+  }
+}
+
 function requireAuth(req: Request, res: Response, next: Function) {
   if (!(req.session as any).userId) {
     return res.status(401).json({ message: "Unauthorized" });
@@ -752,6 +769,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         INSERT INTO app_config (key, value) VALUES ('daily_q', '50'), ('days_per_level', '60')
         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
       `);
+      await seedFounderAccount();
       console.log("⚠️  Database wiped by admin");
       return res.json({ ok: true, message: "All data wiped and config re-seeded." });
     } catch (err: any) {
@@ -760,5 +778,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  await seedFounderAccount();
   return httpServer;
 }
