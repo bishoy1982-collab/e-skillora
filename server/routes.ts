@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db, pool } from "./db";
 import { insertUserSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } from "@shared/schema";
-import { users, sessions, waitlistSubmissions, customQuestions, appConfig } from "@shared/schema";
+import { users, sessions, waitlistSubmissions, customQuestions, appConfig, children } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
@@ -745,6 +745,67 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       return res.status(201).json(submission);
     } catch (err) {
       return res.status(500).json({ message: "Failed to save" });
+    }
+  });
+
+  // ─── CHILDREN PLACEMENT ──────────────────────────────────────
+
+  // POST /api/children/placement — saves/updates child placement data after assessment
+  app.post("/api/children/placement", requireAuth, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const { name, age, placedLevel, floorOverrideApplied } = req.body;
+      if (!name || !placedLevel) return res.status(400).json({ message: "name and placedLevel are required" });
+      const child = await storage.upsertChild({
+        userId,
+        name: String(name),
+        age: parseInt(age) || 0,
+        placedLevel: String(placedLevel),
+        floorOverrideApplied: !!floorOverrideApplied,
+      });
+      return res.json(child);
+    } catch (err: any) {
+      console.error("Children placement error:", err);
+      return res.status(500).json({ message: err.message });
+    }
+  });
+
+  // ─── ADMIN USERS ─────────────────────────────────────────────
+
+  // GET /api/admin/users — all users with their children, for admin dashboard
+  app.get("/api/admin/users", requireAdmin, async (req, res) => {
+    try {
+      const allUsers = await db.select().from(users).orderBy(users.createdAt);
+      const allChildren = await db.select().from(children);
+
+      const childrenByUserId: Record<string, typeof allChildren> = {};
+      for (const c of allChildren) {
+        if (!childrenByUserId[c.userId]) childrenByUserId[c.userId] = [];
+        childrenByUserId[c.userId].push(c);
+      }
+
+      const result = [...allUsers].reverse().map(u => ({
+        id: u.id,
+        email: u.email,
+        name: u.name,
+        subscriptionStatus: u.subscriptionStatus,
+        planType: u.planType,
+        stripeSubscriptionId: u.stripeSubscriptionId,
+        stripeCustomerId: u.stripeCustomerId,
+        trialEndsAt: u.trialEndsAt,
+        createdAt: u.createdAt,
+        children: (childrenByUserId[u.id] || []).map(c => ({
+          name: c.name,
+          age: c.age,
+          placedLevel: c.placedLevel,
+          floorOverrideApplied: c.floorOverrideApplied,
+        })),
+      }));
+
+      return res.json(result);
+    } catch (err: any) {
+      console.error("Admin users error:", err);
+      return res.status(500).json({ message: err.message });
     }
   });
 

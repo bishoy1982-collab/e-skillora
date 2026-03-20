@@ -4529,6 +4529,19 @@ export default function App() {
         pendingRetry: {}, seenThemes: {},
       });
       setActiveChild({ ...activeChild, level, placementDone: true });
+
+      // Persist placement to DB (fire-and-forget)
+      fetch("/api/children/placement", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: activeChild.name,
+          age: activeChild.age,
+          placedLevel: level,
+          floorOverrideApplied: !!ageAdjusted,
+        }),
+      }).catch(err => console.error("Failed to persist child placement:", err));
     }
     setScreen("child_learn");
   };

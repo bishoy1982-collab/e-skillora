@@ -61,6 +61,16 @@ export const appConfig = pgTable("app_config", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const children = pgTable("children", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  name: text("name").notNull(),
+  age: integer("age"),
+  placedLevel: text("placed_level"),
+  floorOverrideApplied: boolean("floor_override_applied").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const waitlistSubmissions = pgTable("waitlist_submissions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
@@ -103,3 +113,4 @@ export type WaitlistSubmission = typeof waitlistSubmissions.$inferSelect;
 export type ChildStreak = typeof childStreaks.$inferSelect;
 export type CustomQuestion = typeof customQuestions.$inferSelect;
 export type AppConfig = typeof appConfig.$inferSelect;
+export type Child = typeof children.$inferSelect;

@@ -1,11 +1,14 @@
 import {
   type User, type InsertWaitlist, type WaitlistSubmission,
-  type Session, type ChildStreak, waitlistSubmissions, users, sessions, childStreaks
+  type Session, type ChildStreak, type Child,
+  waitlistSubmissions, users, sessions, childStreaks, children
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
+  upsertChild(data: { userId: string; name: string; age: number; placedLevel: string; floorOverrideApplied: boolean }): Promise<Child>;
+  getChildrenByUserId(userId: string): Promise<Child[]>;
   getUserById(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByStripeCustomerId(customerId: string): Promise<User | undefined>;
@@ -105,6 +108,24 @@ export class DatabaseStorage implements IStorage {
       .where(and(eq(childStreaks.userId, userId), eq(childStreaks.childId, childId)))
       .returning();
     return row;
+  }
+
+  async upsertChild(data: { userId: string; name: string; age: number; placedLevel: string; floorOverrideApplied: boolean }): Promise<Child> {
+    const [row] = await db.insert(children).values({
+      userId: data.userId,
+      name: data.name,
+      age: data.age,
+      placedLevel: data.placedLevel,
+      floorOverrideApplied: data.floorOverrideApplied,
+    }).onConflictDoUpdate({
+      target: [children.userId, children.name, children.age],
+      set: { placedLevel: data.placedLevel, floorOverrideApplied: data.floorOverrideApplied },
+    }).returning();
+    return row;
+  }
+
+  async getChildrenByUserId(userId: string): Promise<Child[]> {
+    return await db.select().from(children).where(eq(children.userId, userId));
   }
 }
 

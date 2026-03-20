@@ -40,6 +40,26 @@ interface RecentUser {
   hasStripe: boolean;
 }
 
+interface AdminChild {
+  name: string;
+  age: number | null;
+  placedLevel: string | null;
+  floorOverrideApplied: boolean | null;
+}
+
+interface AdminUser {
+  id: string;
+  email: string;
+  name: string;
+  subscriptionStatus: string | null;
+  planType: string | null;
+  stripeSubscriptionId: string | null;
+  stripeCustomerId: string | null;
+  trialEndsAt: string | null;
+  createdAt: string | null;
+  children: AdminChild[];
+}
+
 interface Metrics {
   funnel: FunnelData;
   business: BusinessData;
@@ -402,49 +422,166 @@ function DailySignupsChart({ data }: { data: DailySignup[] }) {
   );
 }
 
-// ─── Recent Users Table ───────────────────────────────────────────────────────
+// ─── Users Table ─────────────────────────────────────────────────────────────
 
-function RecentUsersTable({ users }: { users: RecentUser[] }) {
+const PAGE_SIZE = 100;
+
+function UsersTable({ users, password }: { users: AdminUser[]; password: string }) {
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(0);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  const filtered = users.filter(u => u.email.toLowerCase().includes(search.toLowerCase()));
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const pageUsers = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
+  function toggleRow(id: string) {
+    setExpanded(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  const thStyle: React.CSSProperties = {
+    textAlign: "left", padding: "8px 12px",
+    color: "#6B7280", fontWeight: 600, fontSize: 11,
+    textTransform: "uppercase", letterSpacing: "0.05em",
+    whiteSpace: "nowrap",
+  };
+
   return (
     <Card>
-      <SectionTitle>Recent Users</SectionTitle>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 12 }}>
+        <SectionTitle>All Users ({filtered.length})</SectionTitle>
+        <input
+          type="text"
+          placeholder="Filter by email…"
+          value={search}
+          onChange={e => { setSearch(e.target.value); setPage(0); }}
+          style={{
+            padding: "7px 12px", fontSize: 13, border: `1.5px solid ${BORDER}`,
+            borderRadius: 6, outline: "none", width: 240, color: "#111827",
+          }}
+        />
+      </div>
+
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ borderBottom: `2px solid ${BORDER}` }}>
-              {["Name", "Email", "Status", "Trial Ends / Joined", "Stripe"].map(h => (
-                <th key={h} style={{
-                  textAlign: "left", padding: "8px 12px",
-                  color: "#6B7280", fontWeight: 600, fontSize: 12,
-                  textTransform: "uppercase", letterSpacing: "0.05em",
-                }}>
-                  {h}
-                </th>
+              <th style={{ ...thStyle, width: 24 }} />
+              {["Email", "Name", "Plan", "Status", "Started", "Renewal / Trial Ends", "Stripe Sub"].map(h => (
+                <th key={h} style={thStyle}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {users.map((u, i) => (
-              <tr key={u.id} style={{ borderBottom: `1px solid ${BORDER}`, background: i % 2 === 0 ? "#FAFAFA" : CARD_BG }}>
-                <td style={{ padding: "10px 12px", fontWeight: 600, color: "#111827" }}>{u.name || "—"}</td>
-                <td style={{ padding: "10px 12px", color: "#374151" }}>{u.email}</td>
-                <td style={{ padding: "10px 12px" }}>
-                  <StatusBadge status={u.subscriptionStatus} />
-                </td>
-                <td style={{ padding: "10px 12px", color: "#6B7280" }}>
-                  {u.trialEndsAt ? `Trial: ${fmtDate(u.trialEndsAt)}` : `Joined: ${fmtDate(u.createdAt)}`}
-                </td>
-                <td style={{ padding: "10px 12px", textAlign: "center" }}>
-                  {u.hasStripe
-                    ? <span style={{ color: GREEN_TEXT, fontWeight: 700, fontSize: 16 }}>✓</span>
-                    : <span style={{ color: "#D1D5DB" }}>—</span>
-                  }
-                </td>
-              </tr>
-            ))}
+            {pageUsers.map((u, i) => {
+              const isOpen = expanded.has(u.id);
+              const rowBg = i % 2 === 0 ? "#FAFAFA" : CARD_BG;
+              const stripeUrl = u.stripeSubscriptionId
+                ? `https://dashboard.stripe.com/subscriptions/${u.stripeSubscriptionId}`
+                : null;
+
+              const renewalCell = (() => {
+                if (u.subscriptionStatus === "trial" && u.trialEndsAt) {
+                  return <span style={{ color: "#1D4ED8" }}>{fmtDate(u.trialEndsAt)}</span>;
+                }
+                if (u.subscriptionStatus === "active" && stripeUrl) {
+                  return <a href={stripeUrl} target="_blank" rel="noreferrer" style={{ color: GREEN_TEXT, fontWeight: 600, textDecoration: "none" }}>View in Stripe ↗</a>;
+                }
+                return <span style={{ color: "#9CA3AF" }}>—</span>;
+              })();
+
+              return (
+                <>
+                  <tr
+                    key={u.id}
+                    onClick={() => toggleRow(u.id)}
+                    style={{ borderBottom: isOpen ? "none" : `1px solid ${BORDER}`, background: rowBg, cursor: "pointer" }}
+                  >
+                    <td style={{ padding: "10px 8px 10px 12px", color: "#9CA3AF", fontSize: 11 }}>
+                      {isOpen ? "▾" : "▸"}
+                    </td>
+                    <td style={{ padding: "10px 12px", color: "#374151", fontFamily: "monospace", fontSize: 12 }}>{u.email}</td>
+                    <td style={{ padding: "10px 12px", fontWeight: 600, color: "#111827" }}>{u.name || "—"}</td>
+                    <td style={{ padding: "10px 12px", color: "#6B7280" }}>
+                      {u.planType === "2child" ? "2 Children" : u.planType === "1child" ? "1 Child" : "—"}
+                    </td>
+                    <td style={{ padding: "10px 12px" }}>
+                      <StatusBadge status={u.subscriptionStatus} />
+                    </td>
+                    <td style={{ padding: "10px 12px", color: "#6B7280", whiteSpace: "nowrap" }}>
+                      {fmtDate(u.createdAt)}
+                    </td>
+                    <td style={{ padding: "10px 12px", whiteSpace: "nowrap" }}>{renewalCell}</td>
+                    <td style={{ padding: "10px 12px" }}>
+                      {stripeUrl
+                        ? <a href={stripeUrl} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()}
+                            style={{ color: GREEN_TEXT, fontWeight: 600, fontSize: 12, textDecoration: "none", fontFamily: "monospace" }}>
+                            {u.stripeSubscriptionId!.slice(0, 14)}… ↗
+                          </a>
+                        : <span style={{ color: "#D1D5DB" }}>—</span>
+                      }
+                    </td>
+                  </tr>
+
+                  {isOpen && (
+                    <tr key={`${u.id}-exp`} style={{ background: "#F0F7F2", borderBottom: `1px solid ${BORDER}` }}>
+                      <td />
+                      <td colSpan={7} style={{ padding: "10px 12px 14px" }}>
+                        {u.children.length === 0 ? (
+                          <span style={{ fontSize: 12, color: "#9CA3AF", fontStyle: "italic" }}>No placement data recorded yet.</span>
+                        ) : (
+                          <table style={{ borderCollapse: "collapse", fontSize: 12, width: "auto" }}>
+                            <thead>
+                              <tr>
+                                {["Child", "Age", "Placed Level", "Floor Override"].map(h => (
+                                  <th key={h} style={{ textAlign: "left", padding: "4px 16px 4px 0", color: "#6B7280", fontWeight: 600, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.04em" }}>{h}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {u.children.map((c, ci) => (
+                                <tr key={ci}>
+                                  <td style={{ padding: "4px 16px 4px 0", fontWeight: 600, color: "#111827" }}>{c.name}</td>
+                                  <td style={{ padding: "4px 16px 4px 0", color: "#374151" }}>{c.age ?? "—"}</td>
+                                  <td style={{ padding: "4px 16px 4px 0", color: DARK_GREEN, fontWeight: 700 }}>{c.placedLevel ?? "—"}</td>
+                                  <td style={{ padding: "4px 0" }}>
+                                    {c.floorOverrideApplied
+                                      ? <span style={{ background: "#FEF3C7", color: "#B45309", borderRadius: 4, padding: "2px 8px", fontWeight: 700, fontSize: 11 }}>Yes</span>
+                                      : <span style={{ background: "#F3F4F6", color: "#6B7280", borderRadius: 4, padding: "2px 8px", fontSize: 11 }}>No</span>
+                                    }
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                      </td>
+                    </tr>
+                  )}
+                </>
+              );
+            })}
           </tbody>
         </table>
       </div>
+
+      {totalPages > 1 && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+          <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}
+            style={{ padding: "5px 12px", borderRadius: 6, border: `1px solid ${BORDER}`, background: CARD_BG, cursor: page === 0 ? "not-allowed" : "pointer", color: "#374151", fontSize: 13 }}>
+            ← Prev
+          </button>
+          <span style={{ fontSize: 13, color: "#6B7280" }}>Page {page + 1} of {totalPages}</span>
+          <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page === totalPages - 1}
+            style={{ padding: "5px 12px", borderRadius: 6, border: `1px solid ${BORDER}`, background: CARD_BG, cursor: page === totalPages - 1 ? "not-allowed" : "pointer", color: "#374151", fontSize: 13 }}>
+            Next →
+          </button>
+        </div>
+      )}
     </Card>
   );
 }
@@ -544,6 +681,7 @@ function LoginScreen({ onLogin }: { onLogin: (pw: string) => void }) {
 
 function Dashboard({ password }: { password: string }) {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [allUsers, setAllUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [now, setNow] = useState(new Date());
@@ -554,12 +692,15 @@ function Dashboard({ password }: { password: string }) {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/admin/metrics", {
-        headers: { "X-Admin-Secret": password },
-      });
-      if (!res.ok) throw new Error("Failed to load metrics");
-      const data = await res.json();
-      setMetrics(data);
+      const [metricsRes, usersRes] = await Promise.all([
+        fetch("/api/admin/metrics", { headers: { "X-Admin-Secret": password } }),
+        fetch("/api/admin/users",   { headers: { "X-Admin-Secret": password } }),
+      ]);
+      if (!metricsRes.ok) throw new Error("Failed to load metrics");
+      if (!usersRes.ok)   throw new Error("Failed to load users");
+      const [metricsData, usersData] = await Promise.all([metricsRes.json(), usersRes.json()]);
+      setMetrics(metricsData);
+      setAllUsers(usersData);
     } catch (e: any) {
       setError(e.message ?? "Unknown error");
     } finally {
@@ -735,8 +876,8 @@ function Dashboard({ password }: { password: string }) {
             {/* Row 4: Daily Signups Chart */}
             <DailySignupsChart data={metrics.dailySignups} />
 
-            {/* Row 5: Recent Users */}
-            <RecentUsersTable users={metrics.recentUsers} />
+            {/* Row 5: All Users */}
+            <UsersTable users={allUsers} password={password} />
 
             {/* Footer */}
             <div style={{ textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: 12, paddingBottom: 16 }}>

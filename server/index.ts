@@ -92,6 +92,18 @@ app.use((req, res, next) => {
     // Schema migrations — add missing columns safely
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS plan_type TEXT`);
     await pool.query(`
+      CREATE TABLE IF NOT EXISTS children (
+        id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        name TEXT NOT NULL,
+        age INTEGER,
+        placed_level TEXT,
+        floor_override_applied BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(user_id, name, age)
+      )
+    `);
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS child_streaks (
         id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id VARCHAR NOT NULL REFERENCES users(id),
