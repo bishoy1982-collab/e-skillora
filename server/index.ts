@@ -89,6 +89,8 @@ app.use((req, res, next) => {
     await pool.query(`
       CREATE INDEX IF NOT EXISTS user_sessions_store_expire_idx ON user_sessions_store (expire)
     `);
+    // Schema migrations — add missing columns safely
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS plan_type TEXT`);
     await pool.query(`
       CREATE TABLE IF NOT EXISTS child_streaks (
         id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
