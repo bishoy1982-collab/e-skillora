@@ -664,47 +664,27 @@ function OB_Children({ plan, onNext }) {
 
 // Step 5 — Parent PIN
 function OB_Pin({ onNext }) {
-  const [pin, setPin] = useState(Array(4).fill(""));
+  const [pin, setPin] = useState("");
   const [conf, setConf] = useState(false);
-  const [cpin, setCpin] = useState(Array(4).fill(""));
+  const [cpin, setCpin] = useState("");
   const [err, setErr] = useState("");
-  const refs  = [useRef(),useRef(),useRef(),useRef()];
-  const crefs = [useRef(),useRef(),useRef(),useRef()];
 
-  const handleDigit = (i, val, arr, setArr, rs) => {
-    const d = val.replace(/\D/g,"").slice(0,1);
-    const n=[...arr]; n[i]=d; setArr(n);
-    if (d && i<3) rs[i+1].current?.focus();
-    if (!d && i>0) rs[i-1].current?.focus();
-    // auto-submit on last digit
-    if (d && i===3) {
-      const full = [...n];
-      if (conf) {
-        setTimeout(()=>{
-          if (full.join("") !== pin.join("")) { setErr("PINs don't match — try again"); setCpin(Array(4).fill("")); crefs[0].current?.focus(); }
-          else onNext({ pin: full.join("") });
-        }, 120);
-      } else {
-        setTimeout(()=>{ setConf(true); setTimeout(()=>crefs[0].current?.focus(),80); }, 120);
-      }
-    }
+  const pinInputStyle = { ...s.input(false), letterSpacing:"0.3em", fontSize:28, textAlign:"center", fontFamily:"'Fraunces',serif" };
+
+  const handlePin = (val) => {
+    const d = val.replace(/\D/g,"").slice(0,4);
+    setPin(d);
+    if (d.length === 4) setTimeout(()=>{ setConf(true); setCpin(""); setErr(""); }, 120);
   };
 
-  const PinRow = ({arr, setArr, rs}) => (
-    <div style={{ display:"flex", gap:12, justifyContent:"center" }}>
-      {arr.map((d,i)=>(
-        <input key={i} ref={rs[i]} type="password" inputMode="numeric" maxLength={1} value={d}
-          onChange={e=>handleDigit(i,e.target.value,arr,setArr,rs)}
-          onKeyDown={e=>{ if(e.key==="Backspace"&&!d&&i>0) rs[i-1].current?.focus(); }}
-          style={{ width:60, height:68, textAlign:"center", fontSize:28, fontWeight:700, fontFamily:"'Fraunces',serif",
-            background:"var(--cream)", border:`2.5px solid ${d?"var(--forest)":"var(--cream-dd)"}`,
-            borderRadius:"var(--r-lg)", outline:"none", transition:"border-color .2s", color:"var(--forest)" }}
-          onFocus={e=>e.target.style.borderColor="var(--forest)"}
-          onBlur={e=>e.target.style.borderColor=d?"var(--forest)":"var(--cream-dd)"}
-        />
-      ))}
-    </div>
-  );
+  const handleCpin = (val) => {
+    const d = val.replace(/\D/g,"").slice(0,4);
+    setCpin(d);
+    if (d.length === 4) setTimeout(()=>{
+      if (d !== pin) { setErr("PINs don't match — try again"); setCpin(""); }
+      else onNext({ pin: d });
+    }, 120);
+  };
 
   return (
     <div className="afu" style={{...s.card(36), textAlign:"center"}}>
@@ -717,9 +697,12 @@ function OB_Pin({ onNext }) {
       <p style={{ color:"var(--ink-l)", fontSize:15, marginBottom:36 }}>
         {conf ? "Re-enter the same 4-digit PIN" : "Protects the parent dashboard from curious kids 🙈"}
       </p>
-      <PinRow arr={conf?cpin:pin} setArr={conf?setCpin:setPin} rs={conf?crefs:refs}/>
+      {conf
+        ? <input type="password" inputMode="numeric" maxLength={4} value={cpin} onChange={e=>handleCpin(e.target.value)} style={pinInputStyle} placeholder="••••" autoFocus/>
+        : <input type="password" inputMode="numeric" maxLength={4} value={pin}  onChange={e=>handlePin(e.target.value)}  style={pinInputStyle} placeholder="••••" autoFocus/>
+      }
       {err && <p style={{ color:"var(--coral)", fontSize:14, marginTop:12 }}>{err}</p>}
-      {conf && <button onClick={()=>{setConf(false);setCpin(Array(4).fill(""));setErr("");}} style={{ marginTop:16, color:"var(--ink-l)", background:"none", border:"none", fontSize:14, cursor:"pointer", fontFamily:"'Instrument Sans'" }}>← Use different PIN</button>}
+      {conf && <button onClick={()=>{setConf(false);setCpin("");setErr("");}} style={{ marginTop:16, color:"var(--ink-l)", background:"none", border:"none", fontSize:14, cursor:"pointer", fontFamily:"'Instrument Sans'" }}>← Use different PIN</button>}
     </div>
   );
 }
