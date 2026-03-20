@@ -134,6 +134,14 @@ function getStartLevel(age) {
   if (a<=11) return "G"; if (a<=12) return "H"; if (a<=13) return "I";
   if (a<=14) return "J"; if (a<=15) return "K"; return "L";
 }
+function getAgeFloor(age) {
+  const a = parseInt(age);
+  if (a <= 6) return "A";
+  if (a <= 8) return "B";
+  if (a <= 10) return "C";
+  if (a <= 12) return "D";
+  return "E";
+}
 function gradeLabel(age) {
   const a = parseInt(age);
   if (a<=5) return "Pre-K / Kindergarten";
@@ -1067,7 +1075,7 @@ export function ParentDashboard({ onLogout, onFullLogout }) {
 
       {/* Tab Content */}
       <div style={{flex:1,overflowY:"auto",paddingBottom:"calc(var(--nav-h) + var(--safe-b) + 16px)"}}>
-        {tab==="overview" && <OverviewTab app={app}/>}
+        {tab==="overview" && <OverviewTab app={app} refresh={refresh}/>}
         {tab==="children" && <ChildrenTab app={app} planData={planData} refresh={refresh}/>}
         {tab==="plan" && <PlanTab app={app} planData={planData}/>}
         {tab==="settings" && <SettingsTab app={app} onLogout={onFullLogout || onLogout} refresh={refresh}/>}
@@ -1100,7 +1108,7 @@ export function ParentDashboard({ onLogout, onFullLogout }) {
   );
 }
 
-function OverviewTab({ app }) {
+function OverviewTab({ app, refresh }) {
   const hour = new Date().getHours();
   const greeting = hour<12?"Good morning":hour<17?"Good afternoon":"Good evening";
   const emoji = hour<12?"☀️":hour<17?"🌤️":"🌙";
@@ -1218,6 +1226,24 @@ function OverviewTab({ app }) {
                   </div>
                 ))}
               </div>
+
+              {/* Age-adjusted level note */}
+              {child.levelNote && (
+                <div style={{padding:"0 20px 14px"}}>
+                  <div style={{background:"rgba(139,175,148,0.15)",border:"1px solid var(--sage-l)",borderRadius:"var(--r-md)",padding:"10px 12px",display:"flex",alignItems:"flex-start",gap:8}}>
+                    <span style={{fontSize:14,flexShrink:0}}>📊</span>
+                    <p style={{fontSize:12,color:"var(--forest)",lineHeight:1.5,flex:1,margin:0}}>{child.levelNote}</p>
+                    <button onClick={()=>{
+                      const appData = getApp();
+                      if (appData) {
+                        appData.children = appData.children.map(c => c.id===child.id ? {...c, levelNote:null} : c);
+                        setApp(appData);
+                        refresh();
+                      }
+                    }} style={{background:"none",border:"none",cursor:"pointer",color:"var(--ink-ll)",fontSize:16,lineHeight:1,padding:0,flexShrink:0}}>✕</button>
+                  </div>
+                </div>
+              )}
 
               {/* Struggling skills */}
               {strugglingThemes.length > 0 && (
@@ -1623,7 +1649,11 @@ export function ChildPlacement({ child, onComplete }) {
   };
 
   if (done && placedLevel) {
-    const lInfo = typeof LEVEL_MAP!=="undefined" ? LEVEL_MAP[placedLevel] : { grade:"" };
+    const ageFloor = getAgeFloor(child.age);
+    const levelOrder = ["A","B","C","D","E","F","G","H","I","J","K","L"];
+    const finalLevel = levelOrder.indexOf(ageFloor) > levelOrder.indexOf(placedLevel) ? ageFloor : placedLevel;
+    const ageAdjusted = finalLevel !== placedLevel;
+    const lInfo = typeof LEVEL_MAP!=="undefined" ? LEVEL_MAP[finalLevel] : { grade:"" };
     const totalCorrect = Object.values(levelScores).reduce((s,v)=>s+v.correct,0);
     const totalAnswered = Object.values(levelScores).reduce((s,v)=>s+v.total,0);
     const pct = totalAnswered > 0 ? Math.round(totalCorrect/totalAnswered*100) : 0;
@@ -1640,14 +1670,14 @@ export function ChildPlacement({ child, onComplete }) {
             </p>
             <div style={{ background:"var(--sage-ll)", borderRadius:"var(--r-lg)", padding:"20px 28px", marginBottom:16 }}>
               <p style={{ fontSize:13, color:"var(--ink-l)", marginBottom:4 }}>Your starting level</p>
-              <p style={{ fontFamily:"'Fraunces',serif", fontSize:48, fontWeight:800, color:"var(--forest)" }}>Level {placedLevel}</p>
+              <p style={{ fontFamily:"'Fraunces',serif", fontSize:48, fontWeight:800, color:"var(--forest)" }}>Level {finalLevel}</p>
               <p style={{ fontSize:15, color:"var(--forest)", fontWeight:600 }}>{lInfo?.grade||""}</p>
             </div>
             <div style={{ background:"var(--blue-ll)", borderRadius:"var(--r-md)", padding:"10px 16px", marginBottom:24, fontSize:13, color:"var(--blue)", lineHeight:1.5 }}>
               📊 You answered {totalCorrect} of {TOTAL_Q} questions correctly ({pct}%).
               {pct >= 80 ? " Excellent performance!" : pct >= 60 ? " Good effort!" : " We'll help you build from here!"}
             </div>
-            <Btn onClick={()=>onComplete(placedLevel)} full size="lg" v="gold">
+            <Btn onClick={()=>onComplete(finalLevel, ageAdjusted)} full size="lg" v="gold">
               <Play size={20}/> Start Learning! 🚀
             </Btn>
           </div>
@@ -4482,11 +4512,14 @@ export default function App() {
   };
 
   // ── 4. Placement complete
-  const handlePlacementDone = (level) => {
+  const handlePlacementDone = (level, ageAdjusted) => {
     const appData = getApp();
     if (appData && activeChild) {
+      const levelNote = ageAdjusted
+        ? "We adjusted your child's starting level based on their age. They'll move up quickly if the content feels easy."
+        : null;
       appData.children = appData.children.map(c =>
-        c.id === activeChild.id ? { ...c, level, placementDone: true } : c
+        c.id === activeChild.id ? { ...c, level, placementDone: true, levelNote } : c
       );
       setApp(appData);
       // Init progress
