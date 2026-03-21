@@ -364,10 +364,10 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
               Terms &amp; Conditions
             </button>
             <a
-              href="mailto:contact@eskillor.org"
+              href="mailto:contact@e-skillora.org"
               style={{ fontSize: 13, color: "#6B6B6B", textDecoration: "none", fontFamily: "'Instrument Sans', sans-serif" }}
             >
-              contact@eskillor.org
+              contact@e-skillora.org
             </a>
           </div>
           <p style={{ fontSize: 12, color: "#BCBCBC", fontFamily: "'Instrument Sans', sans-serif" }}>

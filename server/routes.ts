@@ -18,7 +18,7 @@ const PRICE_ID = process.env.STRIPE_PRICE_ID!;
 const PRICE_ID_1_CHILD = process.env.STRIPE_PRICE_ID_1_CHILD || process.env.STRIPE_PRICE_ID!;
 const PRICE_ID_2_CHILD = process.env.STRIPE_PRICE_ID_2_CHILD || process.env.STRIPE_PRICE_ID!;
 const TRIAL_DAYS = 3;
-const APP_URL = process.env.APP_URL || "https://e-skillora.com";
+const APP_URL = process.env.APP_URL || "https://e-skillora.org";
 
 // Hardcoded internal test account — bypasses DB and Stripe entirely
 const TEST_EMAIL = "bishoy@e-skillora.org";

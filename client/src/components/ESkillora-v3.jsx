@@ -1295,7 +1295,7 @@ function ChildrenTab({ app, planData, refresh }) {
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <h2 style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:20,color:"var(--forest)"}}>Children</h2>
         {(app?.children?.length||0) < planData.cap && (
-          <button style={{...s.btn("primary","","","sm"),gap:5}} onClick={()=>alert("Add child flow coming soon")}>
+          <button style={{...s.btn("primary","","","sm"),gap:5}} onClick={()=>{}}>
             <Plus size={14}/> Add Child
           </button>
         )}

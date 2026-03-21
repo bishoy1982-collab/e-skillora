@@ -128,7 +128,7 @@ export default function TermsPage({ onNavigate }: Props) {
             <ul>
               <li><strong>Free Trial:</strong> New subscribers receive a 3-day free trial. You will not be charged until the trial ends. You may cancel before the trial ends to avoid any charge.</li>
               <li><strong>Billing Cycle:</strong> Subscriptions renew monthly on the anniversary of your start date unless cancelled.</li>
-              <li><strong>Cancellation:</strong> You may cancel at any time through your account settings or by contacting us at <a href="mailto:contact@eskillor.org" style={{ color: "#C9973A" }}>contact@eskillor.org</a>. Cancellation takes effect at the end of the current billing period.</li>
+              <li><strong>Cancellation:</strong> You may cancel at any time through your account settings or by contacting us at <a href="mailto:contact@e-skillora.org" style={{ color: "#C9973A" }}>contact@e-skillora.org</a>. Cancellation takes effect at the end of the current billing period.</li>
               <li><strong>Refunds:</strong> All payments are non-refundable except where required by applicable law. If you believe you were charged in error, contact us within 14 days of the charge.</li>
               <li><strong>Price Changes:</strong> We may change subscription pricing at any time. We will provide at least 30 days' notice of any price increase via email before it takes effect.</li>
             </ul>
@@ -156,7 +156,7 @@ export default function TermsPage({ onNavigate }: Props) {
               Parents and guardians are responsible for managing their children's use of the Service and for providing any necessary consent. Child profiles are associated with and managed by the parent/guardian account holder.
             </p>
             <p>
-              If you believe we have inadvertently collected personal information from a child without appropriate consent, please contact us immediately at <a href="mailto:contact@eskillor.org" style={{ color: "#C9973A" }}>contact@eskillor.org</a>.
+              If you believe we have inadvertently collected personal information from a child without appropriate consent, please contact us immediately at <a href="mailto:contact@e-skillora.org" style={{ color: "#C9973A" }}>contact@e-skillora.org</a>.
             </p>
           </div>
 
@@ -226,7 +226,7 @@ export default function TermsPage({ onNavigate }: Props) {
               We may suspend or terminate your access to the Service at any time, with or without cause and with or without notice, including for violation of these Terms. Upon termination, your right to use the Service ceases immediately.
             </p>
             <p>
-              You may close your account at any time by contacting us at <a href="mailto:contact@eskillor.org" style={{ color: "#C9973A" }}>contact@eskillor.org</a>. Closing your account does not entitle you to a refund of any prepaid fees.
+              You may close your account at any time by contacting us at <a href="mailto:contact@e-skillora.org" style={{ color: "#C9973A" }}>contact@e-skillora.org</a>. Closing your account does not entitle you to a refund of any prepaid fees.
             </p>
           </div>
 
@@ -245,7 +245,7 @@ export default function TermsPage({ onNavigate }: Props) {
             <p>If you have any questions about these Terms, please contact us:</p>
             <p>
               <strong>E-Skillora LLC</strong><br />
-              Email: <a href="mailto:contact@eskillor.org" style={{ color: "#C9973A" }}>contact@eskillor.org</a>
+              Email: <a href="mailto:contact@e-skillora.org" style={{ color: "#C9973A" }}>contact@e-skillora.org</a>
             </p>
           </div>
         </div>
@@ -258,7 +258,7 @@ export default function TermsPage({ onNavigate }: Props) {
           <div style={{ display: "flex", justifyContent: "center", gap: 20, flexWrap: "wrap", marginBottom: 12 }}>
             <button onClick={() => onNavigate("landing")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#9A9A9A" }}>Home</button>
             <button onClick={() => onNavigate("contact")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#9A9A9A" }}>Contact Us</button>
-            <a href="mailto:contact@eskillor.org" style={{ fontSize: 13, color: "#9A9A9A", textDecoration: "none" }}>contact@eskillor.org</a>
+            <a href="mailto:contact@e-skillora.org" style={{ fontSize: 13, color: "#9A9A9A", textDecoration: "none" }}>contact@e-skillora.org</a>
           </div>
           <p style={{ fontSize: 12, color: "#BCBCBC" }}>
             &copy; {new Date().getFullYear()} E-Skillora LLC · All rights reserved.

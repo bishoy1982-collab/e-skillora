@@ -92,10 +92,10 @@ export default function ContactPage({ onNavigate }: Props) {
                   Email us
                 </p>
                 <a
-                  href="mailto:contact@eskillor.org"
+                  href="mailto:contact@e-skillora.org"
                   style={{ fontSize: 17, fontWeight: 600, color: "#1C3A2F", textDecoration: "none" }}
                 >
-                  contact@eskillor.org
+                  contact@e-skillora.org
                 </a>
                 <p style={{ fontSize: 13, color: "#9A9A9A", marginTop: 4 }}>
                   For general inquiries, support, and feedback
@@ -149,7 +149,7 @@ export default function ContactPage({ onNavigate }: Props) {
           <div style={{ display: "flex", justifyContent: "center", gap: 20, flexWrap: "wrap", marginBottom: 12 }}>
             <button onClick={() => onNavigate("landing")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#9A9A9A" }}>Home</button>
             <button onClick={() => onNavigate("terms")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "#9A9A9A" }}>Terms &amp; Conditions</button>
-            <a href="mailto:contact@eskillor.org" style={{ fontSize: 13, color: "#9A9A9A", textDecoration: "none" }}>Contact</a>
+            <a href="mailto:contact@e-skillora.org" style={{ fontSize: 13, color: "#9A9A9A", textDecoration: "none" }}>Contact</a>
           </div>
           <p style={{ fontSize: 12, color: "#BCBCBC" }}>
             &copy; {new Date().getFullYear()} E-Skillora LLC · All rights reserved.
