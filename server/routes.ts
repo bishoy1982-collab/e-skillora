@@ -861,6 +861,42 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  // GET /api/admin/learning-analytics — aggregate learning data from child_streaks / children
+  app.get("/api/admin/learning-analytics", requireAdmin, async (req, res) => {
+    try {
+      // Streak + level distribution from DB-backed tables
+      const streakResult = await pool.query(`
+        SELECT cs.child_id, cs.current_streak, cs.longest_streak, cs.last_practice_date,
+               c.placed_level
+        FROM child_streaks cs
+        LEFT JOIN children c ON c.id = cs.child_id
+      `);
+
+      const rows = streakResult.rows;
+      const levelMap: Record<string, number> = {};
+      for (const r of rows) {
+        const lv = r.placed_level ?? "Unknown";
+        levelMap[lv] = (levelMap[lv] ?? 0) + 1;
+      }
+      const levelDistribution = Object.entries(levelMap).map(([level, count]) => ({ level, count }));
+
+      return res.json({
+        totalSessions: 0,
+        avgDurationMins: 0,
+        avgAccuracyPct: 0,
+        sessionsByLevel: [],
+        stuckQuestions: [],
+        fastProgressLevels: [],
+        dailyActivity: [],
+        accuracyTrend: [],
+        levelDistribution,
+      });
+    } catch (err: any) {
+      console.error("Learning analytics error:", err);
+      return res.status(500).json({ message: err.message });
+    }
+  });
+
   // POST /api/admin/wipe-db — requires ADMIN_SECRET + confirmation token "CONFIRM"
   app.post("/api/admin/wipe-db", requireAdmin, async (req, res) => {
     if (req.body?.confirm !== "CONFIRM") {

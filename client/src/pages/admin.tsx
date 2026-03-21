@@ -40,6 +40,18 @@ interface RecentUser {
   hasStripe: boolean;
 }
 
+interface LearningAnalytics {
+  totalSessions: number;
+  avgDurationMins: number;
+  avgAccuracyPct: number;
+  sessionsByLevel: { level: string; sessions: number; accuracyPct: number; avgMins: number }[];
+  stuckQuestions: { id: string; count: number; level: string }[];
+  fastProgressLevels: { level: string; sessions: number; accuracyPct: number; avgMins: number }[];
+  dailyActivity: { date: string; sessions: number; avgAccuracy: number }[];
+  accuracyTrend: { week: string; accuracyPct: number }[];
+  levelDistribution: { level: string; count: number }[];
+}
+
 // ─── Grant Beta Card ──────────────────────────────────────────────────────────
 
 const BETA_EMAIL_SUBJECT = `You're in - 30 days free on E-Skillora`;
@@ -709,6 +721,157 @@ function UsersTable({ users, password }: { users: AdminUser[]; password: string 
   );
 }
 
+// ─── Learning Analytics Section ───────────────────────────────────────────────
+
+function LearningAnalyticsSection({ data }: { data: LearningAnalytics | null }) {
+  if (!data) return null;
+
+  const accColor = (pct: number) =>
+    pct >= 85 ? "#16a34a" : pct >= 70 ? "#B45309" : "#B91C1C";
+
+  // Daily activity mini bar chart (last 14 days)
+  const activity = data.dailyActivity.slice(-14);
+  const maxSessions = Math.max(...activity.map(d => d.sessions), 1);
+  const chartH = 80;
+  const barW = 16;
+  const barGap = 6;
+
+  return (
+    <>
+      {/* Section label */}
+      <div style={{
+        fontFamily: "'Fraunces', Georgia, serif",
+        fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.5)",
+        letterSpacing: "0.08em", textTransform: "uppercase", paddingTop: 8,
+      }}>
+        Learning Analytics
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+
+        {/* Card 1: Engagement */}
+        <Card>
+          <SectionTitle>Engagement</SectionTitle>
+          <div style={{ display: "flex", gap: 32, marginBottom: 20 }}>
+            <div>
+              <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 36, fontWeight: 700, color: DARK_GREEN, lineHeight: 1 }}>
+                {data.totalSessions}
+              </div>
+              <div style={{ fontSize: 12, color: "#6B7280", marginTop: 4 }}>Total Sessions</div>
+            </div>
+            <div>
+              <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 36, fontWeight: 700, color: DARK_GREEN, lineHeight: 1 }}>
+                {data.avgDurationMins}m
+              </div>
+              <div style={{ fontSize: 12, color: "#6B7280", marginTop: 4 }}>Avg Duration</div>
+            </div>
+          </div>
+          <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 8, fontWeight: 600 }}>Daily Sessions — Last 14 Days</div>
+          <div style={{ overflowX: "auto" }}>
+            <svg width={activity.length * (barW + barGap)} height={chartH + 24} style={{ display: "block" }}>
+              {activity.map((d, i) => {
+                const barH = Math.max(Math.round((d.sessions / maxSessions) * chartH), d.sessions > 0 ? 3 : 0);
+                const x = i * (barW + barGap);
+                const y = chartH - barH;
+                const label = d.date.slice(5); // MM-DD
+                return (
+                  <g key={d.date}>
+                    <rect x={x} y={y} width={barW} height={barH} fill={DARK_GREEN} rx={2} />
+                    {d.sessions > 0 && (
+                      <text x={x + barW / 2} y={y - 3} textAnchor="middle" fontSize={9} fill="#374151" fontWeight={600}>{d.sessions}</text>
+                    )}
+                    <text x={x + barW / 2} y={chartH + 14} textAnchor="middle" fontSize={8} fill="#9CA3AF"
+                      transform={`rotate(-40,${x + barW / 2},${chartH + 14})`}>{label}</text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+        </Card>
+
+        {/* Card 2: Average Grade */}
+        <Card>
+          <SectionTitle>Average Grade</SectionTitle>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 20 }}>
+            <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 48, fontWeight: 700, color: accColor(data.avgAccuracyPct), lineHeight: 1 }}>
+              {data.avgAccuracyPct}%
+            </div>
+            <div style={{ fontSize: 13, color: "#6B7280" }}>overall accuracy</div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {data.sessionsByLevel.map(row => (
+              <div key={row.level}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 3 }}>
+                  <span style={{ fontWeight: 600, color: "#374151" }}>Level {row.level}</span>
+                  <span style={{ color: accColor(row.accuracyPct), fontWeight: 700 }}>{row.accuracyPct}%</span>
+                </div>
+                <div style={{ height: 6, background: "#F3F4F6", borderRadius: 4, overflow: "hidden" }}>
+                  <div style={{ width: `${row.accuracyPct}%`, height: "100%", background: accColor(row.accuracyPct), borderRadius: 4, transition: "width 0.5s ease" }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Card 3: Getting Stuck */}
+        <Card>
+          <SectionTitle>Getting Stuck</SectionTitle>
+          <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 12 }}>Questions kids miss 3+ times</div>
+          {data.stuckQuestions.length === 0 ? (
+            <div style={{ fontSize: 13, color: "#9CA3AF", fontStyle: "italic" }}>No stuck questions yet.</div>
+          ) : (
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <thead>
+                <tr style={{ borderBottom: `2px solid ${BORDER}` }}>
+                  {["Question ID", "Level", "Times Wrong"].map(h => (
+                    <th key={h} style={{ textAlign: "left", padding: "6px 10px", fontSize: 11, fontWeight: 600, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {data.stuckQuestions.map((q, i) => (
+                  <tr key={q.id} style={{ borderBottom: `1px solid ${BORDER}`, background: i % 2 === 0 ? "#FAFAFA" : CARD_BG }}>
+                    <td style={{ padding: "8px 10px", fontFamily: "monospace", fontSize: 12, color: "#111827" }}>{q.id}</td>
+                    <td style={{ padding: "8px 10px", color: "#374151", fontWeight: 600 }}>{q.level}</td>
+                    <td style={{ padding: "8px 10px" }}>
+                      <span style={{ background: "#FEE2E2", color: "#B91C1C", borderRadius: 4, padding: "2px 8px", fontWeight: 700, fontSize: 12 }}>{q.count}×</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </Card>
+
+        {/* Card 4: Moving Too Fast */}
+        <Card>
+          <SectionTitle>Moving Too Fast</SectionTitle>
+          <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 12 }}>High accuracy + short sessions = content may be too easy</div>
+          {data.fastProgressLevels.length === 0 ? (
+            <div style={{ fontSize: 13, color: "#9CA3AF", fontStyle: "italic" }}>No fast-progress levels detected.</div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {data.fastProgressLevels.map(row => (
+                <div key={row.level} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "#FFFBEB", border: `1px solid #FDE68A`, borderRadius: 8 }}>
+                  <div>
+                    <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontWeight: 700, fontSize: 16, color: DARK_GREEN }}>Level {row.level}</div>
+                    <div style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}>{row.sessions} session{row.sessions !== 1 ? "s" : ""}</div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: "#16a34a" }}>{row.accuracyPct}% accurate</div>
+                    <div style={{ fontSize: 12, color: "#6B7280" }}>avg {row.avgMins}m/session</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+
+      </div>
+    </>
+  );
+}
+
 // ─── Login Screen ─────────────────────────────────────────────────────────────
 
 function LoginScreen({ onLogin }: { onLogin: (pw: string) => void }) {
@@ -805,6 +968,7 @@ function LoginScreen({ onLogin }: { onLogin: (pw: string) => void }) {
 function Dashboard({ password }: { password: string }) {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [allUsers, setAllUsers] = useState<AdminUser[]>([]);
+  const [learningData, setLearningData] = useState<LearningAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [now, setNow] = useState(new Date());
@@ -815,15 +979,17 @@ function Dashboard({ password }: { password: string }) {
     setLoading(true);
     setError("");
     try {
-      const [metricsRes, usersRes] = await Promise.all([
-        fetch("/api/admin/metrics", { headers: { "X-Admin-Secret": password } }),
-        fetch("/api/admin/users",   { headers: { "X-Admin-Secret": password } }),
+      const [metricsRes, usersRes, learningRes] = await Promise.all([
+        fetch("/api/admin/metrics",            { headers: { "X-Admin-Secret": password } }),
+        fetch("/api/admin/users",              { headers: { "X-Admin-Secret": password } }),
+        fetch("/api/admin/learning-analytics", { headers: { "X-Admin-Secret": password } }),
       ]);
       if (!metricsRes.ok) throw new Error("Failed to load metrics");
       if (!usersRes.ok)   throw new Error("Failed to load users");
       const [metricsData, usersData] = await Promise.all([metricsRes.json(), usersRes.json()]);
       setMetrics(metricsData);
       setAllUsers(usersData);
+      if (learningRes.ok) setLearningData(await learningRes.json());
     } catch (e: any) {
       setError(e.message ?? "Unknown error");
     } finally {
@@ -999,7 +1165,11 @@ function Dashboard({ password }: { password: string }) {
             {/* Row 4: Daily Signups Chart */}
             <DailySignupsChart data={metrics.dailySignups} />
 
-            {/* Row 5: Grant Beta */}
+            {/* Row 5: Learning Analytics */}
+            <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 }}>Learning Analytics</div>
+            <LearningAnalyticsSection data={learningData} />
+
+            {/* Row 6: Grant Beta */}
             <GrantBetaCard password={password} />
 
             {/* Row 6: All Users */}
