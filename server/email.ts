@@ -4,12 +4,12 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.EMAIL_FROM || "E-Skillora <hello@e-skillora.org>";
 const APP_URL = process.env.APP_URL || "https://e-skillora.org";
 
-export async function sendBetaGrantedNotification(grantedEmail: string): Promise<void> {
+export async function sendBetaWelcomeEmail(email: string): Promise<void> {
   await resend.emails.send({
-    from: FROM,
-    to: "bishoy@e-skillora.org",
-    subject: `Beta trial granted - ${grantedEmail}`,
-    html: `<p>Beta trial granted for <strong>${grantedEmail}</strong>. Follow up personally when ready.</p>`,
+    from: "Bishoy from E-Skillora <bishoy@e-skillora.org>",
+    to: email,
+    subject: "You're in - 30 days free on E-Skillora",
+    text: `Hi! I'm Bishoy, the founder of E-Skillora. I saw your interest and wanted to personally welcome you. Your 30 days free starts today, no credit card needed. Head to e-skillora.org to get started. I'd love to hear what you think, just reply to this email anytime. - Bishoy`,
   });
 }
 
