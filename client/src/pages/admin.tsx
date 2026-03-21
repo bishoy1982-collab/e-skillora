@@ -42,16 +42,22 @@ interface RecentUser {
 
 // ─── Grant Beta Card ──────────────────────────────────────────────────────────
 
+const BETA_EMAIL_SUBJECT = `You're in - 30 days free on E-Skillora`;
+const BETA_EMAIL_BODY = `Hi! I'm Bishoy, the founder of E-Skillora. I saw your interest and wanted to personally welcome you. Your 30 days free starts today, no credit card needed. Head to e-skillora.org to get started. I'd love to hear what you think, just reply to this email anytime. - Bishoy`;
+
 function GrantBetaCard({ password }: { password: string }) {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<{ ok: boolean; message: string } | null>(null);
+  const [granted, setGranted] = useState<string | null>(null);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState<"subject" | "body" | null>(null);
 
   async function handleGrant(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) return;
     setLoading(true);
-    setStatus(null);
+    setError("");
+    setGranted(null);
     try {
       const res = await fetch("/api/admin/grant-beta", {
         method: "POST",
@@ -59,27 +65,34 @@ function GrantBetaCard({ password }: { password: string }) {
         body: JSON.stringify({ email: email.trim() }),
       });
       const data = await res.json();
-      setStatus({ ok: res.ok, message: data.message });
-      if (res.ok) setEmail("");
+      if (!res.ok) throw new Error(data.message);
+      setGranted(email.trim());
+      setEmail("");
     } catch (e: any) {
-      setStatus({ ok: false, message: e.message });
+      setError(e.message);
     } finally {
       setLoading(false);
     }
+  }
+
+  function copy(text: string, field: "subject" | "body") {
+    navigator.clipboard.writeText(text);
+    setCopied(field);
+    setTimeout(() => setCopied(null), 2000);
   }
 
   return (
     <Card>
       <SectionTitle>Grant Beta Trial</SectionTitle>
       <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 16 }}>
-        Grants a 30-day free trial and sends a welcome email. Works for existing accounts and pre-grants for users who haven't signed up yet.
+        Grants a 30-day free trial. Works for existing accounts and pre-grants for users who haven't signed up yet. Email copy will appear below for you to send manually.
       </p>
       <form onSubmit={handleGrant} style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
         <input
           type="email"
           placeholder="beta@example.com"
           value={email}
-          onChange={e => setEmail(e.target.value)}
+          onChange={e => { setEmail(e.target.value); setGranted(null); setError(""); }}
           required
           style={{
             flex: 1, minWidth: 240, padding: "9px 14px", fontSize: 14,
@@ -95,16 +108,45 @@ function GrantBetaCard({ password }: { password: string }) {
             fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", whiteSpace: "nowrap",
           }}
         >
-          {loading ? "Sending…" : "Grant 30-Day Trial"}
+          {loading ? "Granting…" : "Grant 30-Day Trial"}
         </button>
       </form>
-      {status && (
-        <div style={{
-          marginTop: 12, padding: "8px 14px", borderRadius: 6, fontSize: 13, fontWeight: 500,
-          background: status.ok ? "#DCFCE7" : "#FEE2E2",
-          color: status.ok ? "#15803D" : "#B91C1C",
-        }}>
-          {status.ok ? "✓ " : "✗ "}{status.message}
+
+      {error && (
+        <div style={{ marginTop: 12, padding: "8px 14px", borderRadius: 6, fontSize: 13, fontWeight: 500, background: "#FEE2E2", color: "#B91C1C" }}>
+          ✗ {error}
+        </div>
+      )}
+
+      {granted && (
+        <div style={{ marginTop: 16, padding: 16, background: "#F8FAFC", border: `1px solid ${BORDER}`, borderRadius: 8 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#15803D", marginBottom: 12 }}>
+            ✓ Trial granted for {granted} — send them this email:
+          </div>
+
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Subject</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <code style={{ flex: 1, background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 4, padding: "6px 10px", fontSize: 13, color: "#111827" }}>
+                {BETA_EMAIL_SUBJECT}
+              </code>
+              <button onClick={() => copy(BETA_EMAIL_SUBJECT, "subject")} style={{ padding: "6px 12px", fontSize: 12, fontWeight: 600, background: copied === "subject" ? "#DCFCE7" : "#F3F4F6", color: copied === "subject" ? "#15803D" : "#374151", border: `1px solid ${BORDER}`, borderRadius: 4, cursor: "pointer", whiteSpace: "nowrap" }}>
+                {copied === "subject" ? "Copied!" : "Copy"}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>Body</div>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+              <div style={{ flex: 1, background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 4, padding: "8px 10px", fontSize: 13, color: "#111827", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                {BETA_EMAIL_BODY}
+              </div>
+              <button onClick={() => copy(BETA_EMAIL_BODY, "body")} style={{ padding: "6px 12px", fontSize: 12, fontWeight: 600, background: copied === "body" ? "#DCFCE7" : "#F3F4F6", color: copied === "body" ? "#15803D" : "#374151", border: `1px solid ${BORDER}`, borderRadius: 4, cursor: "pointer", whiteSpace: "nowrap" }}>
+                {copied === "body" ? "Copied!" : "Copy"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </Card>
