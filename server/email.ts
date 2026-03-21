@@ -1,11 +1,15 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.EMAIL_FROM || "E-Skillora <hello@e-skillora.org>";
 const APP_URL = process.env.APP_URL || "https://e-skillora.org";
 
+function getResend(): Resend {
+  if (!process.env.RESEND_API_KEY) throw new Error("RESEND_API_KEY is not set");
+  return new Resend(process.env.RESEND_API_KEY);
+}
+
 export async function sendBetaWelcomeEmail(email: string): Promise<void> {
-  await resend.emails.send({
+  await getResend().emails.send({
     from: "Bishoy from E-Skillora <bishoy@e-skillora.org>",
     to: email,
     subject: "You're in - 30 days free on E-Skillora",
@@ -14,7 +18,7 @@ export async function sendBetaWelcomeEmail(email: string): Promise<void> {
 }
 
 export async function sendPasswordResetEmail(email: string, resetUrl: string): Promise<void> {
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: email,
     subject: "Reset your E-Skillora password",
