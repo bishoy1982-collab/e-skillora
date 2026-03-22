@@ -615,6 +615,86 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  // ─── PAGE TRACKING ───────────────────────────────────────────
+
+  app.post("/api/track", async (req, res) => {
+    try {
+      const { event, referrer } = req.body ?? {};
+      const allowed = ["pageview", "click_free_trial", "click_login"];
+      if (!allowed.includes(event)) return res.status(400).json({ ok: false });
+      // Hash IP for privacy — not stored raw
+      const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress || "";
+      const crypto = await import("crypto");
+      const ip_hash = crypto.createHash("sha256").update(ip).digest("hex").slice(0, 16);
+      await pool.query(
+        `INSERT INTO page_events (event, ip_hash, referrer) VALUES ($1, $2, $3)`,
+        [event, ip_hash, referrer?.slice(0, 255) ?? null]
+      );
+      return res.json({ ok: true });
+    } catch (err: any) {
+      return res.status(500).json({ ok: false });
+    }
+  });
+
+  app.get("/api/admin/traffic", requireAdmin, async (req, res) => {
+    try {
+      const result = await pool.query(`
+        SELECT
+          event,
+          COUNT(*) AS total,
+          COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '1 day')  AS today,
+          COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '7 days') AS week,
+          COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '30 days') AS month,
+          COUNT(DISTINCT ip_hash) FILTER (WHERE created_at >= NOW() - INTERVAL '30 days') AS unique_month
+        FROM page_events
+        GROUP BY event
+      `);
+
+      // Daily pageviews for last 14 days
+      const daily = await pool.query(`
+        SELECT DATE(created_at) AS date, COUNT(*) AS views,
+               COUNT(DISTINCT ip_hash) AS unique_views
+        FROM page_events
+        WHERE event = 'pageview' AND created_at >= NOW() - INTERVAL '14 days'
+        GROUP BY DATE(created_at)
+        ORDER BY date
+      `);
+
+      const byEvent: Record<string, any> = {};
+      for (const row of result.rows) {
+        byEvent[row.event] = {
+          total: Number(row.total),
+          today: Number(row.today),
+          week: Number(row.week),
+          month: Number(row.month),
+          uniqueMonth: Number(row.unique_month),
+        };
+      }
+
+      const pageviews = byEvent["pageview"] ?? { total: 0, today: 0, week: 0, month: 0, uniqueMonth: 0 };
+      const trialClicks = byEvent["click_free_trial"] ?? { total: 0, today: 0, week: 0, month: 0, uniqueMonth: 0 };
+      const loginClicks = byEvent["click_login"] ?? { total: 0, today: 0, week: 0, month: 0, uniqueMonth: 0 };
+      const clickRate = pageviews.month > 0
+        ? Math.round((trialClicks.month / pageviews.month) * 1000) / 10
+        : 0;
+
+      return res.json({
+        pageviews,
+        trialClicks,
+        loginClicks,
+        clickRate,
+        dailyViews: daily.rows.map((r: any) => ({
+          date: r.date,
+          views: Number(r.views),
+          uniqueViews: Number(r.unique_views),
+        })),
+      });
+    } catch (err: any) {
+      console.error("Traffic analytics error:", err);
+      return res.status(500).json({ message: err.message });
+    }
+  });
+
   // ─── PUBLIC CONFIG ───────────────────────────────────────────
 
   app.get("/api/config", async (req, res) => {

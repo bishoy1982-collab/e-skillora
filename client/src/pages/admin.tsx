@@ -52,6 +52,64 @@ interface LearningAnalytics {
   levelDistribution: { level: string; count: number }[];
 }
 
+interface TrafficStat {
+  total: number; today: number; week: number; month: number; uniqueMonth: number;
+}
+interface TrafficData {
+  pageviews: TrafficStat;
+  trialClicks: TrafficStat;
+  loginClicks: TrafficStat;
+  clickRate: number;
+  dailyViews: { date: string; views: number; uniqueViews: number }[];
+}
+
+// ─── Traffic Section ──────────────────────────────────────────────────────────
+
+function TrafficSection({ data }: { data: TrafficData | null }) {
+  if (!data) return (
+    <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: "24px", color: "rgba(255,255,255,0.4)", textAlign: "center", fontSize: 13 }}>
+      No traffic data yet — visits will appear after the first page load.
+    </div>
+  );
+
+  const card = (label: string, value: string | number, sub: string) => (
+    <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 12, padding: "18px 20px", flex: 1, minWidth: 140 }}>
+      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>{label}</div>
+      <div style={{ fontSize: 28, fontWeight: 800, color: "#F7F3ED", lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>{sub}</div>
+    </div>
+  );
+
+  const maxViews = Math.max(...data.dailyViews.map(d => d.views), 1);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {/* KPI row */}
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        {card("Page Views", data.pageviews.month.toLocaleString(), `today: ${data.pageviews.today} · week: ${data.pageviews.week}`)}
+        {card("Unique Visitors", data.pageviews.uniqueMonth.toLocaleString(), "last 30 days")}
+        {card("Trial CTA Clicks", data.trialClicks.month.toLocaleString(), `today: ${data.trialClicks.today} · week: ${data.trialClicks.week}`)}
+        {card("Click-to-Trial Rate", `${data.clickRate}%`, "CTA clicks ÷ pageviews (30d)")}
+      </div>
+
+      {/* Daily bar chart */}
+      {data.dailyViews.length > 0 && (
+        <div style={{ background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: "16px 20px" }}>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>Daily Pageviews (14 days)</div>
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 60 }}>
+            {data.dailyViews.map(d => (
+              <div key={d.date} title={`${d.date}: ${d.views} views (${d.uniqueViews} unique)`} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                <div style={{ width: "100%", background: "rgba(201,151,58,0.7)", borderRadius: "3px 3px 0 0", height: `${Math.max((d.views / maxViews) * 52, 3)}px` }} />
+                <div style={{ fontSize: 9, color: "rgba(255,255,255,0.3)", whiteSpace: "nowrap" }}>{d.date.slice(5)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Grant Beta Card ──────────────────────────────────────────────────────────
 
 const BETA_EMAIL_SUBJECT = `You're in - 30 days free on E-Skillora`;
@@ -969,6 +1027,7 @@ function Dashboard({ password }: { password: string }) {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [allUsers, setAllUsers] = useState<AdminUser[]>([]);
   const [learningData, setLearningData] = useState<LearningAnalytics | null>(null);
+  const [trafficData, setTrafficData] = useState<TrafficData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [now, setNow] = useState(new Date());
@@ -979,10 +1038,11 @@ function Dashboard({ password }: { password: string }) {
     setLoading(true);
     setError("");
     try {
-      const [metricsRes, usersRes, learningRes] = await Promise.all([
+      const [metricsRes, usersRes, learningRes, trafficRes] = await Promise.all([
         fetch("/api/admin/metrics",            { headers: { "X-Admin-Secret": password } }),
         fetch("/api/admin/users",              { headers: { "X-Admin-Secret": password } }),
         fetch("/api/admin/learning-analytics", { headers: { "X-Admin-Secret": password } }),
+        fetch("/api/admin/traffic",            { headers: { "X-Admin-Secret": password } }),
       ]);
       if (!metricsRes.ok) throw new Error("Failed to load metrics");
       if (!usersRes.ok)   throw new Error("Failed to load users");
@@ -990,6 +1050,7 @@ function Dashboard({ password }: { password: string }) {
       setMetrics(metricsData);
       setAllUsers(usersData);
       if (learningRes.ok) setLearningData(await learningRes.json());
+      if (trafficRes.ok)  setTrafficData(await trafficRes.json());
     } catch (e: any) {
       setError(e.message ?? "Unknown error");
     } finally {
@@ -1162,7 +1223,11 @@ function Dashboard({ password }: { password: string }) {
               <StatusBreakdownCard funnel={metrics.funnel} />
             </div>
 
-            {/* Row 4: Daily Signups Chart */}
+            {/* Row 4: Traffic */}
+            <div style={{ color: "rgba(255,255,255,0.5)", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 }}>Website Traffic</div>
+            <TrafficSection data={trafficData} />
+
+            {/* Row 5: Daily Signups Chart */}
             <DailySignupsChart data={metrics.dailySignups} />
 
             {/* Row 5: Learning Analytics */}

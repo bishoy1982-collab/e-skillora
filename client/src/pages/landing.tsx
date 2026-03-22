@@ -1,4 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+function track(event: string) {
+  fetch("/api/track", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ event, referrer: document.referrer }),
+  }).catch(() => {});
+}
 import { Brain, ArrowRight, CheckCircle, BookOpen, Target, Users, Zap, Star, ChevronRight, Play, Shield, Sparkles } from "lucide-react";
 
 const G_FONT = `https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600;9..144,700;9..144,800&family=Instrument+Sans:wght@400;500;600;700&display=swap`;
@@ -29,6 +37,11 @@ interface LandingPageProps {
 }
 
 export default function LandingPage({ onNavigate }: LandingPageProps) {
+  useEffect(() => { track("pageview"); }, []);
+
+  function goSignup() { track("click_free_trial"); onNavigate("signup"); }
+  function goLogin()  { track("click_login");      onNavigate("login");  }
+
   return (
     <>
       <style>{LANDING_CSS}</style>
@@ -56,7 +69,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <button
               className="login-link"
-              onClick={() => onNavigate("login")}
+              onClick={goLogin}
               style={{
                 fontFamily: "'Instrument Sans', sans-serif", fontWeight: 600,
                 fontSize: 14, color: "#6B6B6B", background: "none",
@@ -67,7 +80,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             </button>
             <button
               className="hero-btn"
-              onClick={() => onNavigate("signup")}
+              onClick={goSignup}
               style={{
                 fontFamily: "'Instrument Sans', sans-serif", fontWeight: 700,
                 fontSize: 14, background: "linear-gradient(145deg, #1C3A2F, #2A5240)", color: "#F7F3ED",
@@ -123,7 +136,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
           <div className="fade-up d3" style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
             <button
               className="hero-btn"
-              onClick={() => onNavigate("signup")}
+              onClick={goSignup}
               style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
                 fontFamily: "'Instrument Sans', sans-serif", fontWeight: 700,
@@ -137,7 +150,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             </button>
             <button
               className="hero-btn"
-              onClick={() => onNavigate("login")}
+              onClick={goLogin}
               style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
                 fontFamily: "'Instrument Sans', sans-serif", fontWeight: 600,
@@ -326,7 +339,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             </div>
             <button
               className="hero-btn"
-              onClick={() => onNavigate("signup")}
+              onClick={goSignup}
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center",
                 gap: 8, width: "100%", marginTop: 24,
