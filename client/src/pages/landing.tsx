@@ -281,101 +281,259 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
         <div style={{ ...section }}>
           <div style={wrap}>
             <div style={{ textAlign: "center", marginBottom: 56 }}>
-              <div className="section-label" style={{ background: "#FEF3C7", color: "#D97706" }}>The product</div>
+              <div className="section-label" style={{ background: "#FEF3C7", color: "#D97706" }}>See it in action</div>
               <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 700, color: "#111", letterSpacing: "-0.02em" }}>
-                Built for daily learning, not one-off sessions
+                The full experience, start to finish
               </h2>
+              <p style={{ fontSize: 16, color: "#666", marginTop: 12, maxWidth: 480, margin: "12px auto 0" }}>
+                From picking a profile to completing a worksheet and watching the level bar fill up.
+              </p>
             </div>
-            <div className="three-col" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }}>
-              {[
-                {
-                  title: "Structured daily worksheets",
-                  caption: "Every session has a clear goal and structure — no randomness.",
-                  color: "#7C3AED", bg: "#F5F3FF",
-                  preview: (
-                    <div style={{ padding: "16px" }}>
-                      <div style={{ background: "#fff", borderRadius: 10, padding: "12px 14px", border: "1px solid #E9D5FF", marginBottom: 8 }}>
-                        <p style={{ fontSize: 11, color: "#7C3AED", fontWeight: 700, marginBottom: 6 }}>GRADE 3 · MATH · WORKSHEET 7</p>
-                        {["4 × 6 = ?", "25 + 38 = ?", "100 − 43 = ?"].map((q, i) => (
-                          <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: i < 2 ? "1px solid #F3F4F6" : "none" }}>
-                            <span style={{ fontSize: 12, color: "#444" }}>{q}</span>
-                            <div style={{ width: 48, height: 20, background: "#F3F4F6", borderRadius: 4 }} />
-                          </div>
-                        ))}
+
+            {/* 2×2 screen grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))", gap: 32 }}>
+
+              {/* Screen 1 — Profile selection */}
+              <div>
+                <div style={{
+                  borderRadius: 20, overflow: "hidden",
+                  boxShadow: "0 8px 48px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06)",
+                  background: "linear-gradient(160deg, #1C3A2F 0%, #2A5240 45%, #3D7A5C 100%)",
+                }}>
+                  {/* Chrome bar */}
+                  <div style={{ background: "rgba(0,0,0,0.2)", padding: "10px 16px", display: "flex", alignItems: "center", gap: 6 }}>
+                    {["#FF5F57","#FEBC2E","#28C840"].map(c => <div key={c} style={{ width: 9, height: 9, borderRadius: "50%", background: c }} />)}
+                    <div style={{ flex: 1, background: "rgba(255,255,255,0.1)", borderRadius: 6, height: 20, marginLeft: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}>e-skillora.org</span>
+                    </div>
+                  </div>
+                  {/* App content */}
+                  <div style={{ padding: "28px 24px 32px" }}>
+                    {/* Logo */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 24 }}>
+                      <div style={{ width: 32, height: 32, background: "rgba(255,255,255,0.12)", border: "1.5px solid rgba(255,255,255,0.2)", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <Brain size={16} color="#E5B96A" />
                       </div>
-                      <div style={{ background: "#7C3AED", borderRadius: 8, padding: "8px 14px", textAlign: "center" }}>
-                        <span style={{ fontSize: 12, color: "#fff", fontWeight: 600 }}>Submit Worksheet</span>
+                      <span style={{ fontFamily: "'Fraunces', serif", fontSize: 16, fontWeight: 700, color: "#fff" }}>e-Skillora</span>
+                    </div>
+                    <p style={{ fontFamily: "'Fraunces', serif", fontSize: 20, fontWeight: 700, color: "#fff", textAlign: "center", marginBottom: 20, letterSpacing: "-0.02em" }}>
+                      Who's learning today?
+                    </p>
+                    {/* Profile cards */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+                      {[{ emoji: "🦁", name: "Emma", age: "Age 9 · Level 4" }, { emoji: "🐬", name: "Jake", age: "Age 7 · Level 2" }].map((p) => (
+                        <div key={p.name} style={{
+                          background: "rgba(255,255,255,0.10)", border: "1.5px solid rgba(255,255,255,0.18)",
+                          borderRadius: 20, padding: "16px 12px", textAlign: "center",
+                          backdropFilter: "blur(12px)", cursor: "pointer",
+                        }}>
+                          <div style={{ fontSize: 36, marginBottom: 8 }}>{p.emoji}</div>
+                          <p style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 2 }}>{p.name}</p>
+                          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.55)" }}>{p.age}</p>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Parent access */}
+                    <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 14, padding: "11px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{ width: 32, height: 32, background: "rgba(255,255,255,0.12)", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <span style={{ fontSize: 15 }}>🛡️</span>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>Parent Dashboard</p>
+                        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>parent@email.com</p>
+                      </div>
+                      <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 16 }}>›</span>
+                    </div>
+                  </div>
+                </div>
+                <div style={{ marginTop: 16, paddingLeft: 4 }}>
+                  <p style={{ fontFamily: "'Fraunces', serif", fontSize: 16, fontWeight: 700, color: "#111", marginBottom: 4 }}>Choose your learner</p>
+                  <p style={{ fontSize: 14, color: "#666", lineHeight: 1.6 }}>Each child has their own profile, level, and progress — completely separate.</p>
+                </div>
+              </div>
+
+              {/* Screen 2 — Active worksheet */}
+              <div>
+                <div style={{
+                  borderRadius: 20, overflow: "hidden",
+                  boxShadow: "0 8px 48px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06)",
+                  background: "#F7F3ED",
+                }}>
+                  <div style={{ background: "rgba(0,0,0,0.07)", padding: "10px 16px", display: "flex", alignItems: "center", gap: 6 }}>
+                    {["#FF5F57","#FEBC2E","#28C840"].map(c => <div key={c} style={{ width: 9, height: 9, borderRadius: "50%", background: c }} />)}
+                    <div style={{ flex: 1, background: "rgba(0,0,0,0.06)", borderRadius: 6, height: 20, marginLeft: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontSize: 10, color: "rgba(0,0,0,0.35)" }}>e-skillora.org</span>
+                    </div>
+                  </div>
+                  <div style={{ padding: "0 0 20px" }}>
+                    {/* Header */}
+                    <div style={{ background: "linear-gradient(145deg, #1C3A2F, #2A5240)", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div>
+                        <p style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>Grade 4 · Math</p>
+                        <p style={{ fontSize: 15, fontWeight: 700, color: "#fff", fontFamily: "'Fraunces', serif" }}>Worksheet #12</p>
+                      </div>
+                      <div style={{ background: "linear-gradient(145deg, #C9973A, #E5B96A)", color: "#1C3A2F", fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 9999 }}>
+                        Level 4
                       </div>
                     </div>
-                  ),
-                },
-                {
-                  title: "Instant grading and feedback",
-                  caption: "Students see exactly what to fix — no waiting, no guessing.",
-                  color: "#2563EB", bg: "#EFF6FF",
-                  preview: (
-                    <div style={{ padding: "16px" }}>
-                      <div style={{ background: "#fff", borderRadius: 10, padding: "12px 14px", border: "1px solid #BFDBFE", marginBottom: 8 }}>
-                        <p style={{ fontSize: 11, color: "#2563EB", fontWeight: 700, marginBottom: 8 }}>RESULTS</p>
-                        {[{ q: "4 × 6 = ?", a: "24", ok: true }, { q: "25 + 38 = ?", a: "63", ok: true }, { q: "100 − 43 = ?", a: "47", ok: false }].map((r, i) => (
-                          <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: i < 2 ? "1px solid #F3F4F6" : "none" }}>
-                            <span style={{ fontSize: 12, color: "#444" }}>{r.q} <strong>{r.a}</strong></span>
-                            <span style={{ fontSize: 13, fontWeight: 700, color: r.ok ? "#16A34A" : "#DC2626" }}>{r.ok ? "✓" : "✗"}</span>
-                          </div>
-                        ))}
+                    {/* Questions */}
+                    <div style={{ padding: "16px 20px 0" }}>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: "#9A9A9A", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 12 }}>Daily Worksheet</p>
+                      {[
+                        { n: "1", q: "What is 7 × 8?", answered: true },
+                        { n: "2", q: "Solve: 144 ÷ 12 = ?", answered: true },
+                        { n: "3", q: "Round 3,748 to the nearest hundred", answered: false },
+                        { n: "4", q: "What is 25% of 200?", answered: false },
+                      ].map((item) => (
+                        <div key={item.n} style={{
+                          background: item.answered ? "rgba(28,58,47,0.06)" : "rgba(255,255,255,0.9)",
+                          border: `1.5px solid ${item.answered ? "rgba(28,58,47,0.15)" : "rgba(224,217,207,0.9)"}`,
+                          borderRadius: 14, padding: "12px 14px", marginBottom: 8,
+                          display: "flex", alignItems: "center", gap: 12,
+                        }}>
+                          <span style={{ width: 22, height: 22, borderRadius: "50%", background: item.answered ? "#1C3A2F" : "#E0D9CF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: item.answered ? "#fff" : "#9A9A9A", flexShrink: 0 }}>{item.n}</span>
+                          <span style={{ fontSize: 13, color: "#3D3D3D", flex: 1 }}>{item.q}</span>
+                          {item.answered
+                            ? <span style={{ fontSize: 11, color: "#3D7A5C", fontWeight: 600 }}>Answered</span>
+                            : <div style={{ width: 56, height: 22, background: "#F7F3ED", border: "1.5px solid #E0D9CF", borderRadius: 6 }} />
+                          }
+                        </div>
+                      ))}
+                      <div style={{ marginTop: 16, background: "linear-gradient(145deg, #1C3A2F, #2A5240)", borderRadius: 9999, padding: "13px", textAlign: "center" }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "#F7F3ED" }}>Submit Worksheet</span>
                       </div>
-                      <div style={{ background: "#EFF6FF", borderRadius: 8, padding: "8px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ fontSize: 12, color: "#2563EB", fontWeight: 600 }}>Score: 67%</span>
-                        <div style={{ height: 6, width: 80, background: "#BFDBFE", borderRadius: 9999 }}>
-                          <div style={{ height: "100%", width: "67%", background: "#2563EB", borderRadius: 9999 }} />
+                    </div>
+                  </div>
+                </div>
+                <div style={{ marginTop: 16, paddingLeft: 4 }}>
+                  <p style={{ fontFamily: "'Fraunces', serif", fontSize: 16, fontWeight: 700, color: "#111", marginBottom: 4 }}>Structured daily worksheets</p>
+                  <p style={{ fontSize: 14, color: "#666", lineHeight: 1.6 }}>Every session is purposeful — the right level, the right questions, every day.</p>
+                </div>
+              </div>
+
+              {/* Screen 3 — Graded results */}
+              <div>
+                <div style={{
+                  borderRadius: 20, overflow: "hidden",
+                  boxShadow: "0 8px 48px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06)",
+                  background: "#F7F3ED",
+                }}>
+                  <div style={{ background: "rgba(0,0,0,0.07)", padding: "10px 16px", display: "flex", alignItems: "center", gap: 6 }}>
+                    {["#FF5F57","#FEBC2E","#28C840"].map(c => <div key={c} style={{ width: 9, height: 9, borderRadius: "50%", background: c }} />)}
+                    <div style={{ flex: 1, background: "rgba(0,0,0,0.06)", borderRadius: 6, height: 20, marginLeft: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontSize: 10, color: "rgba(0,0,0,0.35)" }}>e-skillora.org</span>
+                    </div>
+                  </div>
+                  <div style={{ padding: "0 0 20px" }}>
+                    {/* Score header */}
+                    <div style={{ background: "linear-gradient(145deg, #16A34A, #22C55E)", padding: "20px", textAlign: "center" }}>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>Worksheet Complete</p>
+                      <p style={{ fontFamily: "'Fraunces', serif", fontSize: 40, fontWeight: 800, color: "#fff", lineHeight: 1 }}>85%</p>
+                      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", marginTop: 4 }}>17 of 20 correct · Nice work! 🎉</p>
+                    </div>
+                    <div style={{ padding: "16px 20px 0" }}>
+                      {/* Results */}
+                      {[
+                        { q: "What is 7 × 8?", yours: "56", correct: true },
+                        { q: "Solve: 144 ÷ 12 = ?", yours: "12", correct: true },
+                        { q: "Round 3,748 to the nearest hundred", yours: "3,800", correct: false, right: "3,700" },
+                      ].map((r, i) => (
+                        <div key={i} style={{
+                          display: "flex", alignItems: "flex-start", gap: 10,
+                          padding: "10px 12px", borderRadius: 12, marginBottom: 8,
+                          background: r.correct ? "#F0FDF4" : "#FFF1F0",
+                          border: `1px solid ${r.correct ? "#BBF7D0" : "#FECACA"}`,
+                        }}>
+                          <div style={{ width: 24, height: 24, borderRadius: "50%", background: r.correct ? "#16A34A" : "#E8604C", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
+                            {r.correct ? "✓" : "✗"}
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            <p style={{ fontSize: 12, color: "#3D3D3D", fontWeight: 500 }}>{r.q}</p>
+                            {!r.correct && <p style={{ fontSize: 11, color: "#E8604C", marginTop: 2 }}>Your answer: {r.yours} · Correct: {r.right}</p>}
+                          </div>
+                        </div>
+                      ))}
+                      {/* Level progress */}
+                      <div style={{ marginTop: 14, background: "rgba(28,58,47,0.06)", borderRadius: 14, padding: "12px 14px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: "#1C3A2F" }}>Level 4 progress</span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: "#16A34A" }}>85% ✓ — Level unlocked!</span>
+                        </div>
+                        <div style={{ height: 7, background: "#E0D9CF", borderRadius: 9999 }}>
+                          <div style={{ height: "100%", width: "85%", background: "linear-gradient(90deg, #C9973A, #E5B96A)", borderRadius: 9999 }} />
                         </div>
                       </div>
                     </div>
-                  ),
-                },
-                {
-                  title: "Clear level progression",
-                  caption: "Track growth and move up after proving real mastery.",
-                  color: "#16A34A", bg: "#F0FDF4",
-                  preview: (
-                    <div style={{ padding: "16px" }}>
-                      <div style={{ background: "#fff", borderRadius: 10, padding: "12px 14px", border: "1px solid #BBF7D0", marginBottom: 8 }}>
-                        <p style={{ fontSize: 11, color: "#16A34A", fontWeight: 700, marginBottom: 8 }}>PROGRESS</p>
-                        {[
-                          { level: "Level 3", pct: 100, done: true },
-                          { level: "Level 4", pct: 67, done: false },
-                          { level: "Level 5", pct: 0, done: false },
-                        ].map((l, i) => (
-                          <div key={i} style={{ marginBottom: i < 2 ? 8 : 0 }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                              <span style={{ fontSize: 12, color: "#444", fontWeight: 500 }}>{l.level}</span>
-                              <span style={{ fontSize: 11, color: l.done ? "#16A34A" : "#999", fontWeight: 600 }}>{l.done ? "Complete ✓" : `${l.pct}%`}</span>
-                            </div>
-                            <div style={{ height: 6, background: "#F3F4F6", borderRadius: 9999 }}>
-                              <div style={{ height: "100%", width: `${l.pct}%`, background: l.done ? "#16A34A" : "#86EFAC", borderRadius: 9999, transition: "width 0.3s" }} />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      <div style={{ background: "#F0FDF4", borderRadius: 8, padding: "8px 14px", textAlign: "center" }}>
-                        <span style={{ fontSize: 12, color: "#16A34A", fontWeight: 600 }}>Score 80%+ to unlock Level 5</span>
-                      </div>
-                    </div>
-                  ),
-                },
-              ].map((item, i) => (
-                <div key={i} className="card" style={{ overflow: "hidden" }}>
-                  <div style={{ background: item.bg, borderBottom: "1px solid #EBEBEB" }}>
-                    {item.preview}
-                  </div>
-                  <div style={{ padding: "20px 24px" }}>
-                    <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 17, fontWeight: 700, color: "#111", marginBottom: 6, letterSpacing: "-0.01em" }}>
-                      {item.title}
-                    </h3>
-                    <p style={{ fontSize: 14, color: "#666", lineHeight: 1.6 }}>{item.caption}</p>
                   </div>
                 </div>
-              ))}
+                <div style={{ marginTop: 16, paddingLeft: 4 }}>
+                  <p style={{ fontFamily: "'Fraunces', serif", fontSize: 16, fontWeight: 700, color: "#111", marginBottom: 4 }}>Instant grading and feedback</p>
+                  <p style={{ fontSize: 14, color: "#666", lineHeight: 1.6 }}>Every answer graded immediately — students know exactly what to improve.</p>
+                </div>
+              </div>
+
+              {/* Screen 4 — Parent dashboard */}
+              <div>
+                <div style={{
+                  borderRadius: 20, overflow: "hidden",
+                  boxShadow: "0 8px 48px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.06)",
+                  background: "#F7F3ED",
+                }}>
+                  <div style={{ background: "rgba(0,0,0,0.07)", padding: "10px 16px", display: "flex", alignItems: "center", gap: 6 }}>
+                    {["#FF5F57","#FEBC2E","#28C840"].map(c => <div key={c} style={{ width: 9, height: 9, borderRadius: "50%", background: c }} />)}
+                    <div style={{ flex: 1, background: "rgba(0,0,0,0.06)", borderRadius: 6, height: 20, marginLeft: 8, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontSize: 10, color: "rgba(0,0,0,0.35)" }}>e-skillora.org/dashboard</span>
+                    </div>
+                  </div>
+                  <div style={{ padding: "16px 20px 20px" }}>
+                    <p style={{ fontFamily: "'Fraunces', serif", fontSize: 16, fontWeight: 700, color: "#1C3A2F", marginBottom: 14 }}>Good morning 👋</p>
+                    {/* Child card */}
+                    <div style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(224,217,207,0.7)", boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
+                      <div style={{ background: "linear-gradient(145deg, #1C3A2F, #2A5240)", padding: "14px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{ fontSize: 32 }}>🦁</div>
+                        <div>
+                          <p style={{ fontSize: 15, fontWeight: 700, color: "#fff", fontFamily: "'Fraunces', serif" }}>Emma</p>
+                          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>Age 9 · Level 4 · Math & Reading</p>
+                        </div>
+                        <div style={{ marginLeft: "auto", background: "linear-gradient(145deg, #C9973A, #E5B96A)", color: "#1C3A2F", fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 9999 }}>
+                          Level 4
+                        </div>
+                      </div>
+                      <div style={{ background: "#fff", padding: "14px 16px" }}>
+                        {/* Level bar */}
+                        <div style={{ marginBottom: 14 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: "#6B6B6B", textTransform: "uppercase", letterSpacing: "0.04em" }}>Level Progress</span>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: "#C9973A" }}>72% to Level 5</span>
+                          </div>
+                          <div style={{ height: 7, background: "#EDE8E0", borderRadius: 9999 }}>
+                            <div style={{ height: "100%", width: "72%", background: "linear-gradient(90deg, #C9973A, #E5B96A)", borderRadius: 9999 }} />
+                          </div>
+                        </div>
+                        {/* Stats grid */}
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+                          {[
+                            { label: "Accuracy", val: "84%", color: "#16A34A" },
+                            { label: "Streak",   val: "6 days", color: "#C9973A" },
+                            { label: "Sessions", val: "24",     color: "#2563EB" },
+                            { label: "Time",     val: "4.2h",   color: "#7C3AED" },
+                          ].map((s) => (
+                            <div key={s.label} style={{ background: "#F7F3ED", borderRadius: 10, padding: "8px 6px", textAlign: "center" }}>
+                              <p style={{ fontSize: 13, fontWeight: 800, color: s.color, fontFamily: "'Fraunces', serif" }}>{s.val}</p>
+                              <p style={{ fontSize: 10, color: "#9A9A9A", marginTop: 2 }}>{s.label}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div style={{ marginTop: 16, paddingLeft: 4 }}>
+                  <p style={{ fontFamily: "'Fraunces', serif", fontSize: 16, fontWeight: 700, color: "#111", marginBottom: 4 }}>Parent dashboard</p>
+                  <p style={{ fontSize: 14, color: "#666", lineHeight: 1.6 }}>Track accuracy, streak, level progress, and time spent — all in one place.</p>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
