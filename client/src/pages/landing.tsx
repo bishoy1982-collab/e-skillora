@@ -118,102 +118,148 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
         </nav>
 
         {/* ── HERO ── */}
-        <div style={{ background: "#F9FAFB", borderBottom: "1px solid #EBEBEB" }}>
-          <div style={{ ...wrap, ...section }}>
-            <div className="hero-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
+        <div style={{ background: "#F9FAFB", borderBottom: "1px solid #EBEBEB", overflow: "hidden" }}>
+          <div style={{ ...wrap, paddingTop: 72, paddingBottom: 0 }}>
 
-              {/* Left */}
-              <div>
-                <div className="fu section-label" style={{ background: "#DCFCE7", color: "#16A34A" }}>
-                  <Star size={11} fill="#16A34A" color="#16A34A" /> 3-Day Free Trial
-                </div>
-                <h1 className="fu d1" style={{
-                  fontFamily: "'Fraunces', serif",
-                  fontSize: "clamp(28px, 4vw, 46px)", fontWeight: 800,
-                  color: "#111", lineHeight: 1.15, marginBottom: 18, letterSpacing: "-0.03em",
-                }}>
-                  Help your child improve with structured daily learning
-                </h1>
-                <p className="fu d2" style={{ fontSize: 17, color: "#555", lineHeight: 1.7, marginBottom: 10 }}>
-                  Daily worksheets, instant grading, and level progression that builds real skills.
-                </p>
-                <p className="fu d2" style={{ fontSize: 14, color: "#16A34A", fontWeight: 600, marginBottom: 32 }}>
-                  Also built for self-learners in grades 1–12
-                </p>
-                <div className="fu d3" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                  <button className="btn-primary" onClick={goSignup}>
-                    Start Free Trial <ArrowRight size={16} />
-                  </button>
-                  <button className="btn-secondary" onClick={() => scrollTo("how-it-works")}>
-                    See How It Works <ChevronDown size={16} />
-                  </button>
-                </div>
-                <p className="fu d4" style={{ fontSize: 13, color: "#999", marginTop: 14 }}>
-                  No credit card required · Cancel anytime · Students welcome
-                </p>
+            {/* Top: text centred */}
+            <div style={{ textAlign: "center", maxWidth: 680, margin: "0 auto", paddingBottom: 56 }}>
+              <div className="fu section-label" style={{ background: "#DCFCE7", color: "#16A34A" }}>
+                <Star size={11} fill="#16A34A" color="#16A34A" /> 3-Day Free Trial · No credit card required
               </div>
-
-              {/* Right — Product Mockup */}
-              <div className="hero-mockup fu d3" style={{
-                background: "#fff", borderRadius: 20,
-                boxShadow: "0 8px 48px rgba(0,0,0,0.12), 0 0 0 1px #EBEBEB",
-                overflow: "hidden",
+              <h1 className="fu d1" style={{
+                fontFamily: "'Fraunces', serif",
+                fontSize: "clamp(32px, 5vw, 58px)", fontWeight: 800,
+                color: "#111", lineHeight: 1.1, marginBottom: 20, letterSpacing: "-0.03em",
               }}>
-                {/* Mockup header bar */}
-                <div style={{ background: "#1C3A2F", padding: "14px 20px", display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ display: "flex", gap: 6 }}>
-                    {["#FF5F57","#FEBC2E","#28C840"].map(c => (
-                      <div key={c} style={{ width: 10, height: 10, borderRadius: "50%", background: c }} />
+                Your child can master<br />math and reading
+              </h1>
+              <p className="fu d2" style={{ fontSize: 18, color: "#555", lineHeight: 1.7, marginBottom: 8 }}>
+                Daily worksheets, instant grading, and level progression for grades 1–12.
+              </p>
+              <p className="fu d2" style={{ fontSize: 14, color: "#16A34A", fontWeight: 600, marginBottom: 36 }}>
+                Also built for self-learners
+              </p>
+              <div className="fu d3" style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+                <button className="btn-primary" onClick={goSignup} style={{ fontSize: 16, padding: "15px 32px" }}>
+                  Start Free Trial <ArrowRight size={16} />
+                </button>
+                <button className="btn-secondary" onClick={() => scrollTo("how-it-works")} style={{ fontSize: 15 }}>
+                  See How It Works <ChevronDown size={16} />
+                </button>
+              </div>
+              <p className="fu d4" style={{ fontSize: 13, color: "#999", marginTop: 14 }}>
+                Students welcome, not just parents · Cancel anytime
+              </p>
+            </div>
+
+            {/* Bottom: 3-screenshot cascade */}
+            <div className="hero-mockup" style={{ position: "relative", height: 340, display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 0 }}>
+
+              {/* Left screen — Profile selection */}
+              <div style={{
+                position: "absolute", left: "50%", bottom: 0,
+                transform: "translateX(-108%) rotate(-6deg)",
+                width: 280, borderRadius: "16px 16px 0 0", overflow: "hidden",
+                boxShadow: "0 16px 56px rgba(0,0,0,0.18)", border: "1px solid rgba(0,0,0,0.07)",
+                zIndex: 1,
+              }}>
+                <div style={{ background: "linear-gradient(160deg, #1C3A2F, #2A5240, #3D7A5C)", padding: "10px 14px 0" }}>
+                  <div style={{ display: "flex", gap: 5, marginBottom: 12 }}>
+                    {["#FF5F57","#FEBC2E","#28C840"].map(c => <div key={c} style={{ width: 8, height: 8, borderRadius: "50%", background: c }} />)}
+                  </div>
+                  <p style={{ fontFamily: "'Fraunces', serif", fontSize: 14, fontWeight: 700, color: "#fff", textAlign: "center", marginBottom: 14 }}>Who's learning today?</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+                    {[{ e: "🦁", n: "Emma", l: "Level 4" }, { e: "🐬", n: "Jake", l: "Level 2" }].map(p => (
+                      <div key={p.n} style={{ background: "rgba(255,255,255,0.1)", border: "1.5px solid rgba(255,255,255,0.18)", borderRadius: 14, padding: "12px 8px", textAlign: "center" }}>
+                        <div style={{ fontSize: 26, marginBottom: 4 }}>{p.e}</div>
+                        <p style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{p.n}</p>
+                        <p style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}>{p.l}</p>
+                      </div>
                     ))}
                   </div>
-                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginLeft: 8 }}>Grade 4 · Math · Worksheet #12</span>
-                  <div style={{ marginLeft: "auto", background: "#E5B96A", color: "#1C3A2F", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 9999 }}>
-                    Level 4
-                  </div>
-                </div>
-                {/* Worksheet body */}
-                <div style={{ padding: "24px 24px 20px" }}>
-                  <p style={{ fontSize: 13, color: "#999", marginBottom: 16, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                    Daily Worksheet
-                  </p>
-                  {[
-                    { q: "What is 7 × 8?", a: "56", correct: true },
-                    { q: "Solve: 144 ÷ 12 = ?", a: "12", correct: true },
-                    { q: "Round 3,748 to the nearest hundred", a: "3,700", correct: false },
-                  ].map((item, i) => (
-                    <div key={i} style={{
-                      display: "flex", alignItems: "center", justifyContent: "space-between",
-                      padding: "10px 14px", borderRadius: 10, marginBottom: 8,
-                      background: item.correct ? "#F0FDF4" : "#FFF7ED",
-                      border: `1px solid ${item.correct ? "#BBF7D0" : "#FED7AA"}`,
-                    }}>
-                      <div>
-                        <p style={{ fontSize: 13, color: "#444", fontWeight: 500 }}>{item.q}</p>
-                        <p style={{ fontSize: 12, color: "#888", marginTop: 2 }}>Answer: {item.a}</p>
-                      </div>
-                      <div style={{
-                        width: 28, height: 28, borderRadius: "50%",
-                        background: item.correct ? "#16A34A" : "#F97316",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        color: "#fff", fontSize: 14, fontWeight: 700, flexShrink: 0,
-                      }}>
-                        {item.correct ? "✓" : "✗"}
-                      </div>
-                    </div>
-                  ))}
-                  {/* Score bar */}
-                  <div style={{ marginTop: 16, padding: "14px 16px", background: "#F9FAFB", borderRadius: 12, border: "1px solid #EBEBEB" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: "#444" }}>Worksheet Score</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#16A34A" }}>67%</span>
-                    </div>
-                    <div style={{ height: 6, background: "#E5E7EB", borderRadius: 9999 }}>
-                      <div style={{ height: "100%", width: "67%", background: "linear-gradient(90deg, #16A34A, #22C55E)", borderRadius: 9999 }} />
-                    </div>
-                    <p style={{ fontSize: 11, color: "#999", marginTop: 8 }}>Score 80%+ to advance to Level 5</p>
+                  <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 10, padding: "8px 12px", display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                    <span style={{ fontSize: 16 }}>🛡️</span>
+                    <div><p style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>Parent Dashboard</p><p style={{ fontSize: 10, color: "rgba(255,255,255,0.45)" }}>View progress</p></div>
                   </div>
                 </div>
               </div>
+
+              {/* Centre screen — Active worksheet (tallest, front) */}
+              <div style={{
+                position: "relative", width: 300, borderRadius: "16px 16px 0 0", overflow: "hidden",
+                boxShadow: "0 20px 72px rgba(0,0,0,0.22)", border: "1px solid rgba(0,0,0,0.07)",
+                zIndex: 3,
+              }}>
+                <div style={{ background: "rgba(0,0,0,0.06)", padding: "9px 14px", display: "flex", gap: 5 }}>
+                  {["#FF5F57","#FEBC2E","#28C840"].map(c => <div key={c} style={{ width: 8, height: 8, borderRadius: "50%", background: c }} />)}
+                </div>
+                <div style={{ background: "linear-gradient(145deg, #1C3A2F, #2A5240)", padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <p style={{ fontSize: 9, color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Grade 4 · Math</p>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: "#fff", fontFamily: "'Fraunces', serif" }}>Worksheet #12</p>
+                  </div>
+                  <div style={{ background: "linear-gradient(145deg,#C9973A,#E5B96A)", color: "#1C3A2F", fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 9999 }}>Level 4</div>
+                </div>
+                <div style={{ background: "#F7F3ED", padding: "14px 16px 18px" }}>
+                  <p style={{ fontSize: 9, fontWeight: 700, color: "#9A9A9A", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Daily Worksheet</p>
+                  {[
+                    { n: "1", q: "What is 7 × 8?", done: true },
+                    { n: "2", q: "Solve: 144 ÷ 12 = ?", done: true },
+                    { n: "3", q: "Round 3,748 to the nearest hundred", done: false },
+                    { n: "4", q: "What is 25% of 200?", done: false },
+                  ].map(item => (
+                    <div key={item.n} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 10, marginBottom: 6, background: item.done ? "rgba(28,58,47,0.07)" : "rgba(255,255,255,0.9)", border: `1px solid ${item.done ? "rgba(28,58,47,0.15)" : "rgba(224,217,207,0.9)"}` }}>
+                      <span style={{ width: 18, height: 18, borderRadius: "50%", background: item.done ? "#1C3A2F" : "#E0D9CF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: item.done ? "#fff" : "#9A9A9A", flexShrink: 0 }}>{item.n}</span>
+                      <span style={{ fontSize: 11, color: "#3D3D3D", flex: 1 }}>{item.q}</span>
+                      {item.done && <span style={{ fontSize: 9, color: "#3D7A5C", fontWeight: 600 }}>✓</span>}
+                    </div>
+                  ))}
+                  <div style={{ marginTop: 10, background: "linear-gradient(145deg,#1C3A2F,#2A5240)", borderRadius: 9999, padding: "9px", textAlign: "center" }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#F7F3ED" }}>Submit Worksheet</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right screen — Results */}
+              <div style={{
+                position: "absolute", left: "50%", bottom: 0,
+                transform: "translateX(8%) rotate(6deg)",
+                width: 280, borderRadius: "16px 16px 0 0", overflow: "hidden",
+                boxShadow: "0 16px 56px rgba(0,0,0,0.18)", border: "1px solid rgba(0,0,0,0.07)",
+                zIndex: 1,
+              }}>
+                <div style={{ background: "rgba(0,0,0,0.06)", padding: "9px 14px", display: "flex", gap: 5 }}>
+                  {["#FF5F57","#FEBC2E","#28C840"].map(c => <div key={c} style={{ width: 8, height: 8, borderRadius: "50%", background: c }} />)}
+                </div>
+                <div style={{ background: "linear-gradient(145deg,#16A34A,#22C55E)", padding: "16px", textAlign: "center" }}>
+                  <p style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>Worksheet Complete</p>
+                  <p style={{ fontFamily: "'Fraunces', serif", fontSize: 36, fontWeight: 800, color: "#fff", lineHeight: 1 }}>85%</p>
+                  <p style={{ fontSize: 10, color: "rgba(255,255,255,0.75)", marginTop: 2 }}>17 of 20 correct 🎉</p>
+                </div>
+                <div style={{ background: "#F7F3ED", padding: "12px 14px" }}>
+                  {[
+                    { q: "What is 7 × 8?", ok: true },
+                    { q: "Solve: 144 ÷ 12 = ?", ok: true },
+                    { q: "Round 3,748 to nearest hundred", ok: false, right: "3,700" },
+                  ].map((r, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 8, marginBottom: 5, background: r.ok ? "#F0FDF4" : "#FFF1F0", border: `1px solid ${r.ok ? "#BBF7D0" : "#FECACA"}` }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: r.ok ? "#16A34A" : "#E8604C", flexShrink: 0 }}>{r.ok ? "✓" : "✗"}</span>
+                      <span style={{ fontSize: 10, color: "#444", flex: 1 }}>{r.q}</span>
+                    </div>
+                  ))}
+                  <div style={{ marginTop: 10, background: "rgba(28,58,47,0.06)", borderRadius: 10, padding: "8px 12px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#1C3A2F" }}>Level 4 progress</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "#16A34A" }}>85% ✓</span>
+                    </div>
+                    <div style={{ height: 5, background: "#E0D9CF", borderRadius: 9999 }}>
+                      <div style={{ height: "100%", width: "85%", background: "linear-gradient(90deg,#C9973A,#E5B96A)", borderRadius: 9999 }} />
+                    </div>
+                    <p style={{ fontSize: 9, color: "#9A9A9A", marginTop: 4 }}>Level 5 unlocked! 🎉</p>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
