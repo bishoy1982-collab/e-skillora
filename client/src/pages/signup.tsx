@@ -30,7 +30,7 @@ const PLANS = [
     label: "1 Child",
     price: "$10.99",
     desc: "Perfect for one learner",
-    features: ["1 child profile", "All 12 grade levels", "AI tutor & explanations", "Daily streaks & progress"],
+    features: ["1 child profile", "All 12 grade levels", "AI that explains your mistakes in plain English", "Daily streaks & progress"],
     color: "#2A5240",
   },
   {
@@ -38,7 +38,7 @@ const PLANS = [
     label: "2 Children",
     price: "$14.99",
     desc: "Great for siblings",
-    features: ["2 child profiles", "All 12 grade levels", "AI tutor & explanations", "Daily streaks & progress"],
+    features: ["2 child profiles", "All 12 grade levels", "AI that explains your mistakes in plain English", "Daily streaks & progress"],
     badge: "Best Value",
     color: "#1C3A2F",
   },

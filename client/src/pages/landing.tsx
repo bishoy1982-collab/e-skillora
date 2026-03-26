@@ -119,9 +119,9 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
               backgroundClip: "text",
             }}>
-              AI tutor
+              AI that explains your mistakes
             </span>
-            <br />for grades 1-12
+            <br />in plain English
           </h1>
 
           <p className="fade-up d2" style={{
@@ -136,8 +136,8 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             maxWidth: 500, margin: "0 auto 32px",
           }}>
             Mastery-based Math & Reading across 12 grade levels.
-            Adaptive quizzes, an interactive whiteboard, and an AI tutor
-            that only appears when your child is truly stuck.
+            Adaptive quizzes, an interactive whiteboard, and an AI that explains your mistakes in plain English —
+            only when your child is truly stuck.
           </p>
 
           <div className="fade-up d3" style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
@@ -190,7 +190,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
               { icon: BookOpen, label: "12 Levels", sub: "Pre-K through Pre-Calc", color: "#1C3A2F", bg: "linear-gradient(145deg, #E6F0E8, #DCFCE7)" },
               { icon: Target, label: "3,000+", sub: "Questions per level", color: "#C9973A", bg: "linear-gradient(145deg, #F5E4C0, #FEF3C7)" },
               { icon: Users, label: "Ages 4-18", sub: "Adaptive placement test", color: "#3D7A5C", bg: "linear-gradient(145deg, #E6F0E8, #DCFCE7)" },
-              { icon: Zap, label: "AI Tutor", sub: "Activates when stuck", color: "#E8604C", bg: "linear-gradient(145deg, #FEF2F0, #FEE2E2)" },
+              { icon: Zap, label: "Plain English", sub: "Explains mistakes, not content", color: "#E8604C", bg: "linear-gradient(145deg, #FEF2F0, #FEE2E2)" },
             ].map((item, i) => (
               <div key={i} className="feature-card fade-up" style={{
                 animationDelay: `${0.1 + i * 0.08}s`,
@@ -251,8 +251,8 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                   color: "#2563EB", bg: "#DBEAFE",
                 },
                 {
-                  step: "03", title: "AI tutor on demand", emoji: "🤖",
-                  desc: "After 2 wrong answers on the same question, the AI tutor activates once to explain the concept clearly.",
+                  step: "03", title: "AI that explains your mistakes", emoji: "🤖",
+                  desc: "After 2 wrong answers on the same question, the AI activates once to explain the mistake in plain English — not to do the work for them.",
                   color: "#16A34A", bg: "#DCFCE7",
                 },
               ].map((item) => (
@@ -333,7 +333,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
               {[
                 "12 grade levels (Math & Reading)",
                 "3,000+ questions per level",
-                "AI tutor that activates when stuck",
+                "AI that explains your mistakes in plain English",
                 "Interactive whiteboard",
                 "Progress analytics dashboard",
                 "Adaptive placement test",

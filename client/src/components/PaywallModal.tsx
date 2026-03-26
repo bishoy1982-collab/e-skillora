@@ -109,7 +109,7 @@ export default function PaywallModal({ reason, onClose }: PaywallModalProps) {
           <div style={{ textAlign: "right" }}>
             {[
               "All 12 grade levels",
-              "AI tutor included",
+              "AI that explains your mistakes in plain English",
               "Unlimited practice",
             ].map((f) => (
               <div key={f} style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "flex-end", marginBottom: 4 }}>
