@@ -124,7 +124,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             {/* Top: text centred */}
             <div style={{ textAlign: "center", maxWidth: 680, margin: "0 auto", paddingBottom: 56 }}>
               <div className="fu section-label" style={{ background: "#DCFCE7", color: "#16A34A" }}>
-                <Star size={11} fill="#16A34A" color="#16A34A" /> 3-Day Free Trial · No credit card required
+                <Star size={11} fill="#16A34A" color="#16A34A" /> 3-Day Free Trial
               </div>
               <h1 className="fu d1" style={{
                 fontFamily: "'Fraunces', serif",
@@ -716,7 +716,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
               >
                 Start 3-Day Free Trial <ArrowRight size={16} />
               </button>
-              <p style={{ color: "#8BAF94", fontSize: 13, marginTop: 12 }}>No credit card required · Cancel anytime</p>
+              <p style={{ color: "#8BAF94", fontSize: 13, marginTop: 12 }}>Cancel anytime</p>
             </div>
           </div>
         </div>
@@ -738,7 +738,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                 See How It Works
               </button>
             </div>
-            <p style={{ fontSize: 13, color: "#999", marginTop: 14 }}>No credit card required · Cancel anytime · Students welcome</p>
+            <p style={{ fontSize: 13, color: "#999", marginTop: 14 }}>Cancel anytime · Students welcome</p>
           </div>
         </div>
 
