@@ -17,6 +17,39 @@ export async function sendBetaWelcomeEmail(email: string): Promise<void> {
   });
 }
 
+export async function sendTrialReminderEmail(email: string, name: string, upgradeUrl: string): Promise<void> {
+  await getResend().emails.send({
+    from: FROM,
+    to: email,
+    subject: "Your e-Skillora trial ends in 2 days",
+    html: `
+      <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; padding: 40px 24px; color: #1A1A1A;">
+        <div style="font-size: 24px; font-weight: 700; color: #1C3A2F; margin-bottom: 24px;">e-Skillora</div>
+        <h1 style="font-size: 22px; font-weight: 700; color: #1C3A2F; margin-bottom: 16px;">
+          Your free trial ends in 2 days
+        </h1>
+        <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px;">
+          Hi ${name},
+        </p>
+        <p style="font-size: 16px; line-height: 1.6; margin-bottom: 24px;">
+          Your 7-day free trial on e-Skillora ends in 2 days. To keep your child's progress and continue their daily worksheets, choose a plan before your trial expires.
+        </p>
+        <a href="${upgradeUrl}" style="display: inline-block; background: #1C3A2F; color: #ffffff;
+          text-decoration: none; padding: 14px 28px; border-radius: 8px; font-size: 16px; font-weight: 700;">
+          Choose a Plan →
+        </a>
+        <div style="margin-top: 32px; padding: 20px; background: #F7F3ED; border-radius: 12px;">
+          <p style="font-size: 14px; font-weight: 700; color: #1C3A2F; margin-bottom: 8px;">Plans start from $10.99/month</p>
+          <p style="font-size: 13px; color: #6B7280; margin: 0;">1 child · $10.99/mo &nbsp;·&nbsp; 2 children · $14.99/mo · Cancel anytime</p>
+        </div>
+        <p style="font-size: 14px; color: #6B7280; margin-top: 32px; line-height: 1.6;">
+          Questions? Just reply to this email — we're happy to help.
+        </p>
+      </div>
+    `,
+  });
+}
+
 export async function sendPasswordResetEmail(email: string, resetUrl: string): Promise<void> {
   await getResend().emails.send({
     from: FROM,

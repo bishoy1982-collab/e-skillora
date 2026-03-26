@@ -174,8 +174,36 @@ function PendingSetup() {
   );
 }
 
+function TrialEndsBanner({ onUpgrade }: { onUpgrade: () => void }) {
+  return (
+    <div style={{
+      position: "sticky", top: 0, zIndex: 200,
+      background: "linear-gradient(145deg, #C9973A, #E5B96A)",
+      padding: "10px 20px",
+      display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
+      flexWrap: "wrap",
+      boxShadow: "0 2px 12px rgba(201,151,58,0.3)",
+    }}>
+      <span style={{ fontSize: 14, fontWeight: 600, color: "#1C3A2F" }}>
+        ⏰ Your trial ends tomorrow. Choose a plan to keep going.
+      </span>
+      <button
+        onClick={onUpgrade}
+        style={{
+          background: "#1C3A2F", color: "#F7F3ED",
+          border: "none", borderRadius: 9999, padding: "7px 18px",
+          fontSize: 13, fontWeight: 700, cursor: "pointer",
+          fontFamily: "'Instrument Sans', sans-serif",
+        }}
+      >
+        Choose a Plan →
+      </button>
+    </div>
+  );
+}
+
 function AppRouter() {
-  const { user, loading, hasAccess } = useAuth();
+  const { user, loading, hasAccess, trialDaysLeft } = useAuth();
   const [page, setPage] = useState<Page>(getInitialPage);
 
   // Update URL when page changes
@@ -251,10 +279,22 @@ function AppRouter() {
     const paywallReason = status === "expired" || status === "cancelled" || status === "past_due"
       ? status : null;
 
+    // Day 6: non-blocking banner (trialDaysLeft === 1 means trial ends tomorrow)
+    const showTrialEndsBanner = trialDaysLeft === 1;
+
     return (
       <div style={{ position: "relative" }}>
         {paywallReason && (
           <PaywallModal reason={paywallReason as "expired" | "cancelled" | "past_due"} />
+        )}
+        {showTrialEndsBanner && (
+          <TrialEndsBanner onUpgrade={() => {
+            // Trigger checkout with default plan — user can change on Stripe
+            apiRequest("POST", "/api/stripe/checkout", { planType: "1child" })
+              .then(r => r.json())
+              .then(({ url }) => { window.location.href = url; })
+              .catch(() => {});
+          }} />
         )}
         <ESkillora />
       </div>

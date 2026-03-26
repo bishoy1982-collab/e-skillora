@@ -124,7 +124,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             {/* Top: text centred */}
             <div style={{ textAlign: "center", maxWidth: 680, margin: "0 auto", paddingBottom: 56 }}>
               <div className="fu section-label" style={{ background: "#DCFCE7", color: "#16A34A" }}>
-                <Star size={11} fill="#16A34A" color="#16A34A" /> 3-Day Free Trial
+                <Star size={11} fill="#16A34A" color="#16A34A" /> 7-Day Free Trial
               </div>
               <h1 className="fu d1" style={{
                 fontFamily: "'Fraunces', serif",
@@ -693,7 +693,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                 <span style={{ fontSize: 15, color: "#8BAF94", marginLeft: 4 }}>/month</span>
               </div>
               <p style={{ color: "#8BAF94", fontSize: 13, marginBottom: 4 }}>1 child · $10.99/mo &nbsp;·&nbsp; 2 children · $14.99/mo</p>
-              <p style={{ color: "#8BAF94", fontSize: 14, marginBottom: 32 }}>Start with a 3-day free trial. Cancel anytime.</p>
+              <p style={{ color: "#8BAF94", fontSize: 14, marginBottom: 32 }}>Start with a 7-day free trial. Cancel anytime.</p>
               <div style={{ textAlign: "left", maxWidth: 320, margin: "0 auto 28px" }}>
                 {[
                   "12 grade levels (Math & Reading)",
@@ -714,7 +714,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                 onClick={goSignup}
                 style={{ width: "100%", justifyContent: "center", background: "linear-gradient(145deg, #C9973A, #E5B96A)", color: "#1C3A2F", boxShadow: "0 6px 24px rgba(201,151,58,0.3)" }}
               >
-                Start 3-Day Free Trial <ArrowRight size={16} />
+                Start 7-Day Free Trial <ArrowRight size={16} />
               </button>
               <p style={{ color: "#8BAF94", fontSize: 13, marginTop: 12 }}>Cancel anytime</p>
             </div>

@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { db, pool } from "./db";
 import { insertUserSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } from "@shared/schema";
 import { users, sessions, waitlistSubmissions, customQuestions, appConfig, children, betaInvites } from "@shared/schema";
-import { sendPasswordResetEmail } from "./email";
+import { sendPasswordResetEmail, sendTrialReminderEmail } from "./email";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
@@ -17,7 +17,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 const PRICE_ID = process.env.STRIPE_PRICE_ID!;
 const PRICE_ID_1_CHILD = process.env.STRIPE_PRICE_ID_1_CHILD || process.env.STRIPE_PRICE_ID!;
 const PRICE_ID_2_CHILD = process.env.STRIPE_PRICE_ID_2_CHILD || process.env.STRIPE_PRICE_ID!;
-const TRIAL_DAYS = 3;
+const TRIAL_DAYS = 7;
 const APP_URL = process.env.APP_URL || "https://e-skillora.org";
 
 // Hardcoded internal test account — bypasses DB and Stripe entirely
@@ -102,6 +102,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         updateData.subscriptionStatus = "trial";
         updateData.trialEndsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
         await db.delete(betaInvites).where(eq(betaInvites.email, email.toLowerCase()));
+      } else {
+        // All regular signups start a 7-day free trial immediately — no card required
+        updateData.subscriptionStatus = "trial";
+        updateData.trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
       }
       const finalUser = Object.keys(updateData).length > 0
         ? await storage.updateUser(user.id, updateData)
@@ -180,6 +184,24 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         user.subscriptionStatus = "expired";
       }
 
+      // Day-5 reminder email: send once when 2 days or fewer remain
+      if (
+        user.subscriptionStatus === "trial" &&
+        user.trialEndsAt &&
+        !user.trialReminderSent
+      ) {
+        const msLeft = new Date(user.trialEndsAt).getTime() - Date.now();
+        const daysLeft = msLeft / (1000 * 60 * 60 * 24);
+        if (daysLeft <= 2) {
+          try {
+            await sendTrialReminderEmail(user.email, user.name, `${APP_URL}/app`);
+            await storage.updateUser(user.id, { trialReminderSent: true });
+          } catch (e) {
+            console.error("Failed to send trial reminder email:", e);
+          }
+        }
+      }
+
       return res.json({
         id: user.id, email: user.email, name: user.name,
         subscriptionStatus: user.subscriptionStatus, trialEndsAt: user.trialEndsAt,
@@ -248,7 +270,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
 
   // ─── STRIPE ROUTES ───────────────────────────────────────────
 
-  // Create checkout session with 3-day trial (card required upfront)
+  // Create checkout session — trial already ran in DB, card charged immediately on upgrade
   app.post("/api/stripe/checkout", requireAuth, async (req, res) => {
     try {
       // Test account should never reach Stripe
@@ -284,14 +306,12 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         sessionParams.customer_email = user.email;
       }
 
-      // Founder test account always gets a 2-year trial (never practically charged, max Stripe allows is 730 days)
+      // Founder account gets a 2-year Stripe trial (max allowed)
       const isFounder = user.email.toLowerCase() === "founder@founder.com";
-
-      // Add trial if user has no active Stripe subscription yet
-      const noStripeSubscription = !user.stripeSubscriptionId;
-      if (isFounder || noStripeSubscription) {
-        sessionParams.subscription_data = { trial_period_days: isFounder ? 730 : TRIAL_DAYS };
+      if (isFounder) {
+        sessionParams.subscription_data = { trial_period_days: 730 };
       }
+      // Regular users: free trial already ran in our DB — Stripe charges immediately on upgrade
 
       // Save planType immediately so onboarding can skip the plan step
       await storage.updateUser(user.id, { planType: planType === "2child" ? "2child" : "1child" });

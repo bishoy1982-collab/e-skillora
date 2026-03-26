@@ -15,6 +15,16 @@ export default function SuccessPage({ onNavigate }: SuccessPageProps) {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
+    if (window.gtag) {
+      window.gtag('event', 'conversion', {
+        send_to: 'AW-17997898218',
+        value: 10.99,
+        currency: 'USD',
+      });
+    }
+  }, []);
+
+  useEffect(() => {
     // First: try to confirm via session_id in URL (reliable, no webhook dependency)
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");

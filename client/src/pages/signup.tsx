@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Brain, ArrowRight, Eye, EyeOff, AlertCircle, CheckCircle, ChevronLeft, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { apiRequest } from "@/lib/queryClient";
 
 const G_FONT = `https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,800&family=Instrument+Sans:wght@400;500;600;700&display=swap`;
 
@@ -24,29 +23,8 @@ interface SignupPageProps {
   onNavigate: (page: "landing" | "login" | "app") => void;
 }
 
-const PLANS = [
-  {
-    id: "1child" as const,
-    label: "1 Child",
-    price: "$10.99",
-    desc: "Perfect for one learner",
-    features: ["1 child profile", "All 12 grade levels", "AI that explains your mistakes in plain English", "Daily streaks & progress"],
-    color: "#2A5240",
-  },
-  {
-    id: "2child" as const,
-    label: "2 Children",
-    price: "$14.99",
-    desc: "Great for siblings",
-    features: ["2 child profiles", "All 12 grade levels", "AI that explains your mistakes in plain English", "Daily streaks & progress"],
-    badge: "Best Value",
-    color: "#1C3A2F",
-  },
-];
-
 export default function SignupPage({ onNavigate }: SignupPageProps) {
   const { signup } = useAuth();
-  const [selectedPlan, setSelectedPlan] = useState<"1child" | "2child">("1child");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -65,9 +43,7 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
     setLoading(true);
     try {
       await signup(email, name, password);
-      const res = await apiRequest("POST", "/api/stripe/checkout", { planType: selectedPlan });
-      const { url } = await res.json();
-      window.location.href = url;
+      onNavigate("app");
     } catch (err: any) {
       const msg = err?.message || "";
       if (msg.includes("409") || msg.includes("already exists")) {
@@ -134,7 +110,7 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
           backdropFilter: "blur(8px)",
         }}>
           <Star size={12} fill="#E5B96A" color="#E5B96A" />
-          3 DAYS FREE · THEN FROM $10.99/MONTH
+          7 Days Free · Then from $10.99/month
         </div>
 
         {/* Card */}
@@ -151,57 +127,9 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
           }}>
             Create your account
           </h1>
-          <p style={{ color: "#9A9A9A", fontSize: 14, marginBottom: 20, lineHeight: 1.5 }}>
-            Start your child's free 3-day trial today
+          <p style={{ color: "#9A9A9A", fontSize: 14, marginBottom: 24, lineHeight: 1.5 }}>
+            Start your free 7-day trial today — no credit card required
           </p>
-
-          {/* Plan selector */}
-          <div style={{ marginBottom: 24 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: "#6B6B6B", marginBottom: 10, letterSpacing: "0.04em", textTransform: "uppercase" }}>
-              Choose your plan
-            </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              {PLANS.map(plan => {
-                const active = selectedPlan === plan.id;
-                return (
-                  <button
-                    key={plan.id}
-                    type="button"
-                    onClick={() => setSelectedPlan(plan.id)}
-                    style={{
-                      position: "relative",
-                      padding: "14px 12px",
-                      borderRadius: 14,
-                      border: `2px solid ${active ? plan.color : "rgba(224,217,207,0.9)"}`,
-                      background: active ? plan.color : "rgba(255,255,255,0.85)",
-                      cursor: "pointer",
-                      textAlign: "left" as const,
-                      transition: "all 0.15s",
-                      fontFamily: "'Instrument Sans', sans-serif",
-                    }}
-                  >
-                    {plan.badge && (
-                      <span style={{
-                        position: "absolute", top: -9, right: 8,
-                        background: "#C9973A", color: "#1C3A2F",
-                        fontSize: 9, fontWeight: 800, padding: "2px 8px",
-                        borderRadius: 9999, letterSpacing: "0.03em",
-                      }}>{plan.badge}</span>
-                    )}
-                    <p style={{ fontSize: 13, fontWeight: 700, color: active ? "#fff" : "#1C3A2F", marginBottom: 2 }}>
-                      {plan.label}
-                    </p>
-                    <p style={{ fontFamily: "'Fraunces', serif", fontSize: 20, fontWeight: 800, color: active ? "#E5B96A" : "#1C3A2F", lineHeight: 1 }}>
-                      {plan.price}<span style={{ fontSize: 11, fontWeight: 400, color: active ? "rgba(255,255,255,0.65)" : "#9A9A9A" }}>/mo</span>
-                    </p>
-                    <p style={{ fontSize: 11, color: active ? "rgba(255,255,255,0.7)" : "#9A9A9A", marginTop: 3 }}>
-                      {plan.desc}
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
 
           {error && (
             <div style={{
@@ -304,7 +232,7 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
                 minHeight: 52,
               }}
             >
-              {loading ? "Setting up your trial..." : <> Start Free Trial <ArrowRight size={18} /> </>}
+              {loading ? "Creating your account..." : <> Start Free Trial <ArrowRight size={18} /> </>}
             </button>
           </form>
 
@@ -314,9 +242,9 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
             display: "flex", flexDirection: "column", gap: 10,
           }}>
             {[
-              "3 days completely free",
+              "7 days completely free — no card needed",
               "Full access to all 12 grade levels",
-              `Then from $10.99/month — cancel anytime`,
+              "Then from $10.99/month — cancel anytime",
             ].map((item) => (
               <div key={item} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <CheckCircle size={15} color="#16A34A" />

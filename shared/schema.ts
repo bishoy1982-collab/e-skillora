@@ -17,6 +17,7 @@ export const users = pgTable("users", {
   passwordResetExpires: timestamp("password_reset_expires"),
   betaTester: boolean("beta_tester").default(false),
   betaGrantedAt: timestamp("beta_granted_at"),
+  trialReminderSent: boolean("trial_reminder_sent").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
