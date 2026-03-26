@@ -103,7 +103,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             boxShadow: "0 2px 8px rgba(28,58,47,0.08)",
           }}>
             <Star size={12} fill="#C9973A" color="#C9973A" />
-            3-DAY FREE TRIAL · THEN FROM $9.99/MONTH
+            3-DAY FREE TRIAL
           </div>
 
           <h1 className="fade-up d1" style={{
@@ -123,6 +123,13 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             </span>
             <br />for grades 1-12
           </h1>
+
+          <p className="fade-up d2" style={{
+            fontSize: 17, color: "#3D7A5C", fontWeight: 600, lineHeight: 1.4,
+            maxWidth: 500, margin: "0 auto 10px",
+          }}>
+            Also built for self-learners in grades 1–12
+          </p>
 
           <p className="fade-up d2" style={{
             fontSize: 17, color: "#6B6B6B", lineHeight: 1.65,
@@ -164,8 +171,11 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             </button>
           </div>
 
-          <p className="fade-up d4" style={{ fontSize: 13, color: "#9A9A9A", marginTop: 16 }}>
+          <p className="fade-up d4" style={{ fontSize: 13, color: "#9A9A9A", marginTop: 12 }}>
             No credit card required for trial · Cancel anytime
+          </p>
+          <p className="fade-up d5" style={{ fontSize: 13, color: "#9A9A9A", marginTop: 6 }}>
+            Students welcome, not just parents
           </p>
         </div>
 
@@ -309,12 +319,12 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             <div style={{ marginBottom: 8 }}>
               <span style={{ fontSize: 13, color: "#8BAF94", marginRight: 4 }}>from</span>
               <span style={{ fontFamily: "'Fraunces', serif", fontSize: 48, fontWeight: 800, color: "white", letterSpacing: "-0.03em" }}>
-                $9.99
+                $10.99
               </span>
               <span style={{ fontSize: 15, color: "#8BAF94", marginLeft: 4 }}>/month</span>
             </div>
             <p style={{ color: "#8BAF94", fontSize: 13, marginBottom: 4 }}>
-              1 child · $9.99/mo &nbsp;·&nbsp; 2 children · $14.99/mo
+              1 child · $10.99/mo &nbsp;·&nbsp; 2 children · $14.99/mo
             </p>
             <p style={{ color: "#8BAF94", fontSize: 14, marginBottom: 28 }}>
               Start with a 3-day free trial. Cancel anytime.
