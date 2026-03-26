@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 
 function track(event: string) {
   fetch("/api/track", {
@@ -7,7 +7,7 @@ function track(event: string) {
     body: JSON.stringify({ event, referrer: document.referrer }),
   }).catch(() => {});
 }
-import { Brain, ArrowRight, CheckCircle, BookOpen, Target, Users, Zap, Star, ChevronRight, Play, Shield, Sparkles } from "lucide-react";
+import { Brain, ArrowRight, CheckCircle, BookOpen, Target, Users, ClipboardCheck, BarChart3, GraduationCap, Star, ChevronDown } from "lucide-react";
 
 const G_FONT = `https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600;9..144,700;9..144,800&family=Instrument+Sans:wght@400;500;600;700&display=swap`;
 
@@ -18,11 +18,8 @@ html, body { min-height: 100%; -webkit-font-smoothing: antialiased; -webkit-text
 body { font-family: 'Instrument Sans', sans-serif; background: #F7F3ED; color: #1A1A1A; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
 @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
-@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
 .fade-up { animation: fadeUp 0.6s cubic-bezier(.22,1,.36,1) both; }
 .d1 { animation-delay: .08s; } .d2 { animation-delay: .16s; } .d3 { animation-delay: .24s; } .d4 { animation-delay: .32s; } .d5 { animation-delay: .4s; }
-.float { animation: float 3s ease-in-out infinite; }
 .hero-btn { transition: all 0.2s cubic-bezier(.22,1,.36,1); }
 .hero-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(0,0,0,0.2) !important; }
 .login-link:hover { color: #1C3A2F !important; }
@@ -30,6 +27,8 @@ body { font-family: 'Instrument Sans', sans-serif; background: #F7F3ED; color: #
 .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.12) !important; }
 .step-card { transition: all 0.25s cubic-bezier(.22,1,.36,1); }
 .step-card:hover { transform: translateY(-2px); }
+.nav-link { background: none; border: none; cursor: pointer; font-family: 'Instrument Sans', sans-serif; font-size: 14px; font-weight: 500; color: #6B6B6B; padding: 8px 12px; transition: color 0.2s; text-decoration: none; }
+.nav-link:hover { color: #1C3A2F; }
 `;
 
 interface LandingPageProps {
@@ -41,6 +40,10 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
 
   function goSignup() { track("click_free_trial"); onNavigate("signup"); }
   function goLogin()  { track("click_login");      onNavigate("login");  }
+
+  function scrollTo(id: string) {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  }
 
   return (
     <>
@@ -66,17 +69,15 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
               e-Skillora
             </span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <button className="nav-link" onClick={() => scrollTo("how-it-works")}>How it works</button>
+            <button className="nav-link" onClick={() => scrollTo("pricing")}>Pricing</button>
             <button
-              className="login-link"
+              className="login-link nav-link"
               onClick={goLogin}
-              style={{
-                fontFamily: "'Instrument Sans', sans-serif", fontWeight: 600,
-                fontSize: 14, color: "#6B6B6B", background: "none",
-                border: "none", cursor: "pointer", padding: "8px 14px", transition: "color 0.2s",
-              }}
+              style={{ fontWeight: 600, color: "#6B6B6B" }}
             >
-              Log in
+              Login
             </button>
             <button
               className="hero-btn"
@@ -85,16 +86,16 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                 fontFamily: "'Instrument Sans', sans-serif", fontWeight: 700,
                 fontSize: 14, background: "linear-gradient(145deg, #1C3A2F, #2A5240)", color: "#F7F3ED",
                 border: "none", borderRadius: 9999, padding: "10px 22px", cursor: "pointer",
-                boxShadow: "0 8px 32px rgba(28,58,47,0.22)",
+                boxShadow: "0 8px 32px rgba(28,58,47,0.22)", marginLeft: 6,
               }}
             >
-              Start Free Trial
+              Get Started
             </button>
           </div>
         </nav>
 
         {/* Hero */}
-        <div style={{ maxWidth: 760, margin: "0 auto", padding: "48px 20px 40px", textAlign: "center" }}>
+        <div style={{ maxWidth: 760, margin: "0 auto", padding: "56px 20px 48px", textAlign: "center" }}>
           <div className="fade-up" style={{
             display: "inline-flex", alignItems: "center", gap: 8,
             background: "linear-gradient(145deg, #E6F0E8, #DCFCE7)", color: "#1C3A2F", fontSize: 12,
@@ -108,20 +109,20 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
 
           <h1 className="fade-up d1" style={{
             fontFamily: "'Fraunces', serif",
-            fontSize: "clamp(32px, 6vw, 54px)",
+            fontSize: "clamp(30px, 5.5vw, 52px)",
             fontWeight: 800, color: "#1C3A2F",
-            lineHeight: 1.1, marginBottom: 18,
+            lineHeight: 1.15, marginBottom: 20,
             letterSpacing: "-0.03em",
           }}>
-            Your child's personal{" "}
+            Help your child improve{" "}
             <span style={{
               background: "linear-gradient(145deg, #C9973A, #E5B96A)",
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
               backgroundClip: "text",
             }}>
-              AI that explains your mistakes
-            </span>
-            <br />in plain English
+              math and reading
+            </span>{" "}
+            with structured daily practice
           </h1>
 
           <p className="fade-up d2" style={{
@@ -133,11 +134,9 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
 
           <p className="fade-up d2" style={{
             fontSize: 17, color: "#6B6B6B", lineHeight: 1.65,
-            maxWidth: 500, margin: "0 auto 32px",
+            maxWidth: 520, margin: "0 auto 32px",
           }}>
-            Mastery-based Math & Reading across 12 grade levels.
-            Adaptive quizzes, an interactive whiteboard, and an AI that explains your mistakes in plain English —
-            only when your child is truly stuck.
+            Daily worksheets, instant grading, and level progression for grades 1–12.
           </p>
 
           <div className="fade-up d3" style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
@@ -157,7 +156,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             </button>
             <button
               className="hero-btn"
-              onClick={goLogin}
+              onClick={() => scrollTo("how-it-works")}
               style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
                 fontFamily: "'Instrument Sans', sans-serif", fontWeight: 600,
@@ -167,57 +166,52 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                 minHeight: 52,
               }}
             >
-              Log in <ChevronRight size={16} />
+              See How It Works <ChevronDown size={16} />
             </button>
           </div>
 
           <p className="fade-up d4" style={{ fontSize: 13, color: "#9A9A9A", marginTop: 12 }}>
-            No credit card required for trial · Cancel anytime
+            No credit card required · Cancel anytime
           </p>
           <p className="fade-up d5" style={{ fontSize: 13, color: "#9A9A9A", marginTop: 6 }}>
             Students welcome, not just parents
           </p>
         </div>
 
-        {/* Stats */}
-        <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 20px 56px" }}>
+        {/* Testimonials */}
+        <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 20px 64px" }}>
           <div style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
-            gap: 12,
+            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+            gap: 16,
           }}>
             {[
-              { icon: BookOpen, label: "12 Levels", sub: "Pre-K through Pre-Calc", color: "#1C3A2F", bg: "linear-gradient(145deg, #E6F0E8, #DCFCE7)" },
-              { icon: Target, label: "3,000+", sub: "Questions per level", color: "#C9973A", bg: "linear-gradient(145deg, #F5E4C0, #FEF3C7)" },
-              { icon: Users, label: "Ages 4-18", sub: "Adaptive placement test", color: "#3D7A5C", bg: "linear-gradient(145deg, #E6F0E8, #DCFCE7)" },
-              { icon: Zap, label: "Plain English", sub: "Explains mistakes, not content", color: "#E8604C", bg: "linear-gradient(145deg, #FEF2F0, #FEE2E2)" },
-            ].map((item, i) => (
+              { quote: "The daily worksheets keep my child consistent.", author: "Parent of a 4th grader" },
+              { quote: "I like that it actually tracks progress clearly.", author: "Parent of a 6th grader" },
+              { quote: "It feels structured, not random like other apps.", author: "Parent of a 2nd grader" },
+            ].map((t, i) => (
               <div key={i} className="feature-card fade-up" style={{
-                animationDelay: `${0.1 + i * 0.08}s`,
-                background: "rgba(255,255,255,0.92)", borderRadius: 24, padding: "22px 18px",
-                textAlign: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.07)",
+                animationDelay: `${0.1 + i * 0.1}s`,
+                background: "rgba(255,255,255,0.92)", borderRadius: 20, padding: "24px 22px",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
                 border: "1px solid rgba(224,217,207,0.7)",
-                backdropFilter: "blur(8px)",
               }}>
-                <div style={{
-                  width: 48, height: 48, borderRadius: 14, margin: "0 auto 12px",
-                  background: item.bg, display: "flex",
-                  alignItems: "center", justifyContent: "center",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                }}>
-                  <item.icon size={22} color={item.color} />
+                <div style={{ display: "flex", gap: 3, marginBottom: 12 }}>
+                  {[...Array(5)].map((_, s) => (
+                    <Star key={s} size={13} fill="#C9973A" color="#C9973A" />
+                  ))}
                 </div>
-                <p style={{ fontFamily: "'Fraunces', serif", fontSize: 22, fontWeight: 700, color: "#1C3A2F", letterSpacing: "-0.02em" }}>
-                  {item.label}
+                <p style={{ fontSize: 15, color: "#1A1A1A", lineHeight: 1.6, marginBottom: 14, fontStyle: "italic" }}>
+                  "{t.quote}"
                 </p>
-                <p style={{ fontSize: 12, color: "#9A9A9A", marginTop: 4, lineHeight: 1.4 }}>{item.sub}</p>
+                <p style={{ fontSize: 12, color: "#9A9A9A", fontWeight: 600 }}>{t.author}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* How it works */}
-        <div style={{ background: "rgba(255,255,255,0.7)", backdropFilter: "blur(8px)", padding: "56px 20px", borderTop: "1px solid rgba(224,217,207,0.5)", borderBottom: "1px solid rgba(224,217,207,0.5)" }}>
+        <div id="how-it-works" style={{ background: "rgba(255,255,255,0.7)", backdropFilter: "blur(8px)", padding: "56px 20px", borderTop: "1px solid rgba(224,217,207,0.5)", borderBottom: "1px solid rgba(224,217,207,0.5)" }}>
           <div style={{ maxWidth: 820, margin: "0 auto" }}>
             <div style={{ textAlign: "center", marginBottom: 40 }}>
               <span style={{
@@ -232,27 +226,27 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                 fontFamily: "'Fraunces', serif", fontSize: "clamp(24px, 4vw, 36px)",
                 fontWeight: 700, color: "#1C3A2F", marginBottom: 10, letterSpacing: "-0.02em",
               }}>
-                Three steps to mastery
+                Three steps to real progress
               </h2>
               <p style={{ color: "#6B6B6B", fontSize: 15, maxWidth: 480, margin: "0 auto" }}>
-                From sign-up to your child's first lesson in under 5 minutes
+                From sign-up to your child's first worksheet in under 5 minutes
               </p>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 20 }}>
               {[
                 {
-                  step: "01", title: "Placement test", emoji: "🎯",
-                  desc: "A quick adaptive quiz places your child at exactly the right level — no grade assumptions.",
+                  step: "01", title: "Get daily worksheets", icon: ClipboardCheck,
+                  desc: "Students receive structured worksheets based on their level — Math, Reading, or both.",
                   color: "#7C3AED", bg: "#EDE9FE",
                 },
                 {
-                  step: "02", title: "Daily practice", emoji: "📚",
-                  desc: "Structured worksheets with Math & Reading questions. Progress requires mastery, not just completion.",
+                  step: "02", title: "Complete and get graded instantly", icon: BarChart3,
+                  desc: "Each worksheet is automatically graded with clear feedback on every answer.",
                   color: "#2563EB", bg: "#DBEAFE",
                 },
                 {
-                  step: "03", title: "AI that explains your mistakes", emoji: "🤖",
-                  desc: "After 2 wrong answers on the same question, the AI activates once to explain the mistake in plain English — not to do the work for them.",
+                  step: "03", title: "Progress to the next level", icon: GraduationCap,
+                  desc: "Move up after completing all worksheets with 80% or higher — real mastery, not just completion.",
                   color: "#16A34A", bg: "#DCFCE7",
                 },
               ].map((item) => (
@@ -264,9 +258,9 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                     width: 48, height: 48, borderRadius: 14,
                     background: item.bg, display: "flex",
                     alignItems: "center", justifyContent: "center",
-                    fontSize: 24, marginBottom: 16,
+                    marginBottom: 16,
                   }}>
-                    {item.emoji}
+                    <item.icon size={22} color={item.color} />
                   </div>
                   <div style={{
                     fontSize: 11, fontWeight: 700, color: item.color,
@@ -284,8 +278,92 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
           </div>
         </div>
 
+        {/* Features */}
+        <div style={{ maxWidth: 900, margin: "0 auto", padding: "64px 20px" }}>
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <span style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              background: "#F5E4C0", color: "#C9973A", fontSize: 11,
+              fontWeight: 700, padding: "5px 14px", borderRadius: 9999,
+              marginBottom: 16, letterSpacing: "0.06em", textTransform: "uppercase",
+            }}>
+              WHY IT WORKS
+            </span>
+            <h2 style={{
+              fontFamily: "'Fraunces', serif", fontSize: "clamp(24px, 4vw, 36px)",
+              fontWeight: 700, color: "#1C3A2F", marginBottom: 10, letterSpacing: "-0.02em",
+            }}>
+              Built around consistency, not content
+            </h2>
+          </div>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+            gap: 16,
+          }}>
+            {[
+              {
+                icon: ClipboardCheck,
+                color: "#7C3AED", bg: "#EDE9FE",
+                title: "Daily worksheets that build consistent learning habits",
+                desc: "Same time, same structure, every day. Consistency is what actually moves the needle.",
+              },
+              {
+                icon: BarChart3,
+                color: "#2563EB", bg: "#DBEAFE",
+                title: "Automatic grading so students know exactly what to improve",
+                desc: "No waiting for a teacher. Every answer is graded instantly with specific feedback.",
+              },
+              {
+                icon: GraduationCap,
+                color: "#16A34A", bg: "#DCFCE7",
+                title: "Level-based progression that ensures real mastery before moving forward",
+                desc: "Students can't skip ahead. 80% mastery is required at every level before advancing.",
+              },
+            ].map((f, i) => (
+              <div key={i} className="feature-card" style={{
+                background: "rgba(255,255,255,0.92)", borderRadius: 24, padding: "28px 24px",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.07)",
+                border: "1px solid rgba(224,217,207,0.7)",
+              }}>
+                <div style={{
+                  width: 48, height: 48, borderRadius: 14, marginBottom: 16,
+                  background: f.bg, display: "flex",
+                  alignItems: "center", justifyContent: "center",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                }}>
+                  <f.icon size={22} color={f.color} />
+                </div>
+                <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: 17, fontWeight: 700, color: "#1C3A2F", marginBottom: 8, lineHeight: 1.3, letterSpacing: "-0.01em" }}>
+                  {f.title}
+                </h3>
+                <p style={{ fontSize: 14, color: "#6B6B6B", lineHeight: 1.6 }}>{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Mid-page CTA */}
+        <div style={{ textAlign: "center", padding: "0 20px 64px" }}>
+          <button
+            className="hero-btn"
+            onClick={goSignup}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              fontFamily: "'Instrument Sans', sans-serif", fontWeight: 700,
+              fontSize: 16, background: "linear-gradient(145deg, #1C3A2F, #2A5240)", color: "#F7F3ED",
+              border: "none", borderRadius: 9999, padding: "16px 36px", cursor: "pointer",
+              boxShadow: "0 8px 32px rgba(28,58,47,0.25)",
+              minHeight: 52,
+            }}
+          >
+            Start Free Trial <ArrowRight size={18} />
+          </button>
+          <p style={{ fontSize: 13, color: "#9A9A9A", marginTop: 10 }}>No credit card required · Cancel anytime</p>
+        </div>
+
         {/* Pricing */}
-        <div style={{ maxWidth: 520, margin: "0 auto", padding: "56px 20px" }}>
+        <div id="pricing" style={{ maxWidth: 520, margin: "0 auto", padding: "0 20px 64px" }}>
           <div style={{ textAlign: "center", marginBottom: 32 }}>
             <span style={{
               display: "inline-flex", alignItems: "center", gap: 6,
@@ -332,11 +410,11 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             <div style={{ textAlign: "left", maxWidth: 320, margin: "0 auto" }}>
               {[
                 "12 grade levels (Math & Reading)",
-                "3,000+ questions per level",
+                "Daily worksheets for every level",
+                "Automatic grading with instant feedback",
+                "Level progression requiring 80% mastery",
                 "AI that explains your mistakes in plain English",
-                "Interactive whiteboard",
                 "Progress analytics dashboard",
-                "Adaptive placement test",
               ].map((feature) => (
                 <div key={feature} style={{
                   display: "flex", alignItems: "center", gap: 10,
@@ -366,6 +444,38 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
               No credit card required · Cancel anytime
             </p>
           </div>
+        </div>
+
+        {/* Bottom CTA */}
+        <div style={{
+          background: "linear-gradient(160deg, #1C3A2F, #2A5240)",
+          padding: "64px 20px", textAlign: "center",
+        }}>
+          <h2 style={{
+            fontFamily: "'Fraunces', serif", fontSize: "clamp(24px, 4vw, 38px)",
+            fontWeight: 800, color: "white", marginBottom: 14,
+            letterSpacing: "-0.02em", lineHeight: 1.2,
+          }}>
+            Build consistent learning habits<br />that actually improve results
+          </h2>
+          <p style={{ color: "#8BAF94", fontSize: 16, marginBottom: 32, maxWidth: 420, margin: "0 auto 32px" }}>
+            Structured worksheets, clear progress, and real skill development.
+          </p>
+          <button
+            className="hero-btn"
+            onClick={goSignup}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              fontFamily: "'Instrument Sans', sans-serif", fontWeight: 700,
+              fontSize: 16, background: "linear-gradient(145deg, #C9973A, #E5B96A)", color: "#1C3A2F",
+              border: "none", borderRadius: 9999, padding: "16px 36px", cursor: "pointer",
+              boxShadow: "0 8px 32px rgba(201,151,58,0.3)",
+              minHeight: 52,
+            }}
+          >
+            Start Free Trial <ArrowRight size={18} />
+          </button>
+          <p style={{ fontSize: 13, color: "#8BAF94", marginTop: 12 }}>No credit card required · Cancel anytime</p>
         </div>
 
         {/* Footer */}
