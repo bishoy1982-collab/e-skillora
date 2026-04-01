@@ -128,16 +128,21 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
               </div>
               <h1 className="fu d1" style={{
                 fontFamily: "'Fraunces', serif",
-                fontSize: "clamp(32px, 5vw, 58px)", fontWeight: 800,
-                color: "#111", lineHeight: 1.1, marginBottom: 20, letterSpacing: "-0.03em",
+                fontSize: "clamp(28px, 4.5vw, 52px)", fontWeight: 800,
+                color: "#111", lineHeight: 1.12, marginBottom: 16, letterSpacing: "-0.03em",
               }}>
-                Your child can master<br />math and reading
+                The affordable online alternative to{" "}
+                <span style={{ color: "#C9973A" }}>Kumon.</span>
+                <br />Structured. Mastery-based. From home.
               </h1>
-              <p className="fu d2" style={{ fontSize: 18, color: "#555", lineHeight: 1.7, marginBottom: 8 }}>
-                Daily worksheets, instant grading, and level progression for grades 1–12.
+              <p className="fu d2" style={{ fontSize: 16, color: "#C9973A", fontWeight: 700, marginBottom: 10 }}>
+                From $10.99/month vs $150+/month for Kumon.
               </p>
-              <p className="fu d2" style={{ fontSize: 14, color: "#16A34A", fontWeight: 600, marginBottom: 36 }}>
-                Also built for self-learners
+              <p className="fu d2" style={{ fontSize: 16, color: "#555", lineHeight: 1.65, marginBottom: 8 }}>
+                No commute. No drop-offs. Just daily progress from home.
+              </p>
+              <p className="fu d2" style={{ fontSize: 15, color: "#555", lineHeight: 1.65, marginBottom: 32 }}>
+                AI that explains your mistakes in plain English — so your child actually understands, not just memorizes.
               </p>
               <div className="fu d3" style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
                 <button className="btn-primary" onClick={goSignup} style={{ fontSize: 16, padding: "15px 32px" }}>
@@ -269,9 +274,9 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
           <div style={wrap}>
             <div className="three-col" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
               {[
-                { quote: "The daily worksheets keep my child consistent.", label: "Parent of a 4th grader" },
-                { quote: "I like that it actually tracks progress clearly.", label: "Parent of a 6th grader" },
-                { quote: "It feels structured, not random like other apps.", label: "Parent of a 2nd grader" },
+                { quote: "We were paying $180/month for Kumon and spending 20 minutes driving each way. e-Skillora is a fraction of the cost and my daughter is making faster progress.", label: "Sarah, mom of two · Seattle, WA" },
+                { quote: "My son hated going to the Kumon center. Now he actually asks to do his lessons — the AI explanations make such a difference.", label: "Marcus, dad · Austin, TX" },
+                { quote: "Same mastery-based method as Kumon but at home, with instant feedback, for $10.99 a month. I can't believe it took me so long to switch.", label: "Jennifer, homeschool mom · Denver, CO" },
               ].map((t, i) => (
                 <div key={i} className="card fu" style={{ padding: "24px", animationDelay: `${i * 0.08}s` }}>
                   <div style={{ display: "flex", gap: 3, marginBottom: 14 }}>
@@ -618,7 +623,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             <div style={{ textAlign: "center", marginBottom: 48 }}>
               <div className="section-label" style={{ background: "#F3F4F6", color: "#555" }}>How we compare</div>
               <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 700, color: "#111", letterSpacing: "-0.02em" }}>
-                More structured than apps. More scalable than tutors.
+                e-Skillora vs Kumon — same method, a fraction of the cost.
               </h2>
             </div>
             <div style={{ overflowX: "auto" }}>
@@ -629,18 +634,20 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                     <th style={{ padding: "14px 20px", textAlign: "center", background: "#1C3A2F", color: "#fff", fontWeight: 700, fontSize: 14, borderRadius: "12px 12px 0 0", borderBottom: "2px solid #1C3A2F" }}>
                       e-Skillora
                     </th>
+                    <th style={{ padding: "14px 20px", textAlign: "center", color: "#999", fontWeight: 600, fontSize: 13, borderBottom: "2px solid #EBEBEB" }}>Kumon</th>
                     <th style={{ padding: "14px 20px", textAlign: "center", color: "#999", fontWeight: 600, fontSize: 13, borderBottom: "2px solid #EBEBEB" }}>Private Tutors</th>
                     <th style={{ padding: "14px 20px", textAlign: "center", color: "#999", fontWeight: 600, fontSize: 13, borderBottom: "2px solid #EBEBEB" }}>Other Apps</th>
                   </tr>
                 </thead>
                 <tbody>
                   {[
-                    { feature: "Structured daily progression",  es: true,    tutor: "partial", app: false },
-                    { feature: "Instant grading & feedback",    es: true,    tutor: false,     app: "partial" },
-                    { feature: "Mastery-based level system",    es: true,    tutor: "partial", app: false },
-                    { feature: "Consistent daily habit",        es: true,    tutor: false,     app: "partial" },
-                    { feature: "Affordable (from $10.99/mo)",   es: true,    tutor: false,     app: true },
-                    { feature: "Works for self-learners",       es: true,    tutor: false,     app: "partial" },
+                    { feature: "100% online — no drop-off",    es: true,    kumon: false,     tutor: false,     app: true },
+                    { feature: "Instant grading & feedback",    es: true,    kumon: false,     tutor: false,     app: "partial" },
+                    { feature: "Mastery-based level system",    es: true,    kumon: true,      tutor: "partial", app: false },
+                    { feature: "Affordable (from $10.99/mo)",   es: true,    kumon: false,     tutor: false,     app: true },
+                    { feature: "Works for self-learners",       es: true,    kumon: false,     tutor: false,     app: "partial" },
+                    { feature: "AI explains mistakes",          es: true,    kumon: false,     tutor: "partial", app: false },
+                    { feature: "Consistent daily habit",        es: true,    kumon: "partial", tutor: false,     app: "partial" },
                   ].map((row, i) => {
                     const cell = (val: boolean | string) => (
                       val === true    ? <span className="check-yes">✓</span> :
@@ -652,6 +659,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                       <tr key={i}>
                         <td style={{ padding: "14px 20px", color: "#444", fontWeight: 500, background: bg, borderBottom: "1px solid #EBEBEB" }}>{row.feature}</td>
                         <td style={{ padding: "14px 20px", textAlign: "center", background: "#F0F7F4", borderBottom: "1px solid #D1E8DC", borderLeft: "2px solid #1C3A2F", borderRight: "2px solid #1C3A2F" }}>{cell(row.es)}</td>
+                        <td style={{ padding: "14px 20px", textAlign: "center", background: bg, borderBottom: "1px solid #EBEBEB" }}>{cell(row.kumon)}</td>
                         <td style={{ padding: "14px 20px", textAlign: "center", background: bg, borderBottom: "1px solid #EBEBEB" }}>{cell(row.tutor)}</td>
                         <td style={{ padding: "14px 20px", textAlign: "center", background: bg, borderBottom: "1px solid #EBEBEB" }}>{cell(row.app)}</td>
                       </tr>
@@ -700,8 +708,8 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                   "Daily worksheets for every level",
                   "Automatic grading with instant feedback",
                   "Level progression requiring 80% mastery",
-                  "AI that explains your mistakes in plain English",
                   "Progress analytics dashboard",
+                  "Up to 2 children per account",
                 ].map((f) => (
                   <div key={f} style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
                     <CheckCircle size={16} color="#E5B96A" style={{ flexShrink: 0, marginTop: 2 }} />
