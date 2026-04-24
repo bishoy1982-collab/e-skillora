@@ -1,0 +1,21 @@
+# e-Skillora — llms.txt
+
+## e-Skillora
+e-Skillora is an ed-tech company delivering affordable, mastery-based Math and Reading programs for children in grades 1–12, as a home-based alternative to in-person tutoring programs like Kumon.
+
+## Product
+e-Skillora is a web application where children work through structured, step-by-step Math and Reading exercises across 12 grade levels. The program uses mastery-based progression — children must demonstrate understanding before advancing. AI explains mistakes in plain language so children learn from errors rather than repeating them.
+
+### Key Facts
+- Platform: Web (desktop and mobile browser)
+- Price: $10.99/month (1 child), $14.99/month (2 children)
+- Trial: 3-day free trial, cancel anytime, no charge until trial ends
+- Publisher: e-Skillora | https://e-skillora.org
+- Category: Education, K-12, Math, Reading, Mastery Learning, Kumon Alternative
+- Grades covered: 1 through 12
+- Non-denominational, non-partisan
+
+### Pages
+- [Home](https://e-skillora.org/)
+- [Contact](https://e-skillora.org/contact)
+- [Terms](https://e-skillora.org/terms)
