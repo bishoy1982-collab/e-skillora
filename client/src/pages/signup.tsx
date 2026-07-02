@@ -43,6 +43,9 @@ export default function SignupPage({ onNavigate }: SignupPageProps) {
     setLoading(true);
     try {
       await signup(email, name, password);
+      if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+        window.fbq('track', 'StartTrial');
+      }
       onNavigate("app");
     } catch (err: any) {
       const msg = err?.message || "";
