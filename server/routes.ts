@@ -103,9 +103,8 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
         updateData.trialEndsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
         await db.delete(betaInvites).where(eq(betaInvites.email, email.toLowerCase()));
       } else {
-        // All regular signups start a 7-day free trial immediately — no card required
-        updateData.subscriptionStatus = "trial";
-        updateData.trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
+        // Regular signups start as pending — must complete Stripe checkout to activate trial
+        updateData.subscriptionStatus = "pending";
       }
       const finalUser = Object.keys(updateData).length > 0
         ? await storage.updateUser(user.id, updateData)
@@ -310,8 +309,10 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       const isFounder = user.email.toLowerCase() === "founder@founder.com";
       if (isFounder) {
         sessionParams.subscription_data = { trial_period_days: 730 };
+      } else if (user.subscriptionStatus === "pending") {
+        // New users get a 7-day Stripe trial — card required upfront but not charged until day 8
+        sessionParams.subscription_data = { trial_period_days: TRIAL_DAYS };
       }
-      // Regular users: free trial already ran in our DB — Stripe charges immediately on upgrade
 
       // Save planType immediately so onboarding can skip the plan step
       await storage.updateUser(user.id, { planType: planType === "2child" ? "2child" : "1child" });

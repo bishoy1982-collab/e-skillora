@@ -94,7 +94,7 @@ function PendingSetup() {
           Choose your plan
         </h2>
         <p style={{ color: "#6B6B6B", fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>
-          Try free for <strong>3 days</strong> · Cancel anytime · You won't be charged until the trial ends.
+          Start your <strong>7-day free trial</strong> · Cancel anytime within 7 days and you <strong>won't be charged</strong>.
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
