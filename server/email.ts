@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 
 const FROM = process.env.EMAIL_FROM || "E-Skillora <hello@e-skillora.org>";
-const APP_URL = process.env.APP_URL || "https://e-skillora.org";
+const APP_URL = process.env.APP_URL || "https://e-skillora.com";
 
 function getResend(): Resend {
   if (!process.env.RESEND_API_KEY) throw new Error("RESEND_API_KEY is not set");
