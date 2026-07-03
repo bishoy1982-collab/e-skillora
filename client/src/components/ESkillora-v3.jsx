@@ -1964,7 +1964,14 @@ function generateELAThemeQuestions(level, theme, mkId) {
     });
     add("Every sentence starts with a _____ letter.","multiple",["capital","small","number","symbol"],"capital","Think about how sentences begin.","Sentences start with a capital letter.");
     add("Every sentence ends with a _____.","multiple",["period","comma","colon","dash"],"period","What goes at the end?","Sentences end with a period (or ? or !).");
-    for(let i=0;i<8;i++) add(`Does this need a period or question mark? "Where is the cat___"`,"multiple",["?",".","!",","],"?","Is it asking something?","Questions end with ?");
+    // Varied punctuation examples
+    [
+      ["Where is the cat","?"],["The cat is sleeping","."],["I love ice cream","!"],
+      ["Can you help me","?"],["She ran to the store","."],["Watch out","!"],
+      ["Did you see that","?"],["My name is Alex","."]
+    ].forEach(([ex,mark])=>{
+      add(`What punctuation ends this? "${ex}___"`,"multiple",["?",".","!",","],mark,`Is it a question, statement, or exclamation?`,`"${ex}${mark}" — ${mark==="?"?"questions end with ?":mark==="!"?"exclamations end with !":"statements end with ."}`);
+    });
   }
   if (theme==="Rhyming Words") {
     const pairs=[["cat","hat"],["dog","log"],["sun","fun"],["bed","red"],["pig","big"],["hop","top"],["run","bun"],["lake","cake"],["bell","well"],["king","ring"],["fish","dish"],["mat","bat"],["pen","ten"],["sit","hit"],["cup","pup"]];
@@ -1977,11 +1984,27 @@ function generateELAThemeQuestions(level, theme, mkId) {
   if (theme==="Story Sequence") {
     add("What happens FIRST in a story?","multiple",["The beginning","The middle","The end","The title"],"The beginning","Stories have a beginning, middle, and end.","The beginning comes first.");
     add("What happens LAST in a story?","multiple",["The end","The beginning","The middle","The title"],"The end","Stories have a beginning, middle, and end.","The end comes last.");
-    for(let i=0;i<5;i++){
-      add(`Put in order: "She ate breakfast. She woke up. She went to school." What happened first?`,"multiple",["She woke up","She ate breakfast","She went to school","She slept"],"She woke up","Think about what you do first in the morning.","First she woke up, then ate, then went to school.");
-      add(`Put in order: "The seed grew. We planted a seed. A flower bloomed." What happened first?`,"multiple",["We planted a seed","The seed grew","A flower bloomed","It rained"],"We planted a seed","What has to happen before something can grow?","First plant, then grow, then bloom.");
-      add(`Put in order: "He blew out candles. He opened presents. His friends arrived." What happened first?`,"multiple",["His friends arrived","He blew out candles","He opened presents","He ate cake"],"His friends arrived","Friends come to the party before cake.","First friends arrive, then candles, then presents.");
-    }
+    add("What is the MIDDLE of a story?","multiple",["Where the main events happen","The opening","The ending","The title"],"Where the main events happen","The middle has the main events.","The middle contains the main action.");
+    // Varied story sequence examples
+    const sequences=[
+      {steps:["She woke up","She ate breakfast","She went to school"],first:"She woke up"},
+      {steps:["We planted a seed","The seed grew","A flower bloomed"],first:"We planted a seed"},
+      {steps:["His friends arrived","He blew out candles","He opened presents"],first:"His friends arrived"},
+      {steps:["She got dressed","She put on shoes","She left the house"],first:"She got dressed"},
+      {steps:["He lit the stove","The water boiled","He poured the soup"],first:"He lit the stove"},
+      {steps:["They ordered pizza","They ate the pizza","They paid the bill"],first:"They ordered pizza"},
+      {steps:["He opened the envelope","He read the letter","He got excited"],first:"He opened the envelope"},
+      {steps:["The baby cried","Mom picked her up","The baby smiled"],first:"The baby cried"},
+      {steps:["She found her keys","She got in the car","She drove away"],first:"She found her keys"},
+      {steps:["The sun set","It got dark","Stars appeared"],first:"The sun set"},
+      {steps:["He hit the ball","He ran to first base","He cheered"],first:"He hit the ball"},
+      {steps:["She got sick","She blew her nose","She went to the doctor"],first:"She got sick"},
+    ];
+    sequences.forEach(({steps,first})=>{
+      const [s1,s2,s3]=steps;
+      add(`Put in order: "${s1}. ${s2}. ${s3}." What happened FIRST?`,"multiple",shuffle(steps),first,"Think about the logical order of events.","Events happen in a natural sequence.");
+    });
+    add("Words like 'first,' 'then,' and 'finally' tell you about _____.","multiple",["the order of events","characters","the setting","the title"],"the order of events","Sequence words show order.","Sequence words help you understand the order of events.");
   }
 
   // ── LEVEL B ──
@@ -2002,18 +2025,23 @@ function generateELAThemeQuestions(level, theme, mkId) {
     });
   }
   if (theme==="Reading Comprehension") {
-    const passages=[
+    const rcPassages=[
       {text:"Tom has a red ball. He likes to play with it in the park.",q:"What color is Tom's ball?",a:"Red",opts:["Red","Blue","Green","Yellow"]},
       {text:"The cat sat on a mat. It was a sunny day.",q:"Where did the cat sit?",a:"On a mat",opts:["On a mat","On a bed","On a chair","On the floor"]},
       {text:"Sara loves to read books. Her favorite book is about a dog named Max.",q:"What is Sara's favorite book about?",a:"A dog named Max",opts:["A dog named Max","A cat","A bird","A fish"]},
       {text:"Ben went to the store. He bought milk and bread.",q:"What did Ben buy?",a:"Milk and bread",opts:["Milk and bread","Eggs","Juice","Cookies"]},
       {text:"It was raining outside. Lily took her umbrella.",q:"Why did Lily take her umbrella?",a:"It was raining",opts:["It was raining","It was sunny","It was snowing","It was windy"]},
+      {text:"The bird sang in the tree. It had bright red feathers.",q:"What color were the bird's feathers?",a:"Red",opts:["Red","Blue","Green","Yellow"]},
+      {text:"Jake loves to draw. He draws pictures of animals every day.",q:"What does Jake love to do?",a:"Draw",opts:["Draw","Swim","Run","Cook"]},
+      {text:"The dog barked at the mail carrier. The mail carrier waved and walked away.",q:"What did the dog do?",a:"Barked",opts:["Barked","Ran away","Sat","Slept"]},
     ];
-    passages.forEach(p=>{
+    rcPassages.forEach(p=>{
       add(`Read: "${p.text}" — ${p.q}`,"multiple",shuffle(p.opts),p.a,"Read the passage carefully.","The answer is found in the text.");
       add(`Read: "${p.text}" — ${p.q} (type your answer)`,"input",null,p.a,"Look for the answer in the passage.","Re-read the passage to find it.");
     });
-    for(let i=0;i<5;i++) add(`In the sentence "The happy puppy ran fast," what word describes the puppy?`,"multiple",shuffle(["happy","ran","fast","the"]),"happy","Describing words tell us about the noun.","'Happy' describes the puppy.");
+    add(`In "The happy puppy ran fast," what word describes the puppy?`,"multiple",shuffle(["happy","ran","fast","the"]),"happy","Describing words tell us about the noun.","'Happy' describes the puppy.");
+    add(`In "The tiny kitten meowed softly," what describes the kitten?`,"multiple",shuffle(["tiny","meowed","softly","the"]),"tiny","What word tells us about the kitten?","'Tiny' is the adjective describing the kitten.");
+    add(`In "The tall tree swayed gently," what word describes the tree?`,"multiple",shuffle(["tall","tree","swayed","gently"]),"tall","Adjectives describe nouns.","'Tall' describes the tree.");
   }
   if (theme==="Vocabulary") {
     const vocab=[["big","large"],["small","tiny"],["fast","quick"],["happy","glad"],["sad","unhappy"],["pretty","beautiful"],["smart","clever"],["begin","start"],["end","finish"],["hard","difficult"]];
@@ -2031,17 +2059,33 @@ function generateELAThemeQuestions(level, theme, mkId) {
     });
     add("Which should be capitalized?","multiple",shuffle(["tuesday","ball","run","happy"]),"tuesday","Days of the week are capitalized.","Tuesday is a proper noun.");
     add("Which should be capitalized?","multiple",shuffle(["march","chair","walk","green"]),"march","Months are capitalized.","March is a proper noun.");
-    for(let i=0;i<5;i++) add("The first word of a sentence should be _____.","multiple",["capitalized","lowercase","bold","underlined"],"capitalized","Every sentence starts with...","The first word is always capitalized.");
+    add("The first word of a sentence should be _____.","multiple",["capitalized","lowercase","bold","underlined"],"capitalized","Every sentence starts with...","The first word is always capitalized.");
+    add("The pronoun 'I' is always written as _____.","multiple",["a capital letter","lowercase","bold","small"],"a capital letter","The word 'I' is always capitalized.","'I' is always capitalized when used as a pronoun.");
+    add("Names of specific people, places, and things are called _____.","multiple",["proper nouns","common nouns","adjectives","verbs"],"proper nouns","Proper nouns get capital letters.","Proper nouns always start with a capital letter.");
+    [
+      ["pacific ocean","Oceans and bodies of water","Pacific Ocean"],
+      ["dr. jones","Titles with names","Dr. Jones"],
+      ["thanksgiving","Names of holidays","Thanksgiving"],
+    ].forEach(([n,rule,c])=>{
+      add(`Should "${n}" be capitalized?`,"multiple",["Yes","No"],"Yes",`${rule} are proper nouns.`,`"${c}" — ${rule} are always capitalized.`);
+    });
   }
   if (theme==="Punctuation Basics") {
-    for(let i=0;i<5;i++){
-      add("A telling sentence ends with a _____.","multiple",shuffle(["period","question mark","exclamation point","comma"]),"period","Telling sentences end with .","A period ends a statement.");
-      add("An asking sentence ends with a _____.","multiple",shuffle(["question mark","period","exclamation point","comma"]),"question mark","Asking sentences end with ?","A question mark ends a question.");
-      add("A sentence showing excitement ends with _____.","multiple",shuffle(["exclamation point","period","question mark","comma"]),"exclamation point","Exciting! Amazing! Wow!","An exclamation point shows strong feeling.");
-    }
+    add("A telling sentence ends with a _____.","multiple",shuffle(["period","question mark","exclamation point","comma"]),"period","Telling sentences end with .","A period ends a statement.");
+    add("An asking sentence ends with a _____.","multiple",shuffle(["question mark","period","exclamation point","comma"]),"question mark","Asking sentences end with ?","A question mark ends a question.");
+    add("A sentence showing excitement ends with _____.","multiple",shuffle(["exclamation point","period","question mark","comma"]),"exclamation point","Exciting! Amazing! Wow!","An exclamation point shows strong feeling.");
     add(`What punctuation goes here? "Where are you going___"`,"multiple",["?",".",",","!"],"?","Is it asking something?","Questions need a question mark.");
     add(`What punctuation goes here? "I love ice cream___"`,"multiple",["!","?",".",","],"!","It shows excitement.","An exclamation point shows excitement.");
     add(`What punctuation goes here? "The cat is sleeping___"`,"multiple",[".",",","?","!"],".","It's a simple statement.","Statements end with periods.");
+    add(`What punctuation goes here? "Are you coming to the party___"`,"multiple",["?",".",",","!"],"?","Is it asking a question?","Questions end with question marks.");
+    add(`What punctuation goes here? "Stop right there___"`,"multiple",["!","?",".",","],"!","It's a command or exclamation.","Exclamations and strong commands use exclamation points.");
+    add(`What punctuation goes here? "My dog's name is Spot___"`,"multiple",[".",",","?","!"],".","It's a statement.","Simple statements end with periods.");
+    add("A comma is used to _____.","multiple",shuffle(["separate items in a list","end a sentence","ask a question","show excitement"]),"separate items in a list","Commas separate things.","Commas separate items in a list.");
+    add(`In "I have a cat, a dog, and a fish," commas separate _____.`,"multiple",["items in a list","sentences","paragraphs","nothing"],"items in a list","List items are separated by commas.","Commas separate the items in the list.");
+    add("How many end marks are there? (. ? !)","multiple",["3","2","4","1"],"3","Count them: period, question mark, exclamation point.","There are 3 end punctuation marks.");
+    add("Which sentence needs a question mark?","multiple",["What is your name","My name is Sam","I like cats","She runs fast"],"What is your name","Questions ask something.","'What is your name?' is asking a question.");
+    add("Which sentence needs a period?","multiple",["The sky is blue","What time is it","Watch out","Did you eat"],"The sky is blue","Statements end with periods.","'The sky is blue.' is a statement.");
+    add("Which sentence needs an exclamation point?","multiple",["I won the prize","Where is the store","The dog is small","She walks slowly"],"I won the prize","Exclamation points show strong emotion.","'I won the prize!' shows excitement.");
   }
 
   // ── LEVEL C ──
@@ -2061,16 +2105,21 @@ function generateELAThemeQuestions(level, theme, mkId) {
     });
   }
   if (theme==="Main Idea") {
-    const passages=[
+    const miPassages=[
       {text:"Dogs make great pets. They are loyal and fun. Dogs love to play fetch and go for walks.",q:"What is the main idea?",a:"Dogs make great pets",opts:["Dogs make great pets","Cats are better","Birds can fly","Fish swim"]},
       {text:"Apples are a healthy snack. They have vitamins and taste sweet. You can eat them raw or in a pie.",q:"What is the main idea?",a:"Apples are a healthy snack",opts:["Apples are a healthy snack","Pie is tasty","Vitamins are important","Oranges are better"]},
       {text:"Exercise is important for everyone. It keeps your body strong and your mind sharp. You should try to exercise every day.",q:"What is the main idea?",a:"Exercise is important",opts:["Exercise is important","Sleep is good","Food gives energy","Water is wet"]},
+      {text:"Rain comes from clouds. Water evaporates, forms clouds, and falls as rain. This is called the water cycle.",q:"What is the main idea?",a:"Rain comes from clouds in the water cycle",opts:["Rain comes from clouds in the water cycle","Clouds are white","The sun is bright","Oceans are big"]},
+      {text:"Libraries are wonderful places. You can borrow books for free. Libraries also have computers and helpful staff.",q:"What is the main idea?",a:"Libraries are wonderful places",opts:["Libraries are wonderful places","Books cost money","Computers are useful","Staff work hard"]},
+      {text:"Bees are very important insects. They pollinate flowers and make honey. Without bees, many plants could not grow.",q:"What is the main idea?",a:"Bees are very important insects",opts:["Bees are very important insects","Honey is sweet","Flowers are pretty","Gardens are large"]},
     ];
-    passages.forEach(p=>{
+    miPassages.forEach(p=>{
       add(`Read: "${p.text}" — ${p.q}`,"multiple",shuffle(p.opts),p.a,"The main idea is what the whole passage is about.","The main idea is the most important point.");
       add(`Read: "${p.text}" — What is the passage mainly about?`,"input",null,p.a,"What is the big idea?","The main idea is the central topic.");
     });
-    for(let i=0;i<9;i++) add("The main idea of a paragraph is _____.","multiple",shuffle(["what the whole paragraph is about","a small detail","the first word","the last sentence"]),"what the whole paragraph is about","The main idea is the big picture.","The main idea tells what the paragraph is mostly about.");
+    add("The main idea of a paragraph is _____.","multiple",shuffle(["what the whole paragraph is about","a small detail","the first word","the last sentence"]),"what the whole paragraph is about","The main idea is the big picture.","The main idea tells what the paragraph is mostly about.");
+    add("Supporting details are _____ that explain the main idea.","multiple",["facts or examples","the main point","the title","the author"],"facts or examples","Details give more information.","Supporting details explain or prove the main idea.");
+    add("The main idea is usually found in the _____ of a paragraph.","multiple",["topic sentence","last word","middle sentence","title"],"topic sentence","The topic sentence states the main idea.","The topic sentence often contains the main idea.");
   }
   if (theme==="Context Clues") {
     const clues=[
@@ -2099,11 +2148,18 @@ function generateELAThemeQuestions(level, theme, mkId) {
     });
   }
   if (theme==="Story Elements") {
-    for(let i=0;i<5;i++){
-      add("The CHARACTERS in a story are _____.","multiple",shuffle(["the people or animals in the story","where the story takes place","what happens","the author"]),"the people or animals in the story","Characters are who the story is about.","Characters are the people/animals in a story.");
-      add("The SETTING of a story is _____.","multiple",shuffle(["where and when the story takes place","who is in the story","the problem","the ending"]),"where and when the story takes place","Setting = where + when.","The setting is the time and place.");
-      add("The PLOT of a story is _____.","multiple",shuffle(["what happens in the story","who is in it","where it takes place","the title"]),"what happens in the story","Plot = events.","The plot is the sequence of events.");
-    }
+    add("The CHARACTERS in a story are _____.","multiple",shuffle(["the people or animals in the story","where the story takes place","what happens","the author"]),"the people or animals in the story","Characters are who the story is about.","Characters are the people/animals in a story.");
+    add("The SETTING of a story is _____.","multiple",shuffle(["where and when the story takes place","who is in the story","the problem","the ending"]),"where and when the story takes place","Setting = where + when.","The setting is the time and place.");
+    add("The PLOT of a story is _____.","multiple",shuffle(["what happens in the story","who is in it","where it takes place","the title"]),"what happens in the story","Plot = events.","The plot is the sequence of events.");
+    add("The CONFLICT in a story is _____.","multiple",shuffle(["the main problem","the setting","the main character","the happy ending"]),"the main problem","Conflict = the problem.","The conflict is the central problem or challenge.");
+    add("The RESOLUTION of a story is _____.","multiple",shuffle(["how the problem is solved","the setting","the characters","the beginning"]),"how the problem is solved","Resolution = how it ends.","The resolution solves the conflict.");
+    add("The THEME of a story is _____.","multiple",shuffle(["the big lesson or message","the main character's name","where it happens","the title"]),"the big lesson or message","Theme = the life lesson.","The theme is the underlying message or lesson.");
+    add("In 'Goldilocks and the Three Bears,' the setting is _____.","multiple",["a forest and a bear's house","a school","a city","a beach"],"a forest and a bear's house","Where does the story take place?","The story is set in a forest near a bear's house.");
+    add("In 'The Three Little Pigs,' the main conflict is _____.","multiple",["the wolf trying to blow down their houses","finding food","going to school","losing their toys"],"the wolf trying to blow down their houses","What problem do the pigs face?","The conflict is the wolf threatening their homes.");
+    add("A protagonist is the _____ character in a story.","multiple",["main","smallest","oldest","funniest"],"main","The protagonist is the hero or main character.","The protagonist is the central character.");
+    add("An antagonist is the character who _____.","multiple",["causes conflict","helps everyone","solves problems","is the nicest"],"causes conflict","The antagonist is the villain or obstacle.","The antagonist opposes the protagonist.");
+    add("The CLIMAX of a story is _____.","multiple",["the most exciting or tense moment","the beginning","the setting","the character list"],"the most exciting or tense moment","The climax is the turning point.","The climax is the peak of tension in the plot.");
+    add("Story elements include characters, setting, plot, conflict, and _____.","multiple",["resolution","commas","math","pictures"],"resolution","Think about the parts of a story.","Resolution is the final key story element.");
   }
 
   // ── LEVEL D ──
@@ -2133,17 +2189,21 @@ function generateELAThemeQuestions(level, theme, mkId) {
     });
   }
   if (theme==="Text Evidence") {
-    const passages=[
+    const tePassages=[
       {text:"Maria loves painting. She paints every day after school. Her room is full of paintings.",q:"How do you know Maria loves painting?",a:"She paints every day",opts:["She paints every day","She said so","Her mom told her","She has brushes"]},
       {text:"The sky grew dark and the wind blew hard. Trees bent sideways.",q:"What evidence tells you a storm is coming?",a:"The sky grew dark and wind blew hard",opts:["The sky grew dark and wind blew hard","It was sunny","Birds were singing","Flowers bloomed"]},
+      {text:"Jake's stomach growled. He stared at the clock as it slowly ticked toward lunch.",q:"What evidence shows Jake is hungry?",a:"His stomach growled",opts:["His stomach growled","He was sleeping","He was running","He was drawing"]},
+      {text:"The library was silent. Everyone whispered and walked on tiptoe between the shelves.",q:"What evidence shows the library is a quiet place?",a:"Everyone whispered and walked on tiptoe",opts:["Everyone whispered and walked on tiptoe","People were singing","Children were running","Books were falling"]},
+      {text:"Mia checked the weather app three times and packed her sunscreen and towel.",q:"What evidence shows Mia is planning a beach trip?",a:"She packed her sunscreen and towel",opts:["She packed her sunscreen and towel","She brought an umbrella","She wore a coat","She stayed home"]},
+      {text:"The dog wagged its tail, jumped up, and ran to the door.",q:"What evidence shows the dog is excited?",a:"It wagged its tail, jumped up, and ran to the door",opts:["It wagged its tail, jumped up, and ran to the door","It hid under the bed","It was sleeping","It growled"]},
     ];
-    passages.forEach(p=>{
-      for(let i=0;i<4;i++){
-        add(`Read: "${p.text}" — ${p.q}`,"multiple",shuffle(p.opts),p.a,"Find the clues in the text.","Text evidence means proof from the passage.");
-      }
+    tePassages.forEach(p=>{
+      add(`Read: "${p.text}" — ${p.q}`,"multiple",shuffle(p.opts),p.a,"Find the clues in the text.","Text evidence means proof from the passage.");
       add(`Read: "${p.text}" — Find evidence: ${p.q}`,"input",null,p.a,"Quote from the passage.","Look at what the text says directly.");
     });
-    for(let i=0;i<5;i++) add("Text evidence is _____.","multiple",shuffle(["proof from the passage","your opinion","a guess","what a friend says"]),"proof from the passage","Evidence comes from the text itself.","Text evidence = proof found in the reading.");
+    add("Text evidence is _____.","multiple",shuffle(["proof from the passage","your opinion","a guess","what a friend says"]),"proof from the passage","Evidence comes from the text itself.","Text evidence = proof found in the reading.");
+    add("When citing text evidence, you should _____.","multiple",["quote or reference the text","make something up","ask a friend","guess"],"quote or reference the text","Use the exact words or paraphrase from the text.","Text evidence comes directly from the reading.");
+    add("The phrase 'According to the text...' introduces _____.","multiple",["text evidence","a personal opinion","a new topic","the author's name"],"text evidence","This phrase signals you're quoting the text.","'According to the text' introduces evidence from the passage.");
   }
   if (theme==="Adjectives & Adverbs") {
     const adjs=["big","small","red","happy","tall","old","new","fast","slow","bright"];
@@ -2158,11 +2218,17 @@ function generateELAThemeQuestions(level, theme, mkId) {
     add("Adverbs describe _____.","multiple",shuffle(["verbs","nouns","articles","pronouns"]),"verbs","Adverbs tell how, when, or where.","Adverbs modify verbs.");
   }
   if (theme==="Paragraph Writing") {
-    for(let i=0;i<5;i++){
-      add("Every paragraph should have a _____ sentence.","multiple",shuffle(["topic","funny","long","short"]),"topic","The first sentence tells what the paragraph is about.","A topic sentence introduces the main idea.");
-      add("Supporting details _____.","multiple",shuffle(["give more information about the main idea","change the topic","end the paragraph","start a new paragraph"]),"give more information about the main idea","Details support the topic sentence.","Supporting details explain the main idea.");
-      add("A concluding sentence _____.","multiple",shuffle(["wraps up the paragraph","starts a new idea","asks a question","is always short"]),"wraps up the paragraph","The last sentence closes the paragraph.","A concluding sentence summarizes or restates the main idea.");
-    }
+    add("Every paragraph should have a _____ sentence.","multiple",shuffle(["topic","funny","long","short"]),"topic","The first sentence tells what the paragraph is about.","A topic sentence introduces the main idea.");
+    add("Supporting details _____.","multiple",shuffle(["give more information about the main idea","change the topic","end the paragraph","start a new paragraph"]),"give more information about the main idea","Details support the topic sentence.","Supporting details explain the main idea.");
+    add("A concluding sentence _____.","multiple",shuffle(["wraps up the paragraph","starts a new idea","asks a question","is always short"]),"wraps up the paragraph","The last sentence closes the paragraph.","A concluding sentence summarizes or restates the main idea.");
+    add("How many main ideas should a paragraph have?","multiple",["One","Two","Three","As many as you like"],"One","A paragraph focuses on a single idea.","Each paragraph has one main idea.");
+    add("The topic sentence is usually _____ the paragraph.","multiple",["at the beginning of","at the end of","in the middle of","missing from"],"at the beginning of","The topic sentence introduces the topic.","Topic sentences typically open the paragraph.");
+    add("Transition words like 'first,' 'next,' and 'finally' help paragraphs flow _____.","multiple",["smoothly","loudly","slowly","randomly"],"smoothly","Transitions connect ideas.","Transition words help ideas connect logically.");
+    add("Which is a good topic sentence for a paragraph about dogs?","multiple",["Dogs are wonderful pets for many reasons.","The sky is blue.","Math is hard.","I like pizza."],"Dogs are wonderful pets for many reasons.","A topic sentence introduces the main idea.","A good topic sentence states what the paragraph will be about.");
+    add("After the topic sentence, you add _____.","multiple",["supporting details","another topic sentence","a title","page numbers"],"supporting details","Supporting details explain the main idea.","Supporting details follow the topic sentence.");
+    add("Indenting means _____.","multiple",["starting a new paragraph with extra space","writing in all caps","erasing text","using bold letters"],"starting a new paragraph with extra space","Indented paragraphs have a small space at the start.","Indentation signals the start of a new paragraph.");
+    add("A paragraph that jumps between unrelated ideas is _____.","multiple",["unfocused","perfect","creative","ideal"],"unfocused","Good paragraphs stick to one main idea.","Paragraphs should stay focused on one topic.");
+    add("Good paragraphs have a clear beginning, middle, and _____.","multiple",["end","title","character","question"],"end","Paragraphs have a structure.","Well-organized paragraphs have a clear beginning, middle, and end.");
   }
   if (theme==="Figurative Language" && level==="D") {
     const similes=[["quick as a fox","Simile"],["the sun is a golden coin","Metaphor"],["the wind whispered through the trees","Personification"],["I told you a million times","Hyperbole"],["buzz went the bee","Onomatopoeia"],["brave as a lion","Simile"],["life is a rollercoaster","Metaphor"],["the flowers danced in the wind","Personification"],["I'm so hungry I could eat a horse","Hyperbole"],["crash bang boom","Onomatopoeia"]];
@@ -2182,47 +2248,82 @@ function generateELAThemeQuestions(level, theme, mkId) {
     });
   }
   if (theme==="Inference") {
-    const inferences=[
+    const moreInferences=[
       {text:"Sam grabbed his umbrella and raincoat before leaving.",q:"What can you infer about the weather?",a:"It is raining or about to rain",opts:["It is raining or about to rain","It is sunny","It is snowing","It is windy"]},
       {text:"The puppy wagged its tail and jumped on the visitor.",q:"How does the puppy feel?",a:"Happy and excited",opts:["Happy and excited","Scared","Angry","Tired"]},
       {text:"Maria yawned and rubbed her eyes during the movie.",q:"What can you infer about Maria?",a:"She is tired",opts:["She is tired","She is scared","She is hungry","She is angry"]},
       {text:"The cafeteria was noisy with children laughing and talking.",q:"What can you infer?",a:"It is lunchtime at school",opts:["It is lunchtime at school","It is nighttime","Everyone is sleeping","The school is closed"]},
+      {text:"Lena smiled widely as she tore open the gift wrap.",q:"How does Lena feel?",a:"Excited and happy",opts:["Excited and happy","Sad","Angry","Scared"]},
+      {text:"The streets were empty and all the shops had their lights off.",q:"What can you infer about the time?",a:"It is very late or early in the morning",opts:["It is very late or early in the morning","It is noon","School just let out","It is a busy afternoon"]},
+      {text:"Carlos checked his watch again and tapped his foot impatiently.",q:"What can you infer about Carlos?",a:"He is waiting and feels impatient",opts:["He is waiting and feels impatient","He is bored and sleepy","He is happy and dancing","He is working hard"]},
+      {text:"The trash can was overflowing and a smell drifted from the kitchen.",q:"What can you infer?",a:"The trash needs to be taken out",opts:["The trash needs to be taken out","Someone cooked a great meal","The kitchen was just cleaned","The dog made a mess"]},
     ];
-    inferences.forEach(inf=>{
+    moreInferences.forEach(inf=>{
       add(`Read: "${inf.text}" — ${inf.q}`,"multiple",shuffle(inf.opts),inf.a,"Use clues in the text to figure out what's not directly stated.","An inference uses clues to draw a conclusion.");
       add(`Read: "${inf.text}" — ${inf.q}`,"input",null,inf.a,"What do the details suggest?","Infer means to read between the lines.");
     });
-    for(let i=0;i<7;i++) add("An inference is _____.","multiple",shuffle(["a conclusion based on evidence and reasoning","a fact stated in the text","a random guess","the author's name"]),"a conclusion based on evidence and reasoning","Inferences use clues from the text.","An inference is an educated conclusion.");
+    add("An inference is _____.","multiple",shuffle(["a conclusion based on evidence and reasoning","a fact stated in the text","a random guess","the author's name"]),"a conclusion based on evidence and reasoning","Inferences use clues from the text.","An inference is an educated conclusion.");
+    add("To make an inference, you use _____ from the text plus what you already know.","multiple",["clues","random words","the title","the page numbers"],"clues","Inferences combine text clues with background knowledge.","Inferences use text clues plus prior knowledge.");
+    add("'Reading between the lines' means _____.","multiple",["making an inference","copying the text","skipping sentences","summarizing"],"making an inference","You figure out what isn't directly stated.","Making inferences means understanding implied meaning.");
   }
   if (theme==="Compare & Contrast") {
-    for(let i=0;i<5;i++){
-      add("When you COMPARE two things, you find _____.","multiple",shuffle(["how they are similar","how they are different","what color they are","how old they are"]),"how they are similar","Compare = same.","Comparing finds similarities.");
-      add("When you CONTRAST two things, you find _____.","multiple",shuffle(["how they are different","how they are similar","their names","their sizes"]),"how they are different","Contrast = different.","Contrasting finds differences.");
-      add("Which signal word shows COMPARISON?","multiple",shuffle(["similarly","however","but","although"]),"similarly","Comparison = alike.","'Similarly' shows comparison.");
-      add("Which signal word shows CONTRAST?","multiple",shuffle(["however","likewise","also","similarly"]),"however","Contrast = different.","'However' signals contrast.");
-    }
+    add("When you COMPARE two things, you find _____.","multiple",shuffle(["how they are similar","how they are different","what color they are","how old they are"]),"how they are similar","Compare = same.","Comparing finds similarities.");
+    add("When you CONTRAST two things, you find _____.","multiple",shuffle(["how they are different","how they are similar","their names","their sizes"]),"how they are different","Contrast = different.","Contrasting finds differences.");
+    [
+      ["similarly","Comparison"],["however","Contrast"],["likewise","Comparison"],["on the other hand","Contrast"],
+      ["in the same way","Comparison"],["although","Contrast"],["both","Comparison"],["yet","Contrast"],
+      ["also","Comparison"],["but","Contrast"],["in contrast","Contrast"],["just like","Comparison"],
+    ].forEach(([word,type])=>{
+      add(`The signal word "${word}" shows _____.`,"multiple",["Comparison","Contrast","Neither","Both"],type,`${type==="Comparison"?"Comparison words show sameness.":"Contrast words show difference."}`,`"${word}" signals ${type.toLowerCase()}.`);
+    });
+    add("A Venn diagram is used to _____.","multiple",["compare and contrast two things","summarize a story","list opinions","define words"],"compare and contrast two things","Venn diagrams show what's shared and different.","Venn diagrams help organize comparison information.");
+    add("The overlapping center of a Venn diagram shows _____.","multiple",["similarities","differences","only one subject","nothing"],"similarities","The middle shows what both have in common.","The center of a Venn diagram shows shared traits.");
+    add("Which pair is being COMPARED? 'Both cats and dogs make great pets.'","multiple",["Cats and dogs","Dogs and fish","Cats and birds","Dogs and horses"],"Cats and dogs","Look for 'both' — a comparison signal word.","'Both' shows that cats and dogs are being compared.");
   }
   if (theme==="Point of View") {
-    for(let i=0;i<5;i++){
-      add(`"I went to the store." — What point of view is this?`,"multiple",shuffle(["First person","Second person","Third person","Fourth person"]),"First person","Look for 'I' or 'we'.","First person uses 'I' or 'we'.");
-      add(`"You should try this." — What point of view?`,"multiple",shuffle(["Second person","First person","Third person","None"]),"Second person","Look for 'you'.","Second person uses 'you'.");
-      add(`"She walked to school." — What point of view?`,"multiple",shuffle(["Third person","First person","Second person","None"]),"Third person","Look for 'he', 'she', 'they'.","Third person uses 'he', 'she', 'they'.");
-    }
+    [
+      [`"I went to the store."`, "First person", "Look for 'I' or 'we'."],
+      [`"You should try this."`, "Second person", "Look for 'you'."],
+      [`"She walked to school."`, "Third person", "Look for 'he', 'she', 'they'."],
+      [`"We won the championship!"`, "First person", "Look for 'I' or 'we'."],
+      [`"He smiled at the crowd."`, "Third person", "Look for 'he', 'she', 'they'."],
+      [`"You are going to love this."`, "Second person", "Look for 'you'."],
+      [`"I believe everyone deserves kindness."`, "First person", "Look for 'I'."],
+      [`"They ran through the park together."`, "Third person", "Look for 'he', 'she', 'they'."],
+      [`"You must study for your test."`, "Second person", "Look for 'you'."],
+    ].forEach(([ex,pov,hint])=>{
+      add(`${ex} — What point of view is this?`,"multiple",shuffle(["First person","Second person","Third person","Fourth person"]),pov,hint,`This uses ${pov.toLowerCase()}.`);
+    });
+    add("First-person point of view uses _____.","multiple",["I, me, we, us","he, she, they","you, your","it, its"],"I, me, we, us","First person = the narrator speaks as 'I'.","First person uses I, me, we, us.");
+    add("Third-person limited means the narrator knows _____.","multiple",["one character's thoughts","everyone's thoughts","no one's thoughts","the author's thoughts"],"one character's thoughts","Limited = only one character's perspective.","Third-person limited follows one character's viewpoint.");
+    add("Third-person omniscient means the narrator knows _____.","multiple",["all characters' thoughts","one character's thoughts","no thoughts","only the setting"],"all characters' thoughts","Omniscient = all-knowing.","Omniscient narrators know everything.");
   }
   if (theme==="Grammar Review") {
-    for(let i=0;i<5;i++){
-      add("A NOUN is _____.","multiple",shuffle(["a person, place, or thing","an action word","a describing word","a connecting word"]),"a person, place, or thing","Nouns name things.","Nouns are people, places, or things.");
-      add("A VERB is _____.","multiple",shuffle(["an action word","a person","a place","a describing word"]),"an action word","Verbs show action.","Verbs express action or state of being.");
-      add("An ADJECTIVE describes _____.","multiple",shuffle(["a noun","a verb","an adverb","a conjunction"]),"a noun","Adjectives modify nouns.","Adjectives describe nouns.");
-      add("A PRONOUN replaces _____.","multiple",shuffle(["a noun","a verb","an adjective","a sentence"]),"a noun","He, she, they, it...","Pronouns take the place of nouns.");
-    }
+    add("A NOUN is _____.","multiple",shuffle(["a person, place, or thing","an action word","a describing word","a connecting word"]),"a person, place, or thing","Nouns name things.","Nouns are people, places, or things.");
+    add("A VERB is _____.","multiple",shuffle(["an action word","a person","a place","a describing word"]),"an action word","Verbs show action.","Verbs express action or state of being.");
+    add("An ADJECTIVE describes _____.","multiple",shuffle(["a noun","a verb","an adverb","a conjunction"]),"a noun","Adjectives modify nouns.","Adjectives describe nouns.");
+    add("A PRONOUN replaces _____.","multiple",shuffle(["a noun","a verb","an adjective","a sentence"]),"a noun","He, she, they, it...","Pronouns take the place of nouns.");
+    add("A CONJUNCTION connects _____.","multiple",["words or clauses","nouns only","adjectives","punctuation"],"words or clauses","Words like 'and,' 'but,' 'or' are conjunctions.","Conjunctions join words, phrases, or clauses.");
+    add("A PREPOSITION shows _____.","multiple",["relationship between words (in, on, at)","action","description","replacement"],"relationship between words (in, on, at)","Words like 'in,' 'on,' 'under' are prepositions.","Prepositions show relationships between words.");
+    add("An ADVERB describes _____.","multiple",["a verb, adjective, or other adverb","a noun","a sentence","a paragraph"],"a verb, adjective, or other adverb","Adverbs tell how, when, where.","Adverbs modify verbs, adjectives, or other adverbs.");
+    add("In 'The tall girl runs fast,' the adjective is _____.","multiple",["tall","girl","runs","fast"],"tall","Adjectives describe nouns.","'Tall' describes the noun 'girl'.");
+    add("In 'She runs quickly,' the adverb is _____.","multiple",["quickly","She","runs","the"],"quickly","Adverbs describe verbs.","'Quickly' tells how she runs — it's an adverb.");
+    add("Which is a proper noun?","multiple",["London","city","river","mountain"],"London","Proper nouns name specific places.","London is a specific city — a proper noun.");
+    add("Which is a common noun?","multiple",["city","Paris","Mike","Monday"],"city","Common nouns name general things.","'City' is a general noun, not a specific one.");
+    add("A SENTENCE must have a subject and a _____.","multiple",["predicate (verb)","comma","conjunction","period"],"predicate (verb)","Every sentence needs a subject and predicate.","A complete sentence has a subject and a predicate.");
   }
   if (theme==="Research Skills") {
-    for(let i=0;i<5;i++){
-      add("A reliable source is _____.","multiple",shuffle(["a trusted place to find information","any website","a friend's opinion","a social media post"]),"a trusted place to find information","Think: can you trust it?","Reliable sources are trustworthy and accurate.");
-      add("An encyclopedia is _____.","multiple",shuffle(["a book of facts on many topics","a story book","a dictionary","a comic book"]),"a book of facts on many topics","Encyclopedias have factual information.","Encyclopedias contain factual articles.");
-      add("The table of contents is found _____.","multiple",shuffle(["at the beginning of a book","at the end","in the middle","on the cover"]),"at the beginning of a book","It lists chapters and pages.","The table of contents is at the front.");
-    }
+    add("A reliable source is _____.","multiple",shuffle(["a trusted place to find information","any website","a friend's opinion","a social media post"]),"a trusted place to find information","Think: can you trust it?","Reliable sources are trustworthy and accurate.");
+    add("An encyclopedia is _____.","multiple",shuffle(["a book of facts on many topics","a story book","a dictionary","a comic book"]),"a book of facts on many topics","Encyclopedias have factual information.","Encyclopedias contain factual articles.");
+    add("The table of contents is found _____.","multiple",shuffle(["at the beginning of a book","at the end","in the middle","on the cover"]),"at the beginning of a book","It lists chapters and pages.","The table of contents is at the front.");
+    add("The index of a book is found _____.","multiple",["at the back","at the front","in the middle","on the cover"],"at the back","The index lists topics alphabetically.","The index is at the back of a book.");
+    add("A glossary provides _____.","multiple",["definitions of key terms","chapter summaries","author information","illustrations"],"definitions of key terms","A glossary is like a mini-dictionary.","Glossaries define specialized terms used in the book.");
+    add("Which is the most reliable source for a science report?","multiple",["A science textbook","A personal blog","A social media post","An advertisement"],"A science textbook","Textbooks are reviewed by experts.","Science textbooks are peer-reviewed and reliable.");
+    add("The purpose of a bibliography is to _____.","multiple",["list your sources","summarize your research","state your thesis","introduce your topic"],"list your sources","Bibliographies give credit to sources.","A bibliography lists all the sources you used.");
+    add("Primary sources include _____.","multiple",["diaries, letters, and firsthand accounts","encyclopedia articles","textbooks","magazine summaries"],"diaries, letters, and firsthand accounts","Primary sources are original, firsthand materials.","Primary sources are original documents or firsthand accounts.");
+    add("Plagiarism means _____.","multiple",["using someone's work without giving credit","writing your own ideas","citing sources","reading books"],"using someone's work without giving credit","Always give credit for other people's work.","Plagiarism is copying without attribution.");
+    add("Skimming a text means _____.","multiple",["reading quickly for the main ideas","reading every word carefully","memorizing the text","copying the text"],"reading quickly for the main ideas","Skimming gives you a quick overview.","Skimming helps you quickly find main points.");
+    add("When doing research, you should use _____ sources when possible.","multiple",["multiple","only one","no","fictional"],"multiple","Using multiple sources gives a fuller picture.","Good research draws from multiple reliable sources.");
   }
 
   // ── LEVEL F ──
@@ -2241,19 +2342,31 @@ function generateELAThemeQuestions(level, theme, mkId) {
     });
   }
   if (theme==="Theme & Moral") {
-    for(let i=0;i<5;i++){
-      add("The THEME of a story is _____.","multiple",shuffle(["the lesson or message","the main character","the setting","the title"]),"the lesson or message","Theme = the big lesson.","The theme is the underlying message.");
-      add("A MORAL is _____.","multiple",shuffle(["a lesson learned from a story","a character","a setting","a conflict"]),"a lesson learned from a story","Fables often have morals.","A moral is a life lesson from the story.");
-      add(`The story of the tortoise and the hare teaches: "Slow and steady wins the race." This is the _____.`,"multiple",shuffle(["moral","setting","character","conflict"]),"moral","It's the lesson of the story.","The moral is the lesson.");
-    }
+    add("The THEME of a story is _____.","multiple",shuffle(["the lesson or message","the main character","the setting","the title"]),"the lesson or message","Theme = the big lesson.","The theme is the underlying message.");
+    add("A MORAL is _____.","multiple",shuffle(["a lesson learned from a story","a character","a setting","a conflict"]),"a lesson learned from a story","Fables often have morals.","A moral is a life lesson from the story.");
+    add(`The story of the tortoise and the hare teaches: "Slow and steady wins the race." This is the _____.`,"multiple",shuffle(["moral","setting","character","conflict"]),"moral","It's the lesson of the story.","The moral is the lesson.");
+    add(`"The Boy Who Cried Wolf" teaches that if you lie repeatedly, people won't believe you. This is the _____.`,"multiple",["moral","setting","conflict","title"],"moral","Fables have morals.","The moral of this fable is about honesty and trust.");
+    add(`Which is a THEME (not just a topic)?`,"multiple",["Friendship can help you overcome challenges.","Friendship","School","The ocean"],"Friendship can help you overcome challenges.","A theme is a complete message, not just a topic.","Themes are full statements, not single words.");
+    add(`"The Ugly Duckling" teaches that _____.`,"multiple",["true beauty comes from within","ducks are beautiful","ponds are nice","birds can't swim"],"true beauty comes from within","What lesson does this story teach?","The theme is about inner beauty and belonging.");
+    add("Themes are usually _____ in a story — you have to figure them out.","multiple",["implied (not stated directly)","written in the first sentence","in the title","told by a character"],"implied (not stated directly)","Themes are usually shown, not told.","Authors often imply themes rather than stating them directly.");
+    add("A theme is different from a plot because a theme is _____.","multiple",["the message, not the events","what happens in the story","a character's name","the setting"],"the message, not the events","Plot = events; theme = meaning.","The theme is what the story means, not just what happens.");
+    add("Stories can have _____ than one theme.","multiple",["more","exactly","less","only"],"more","Many stories explore several themes.","Rich stories often have multiple themes.");
+    add("To find a theme, ask: What does the main character _____ by the end?","multiple",["learn","eat","buy","forget"],"learn","Character growth often reveals theme.","What the character learns often points to the theme.");
+    add("Which of these is a universal theme found in many stories?","multiple",["Good triumphs over evil.","The dog barked loudly.","She wore a red hat.","He ate breakfast."],"Good triumphs over evil.","Universal themes appear across many cultures and stories.","'Good triumphs over evil' is a common theme found worldwide.");
   }
   if (theme==="Author's Purpose") {
-    for(let i=0;i<5;i++){
-      add("The three main purposes for writing are _____.","multiple",shuffle(["to inform, persuade, and entertain","to read, write, and listen","to speak, sing, and dance","to eat, sleep, and play"]),"to inform, persuade, and entertain","PIE: Persuade, Inform, Entertain.","Authors write to persuade, inform, or entertain.");
-      add("A newspaper article is written to _____.","multiple",shuffle(["inform","entertain","persuade","confuse"]),"inform","News gives facts.","News articles inform readers.");
-      add("A fairy tale is written to _____.","multiple",shuffle(["entertain","inform","persuade","scare"]),"entertain","Stories are for enjoyment.","Fairy tales entertain readers.");
-      add("An advertisement is written to _____.","multiple",shuffle(["persuade","inform","entertain","educate"]),"persuade","Ads want you to buy something.","Advertisements persuade people.");
-    }
+    add("The three main purposes for writing are _____.","multiple",shuffle(["to inform, persuade, and entertain","to read, write, and listen","to speak, sing, and dance","to eat, sleep, and play"]),"to inform, persuade, and entertain","PIE: Persuade, Inform, Entertain.","Authors write to persuade, inform, or entertain.");
+    add("A newspaper article is written to _____.","multiple",shuffle(["inform","entertain","persuade","confuse"]),"inform","News gives facts.","News articles inform readers.");
+    add("A fairy tale is written to _____.","multiple",shuffle(["entertain","inform","persuade","scare"]),"entertain","Stories are for enjoyment.","Fairy tales entertain readers.");
+    add("An advertisement is written to _____.","multiple",shuffle(["persuade","inform","entertain","educate"]),"persuade","Ads want you to buy something.","Advertisements persuade people.");
+    add("A science textbook is written to _____.","multiple",["inform","entertain","persuade","confuse"],"inform","Textbooks provide facts.","Textbooks are written to teach and inform.");
+    add("A letter asking for longer school lunch time is written to _____.","multiple",["persuade","inform","entertain","confuse"],"persuade","You want to change someone's mind.","Persuasive writing tries to change beliefs or actions.");
+    add("A recipe card is written to _____.","multiple",["inform (give instructions)","entertain","persuade","confuse"],"inform (give instructions)","Recipes tell you what to do.","Instructional texts are written to inform.");
+    add("A poem that expresses feelings is written primarily to _____.","multiple",["entertain and express","persuade","inform","argue"],"entertain and express","Poetry expresses emotion and creates experience.","Most poetry is written to entertain and express feelings.");
+    add("The abbreviation PIE stands for _____.","multiple",["Persuade, Inform, Entertain","Print, Identify, Evaluate","Page, Index, Edit","Plan, Investigate, Explain"],"Persuade, Inform, Entertain","PIE is a helpful acronym for author's purpose.","PIE = Persuade, Inform, Entertain.");
+    add("A biography is written mainly to _____.","multiple",["inform about a person's life","entertain with fiction","persuade","confuse"],"inform about a person's life","Biographies are factual accounts of real lives.","Biographies inform readers about real people.");
+    add("A fable is written primarily to _____.","multiple",["entertain and teach a moral","inform with facts","persuade","describe science"],"entertain and teach a moral","Fables teach lessons through stories.","Fables entertain and convey moral lessons.");
+    add("To determine author's purpose, ask: Why did the author _____ this?","multiple",["write","read","copy","delete"],"write","Think about the author's goal.","Always consider why an author chose to write a piece.");
   }
   if (theme==="Figurative Language" && level==="F") {
     const examples=[
@@ -2266,19 +2379,30 @@ function generateELAThemeQuestions(level, theme, mkId) {
     add("Hyperbole is _____.","multiple",shuffle(["extreme exaggeration","a comparison using 'like'","a direct comparison","giving human traits"]),"extreme exaggeration","Hyper = over the top.","Hyperbole is extreme exaggeration for effect.");
   }
   if (theme==="Sentence Structure" && level==="F") {
-    for(let i=0;i<5;i++){
-      add("A SIMPLE sentence has _____.","multiple",shuffle(["one independent clause","two independent clauses","a dependent clause","no subject"]),"one independent clause","Simple = one complete thought.","A simple sentence has one independent clause.");
-      add("A COMPOUND sentence joins two clauses with _____.","multiple",shuffle(["a conjunction (and, but, or)","a period","nothing","a question mark"]),"a conjunction (and, but, or)","FANBOYS: For, And, Nor, But, Or, Yet, So.","Compound sentences use conjunctions.");
-      add("Which is a compound sentence?","multiple",shuffle(["I ran and she walked.","The cat sat.","Running fast.","Blue sky."]),"I ran and she walked.","It has two complete thoughts joined by 'and'.","Two independent clauses joined by a conjunction.");
-    }
+    add("A SIMPLE sentence has _____.","multiple",shuffle(["one independent clause","two independent clauses","a dependent clause","no subject"]),"one independent clause","Simple = one complete thought.","A simple sentence has one independent clause.");
+    add("A COMPOUND sentence joins two clauses with _____.","multiple",shuffle(["a conjunction (and, but, or)","a period","nothing","a question mark"]),"a conjunction (and, but, or)","FANBOYS: For, And, Nor, But, Or, Yet, So.","Compound sentences use conjunctions.");
+    add("Which is a compound sentence?","multiple",shuffle(["I ran and she walked.","The cat sat.","Running fast.","Blue sky."]),"I ran and she walked.","It has two complete thoughts joined by 'and'.","Two independent clauses joined by a conjunction.");
+    add("A COMPLEX sentence has one independent clause and one _____ clause.","multiple",["dependent","compound","simple","run-on"],"dependent","Complex = independent + dependent clauses.","A complex sentence combines an independent and dependent clause.");
+    add("Which word can start a dependent clause?","multiple",shuffle(["because","and","or","so"]),"because","Subordinating conjunctions start dependent clauses.","'Because' is a subordinating conjunction.");
+    add(`"Although it rained, we played outside." — This is a _____ sentence.`,"multiple",["complex","simple","compound","fragment"],"complex","It has an independent and a dependent clause.","'Although it rained' is the dependent clause.");
+    add("A sentence fragment is _____.","multiple",["an incomplete sentence","a complete sentence","a compound sentence","a long sentence"],"an incomplete sentence","Fragments are missing a subject or verb.","A fragment lacks a subject, verb, or complete thought.");
+    add("A run-on sentence has _____.","multiple",["two clauses joined without correct punctuation","one independent clause","a dependent clause","a question mark"],"two clauses joined without correct punctuation","Run-ons need a period, semicolon, or conjunction.","A run-on incorrectly joins independent clauses.");
+    add("FANBOYS stands for conjunctions: For, And, Nor, But, Or, Yet, _____.","multiple",["So","Since","Sometimes","Should"],"So","FANBOYS are coordinating conjunctions.","FANBOYS: For, And, Nor, But, Or, Yet, So.");
+    add("Which is a simple sentence?","multiple",["The dog ran.","I ran but she walked.","Because it was raining.","Running!"],"The dog ran.","A simple sentence has one subject and one verb.","'The dog ran.' has one subject and one verb.");
   }
   if (theme==="Opinion Writing") {
-    for(let i=0;i<5;i++){
-      add("An opinion is _____.","multiple",shuffle(["what someone thinks or believes","a proven fact","a question","a command"]),"what someone thinks or believes","Opinions are personal views.","An opinion reflects a personal belief.");
-      add("A FACT is _____.","multiple",shuffle(["something that can be proven true","what someone thinks","a guess","a hope"]),"something that can be proven true","Facts can be verified.","Facts are provable statements.");
-      add(`"Pizza is the best food." — Is this a fact or opinion?`,"multiple",["Opinion","Fact"],"Opinion","Can it be proven?","It's a personal preference, not provable.");
-      add(`"Water boils at 100°C." — Is this a fact or opinion?`,"multiple",["Fact","Opinion"],"Fact","Can it be proven?","This can be scientifically verified.");
-    }
+    add("An opinion is _____.","multiple",shuffle(["what someone thinks or believes","a proven fact","a question","a command"]),"what someone thinks or believes","Opinions are personal views.","An opinion reflects a personal belief.");
+    add("A FACT is _____.","multiple",shuffle(["something that can be proven true","what someone thinks","a guess","a hope"]),"something that can be proven true","Facts can be verified.","Facts are provable statements.");
+    add(`"Pizza is the best food." — Fact or opinion?`,"multiple",["Opinion","Fact"],"Opinion","Can it be proven?","It's a personal preference, not provable.");
+    add(`"Water boils at 100°C." — Fact or opinion?`,"multiple",["Fact","Opinion"],"Fact","Can it be proven?","This can be scientifically verified.");
+    add(`"Summer is the best season." — Fact or opinion?`,"multiple",["Opinion","Fact"],"Opinion","Different people prefer different seasons.","Personal preferences are opinions.");
+    add(`"There are 7 days in a week." — Fact or opinion?`,"multiple",["Fact","Opinion"],"Fact","This can be verified.","Measurable, verifiable statements are facts.");
+    add(`"Dogs are better pets than cats." — Fact or opinion?`,"multiple",["Opinion","Fact"],"Opinion","People have different preferences.","Preferences are opinions, not facts.");
+    add(`"The Earth orbits the Sun." — Fact or opinion?`,"multiple",["Fact","Opinion"],"Fact","This is scientifically proven.","Scientific facts are verifiable by evidence.");
+    add("Opinion writing should include _____ to support your view.","multiple",["reasons and evidence","only personal feelings","random examples","made-up stories"],"reasons and evidence","Good opinions are supported by reasons.","Strong opinion writing supports claims with evidence.");
+    add("Signal words for opinions include _____.","multiple",["I think, I believe, in my opinion","first, then, finally","for example, such as","however, although"],"I think, I believe, in my opinion","These phrases signal personal opinions.","Opinion signal words show that a statement is a belief.");
+    add("A counterargument in opinion writing is _____.","multiple",["the opposing view you address","your main opinion","your conclusion","an unrelated topic"],"the opposing view you address","Addressing the other side makes your argument stronger.","Acknowledging counterarguments strengthens your position.");
+    add("To write a strong opinion piece, you should _____.","multiple",["state your opinion, give reasons, and conclude","only state your opinion","copy someone else's ideas","avoid using evidence"],"state your opinion, give reasons, and conclude","Good opinion writing has structure.","A strong opinion piece states a view, supports it, and concludes.");
   }
 
   // ── LEVELS G–L: generate themed questions ──
@@ -2307,6 +2431,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"A summary should include the _____ and key details.","opts":["central idea","author's birthday","page numbers","illustrations"],a:"central idea"},
       {q:"The central idea is usually _____ in the text.","opts":["implied or stated","always the first sentence","always the title","never mentioned"],a:"implied or stated"},
       {q:"Which is a central idea vs. a detail? 'Exercise is important' vs 'Running burns calories'","opts":["Exercise is important = central idea","Running burns calories = central idea","Both are details","Both are central ideas"],a:"Exercise is important = central idea"},
+      {q:"Identifying the central idea helps you _____ the text.","opts":["understand and summarize","copy and paste","memorize word for word","ignore"],a:"understand and summarize"},
+      {q:"Each paragraph's topic sentence contributes to the _____ of the article.","opts":["central idea","title","author's name","page number"],a:"central idea"},
+      {q:"The central idea is broader than any single _____.","opts":["detail","chapter","title","letter"],a:"detail"},
+      {q:"When the central idea is implied, you must _____ it.","opts":["infer","copy","ignore","guess randomly"],a:"infer"},
+      {q:"A good summary captures the central idea _____ every minor detail.","opts":["without listing","instead of ignoring","by copying","by listing"],a:"without listing"},
+      {q:"The central idea in informational text is similar to the _____ in literary text.","opts":["theme","plot","character","setting"],a:"theme"},
+      {q:"Central idea questions often ask: 'What is the _____ of the article?'","opts":["main idea / central claim","spelling","page count","author's age"],a:"main idea / central claim"},
+      {q:"Details that support the central idea are called _____ details.","opts":["supporting","random","opposing","off-topic"],a:"supporting"},
+      {q:"To identify the central idea, look at what most of the _____ discuss.","opts":["paragraphs","illustrations","page numbers","headings only"],a:"paragraphs"},
     ],
     "Argument & Evidence":[
       {q:"A claim is _____.","opts":["a statement the author wants you to believe","a fact everyone agrees on","a question","a summary"],a:"a statement the author wants you to believe"},
@@ -2315,6 +2448,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"A counterargument is _____.","opts":["the opposing viewpoint","your main claim","a summary","a conclusion"],a:"the opposing viewpoint"},
       {q:"Logical reasoning connects evidence to the _____.","opts":["claim","title","author","setting"],a:"claim"},
       {q:"Anecdotal evidence is _____ than statistical evidence.","opts":["weaker","stronger","the same","unrelated"],a:"weaker"},
+      {q:"Addressing a counterargument _____ your argument.","opts":["strengthens","weakens","replaces","ignores"],a:"strengthens"},
+      {q:"An argument without evidence is _____.","opts":["weak / unsupported","strong","complete","perfect"],a:"weak / unsupported"},
+      {q:"'According to a 2020 NASA study...' is an example of _____ evidence.","opts":["statistical/scientific","anecdotal","emotional","fictional"],a:"statistical/scientific"},
+      {q:"The conclusion of an argument should _____ the main claim.","opts":["restate and reinforce","contradict","ignore","question"],a:"restate and reinforce"},
+      {q:"A rebuttal is _____.","opts":["a response to a counterargument","the main claim","a type of evidence","the introduction"],a:"a response to a counterargument"},
+      {q:"Which is an opinion, not a fact?","opts":["History class is boring.","Water freezes at 0°C.","The Earth is round.","Dogs are mammals."],a:"History class is boring."},
+      {q:"Citing a source means _____.","opts":["giving credit to where you found information","making up information","copying without credit","ignoring the source"],a:"giving credit to where you found information"},
+      {q:"A warrant in an argument explains _____.","opts":["why the evidence supports the claim","where to find sources","what the topic is","who the author is"],a:"why the evidence supports the claim"},
+      {q:"The strongest arguments combine ethos, pathos, and _____.","opts":["logos","mythos","pathos","rhyme"],a:"logos"},
     ],
     "Literary Devices":[
       {q:"Alliteration is _____.","opts":["repeating the same beginning sound","a type of rhyme","a metaphor","a plot twist"],a:"repeating the same beginning sound"},
@@ -2323,6 +2465,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Irony is when the opposite of what is _____ happens.","opts":["expected","written","said","seen"],a:"expected"},
       {q:"An allusion is a reference to _____.","opts":["something well-known","nothing","the future","a footnote"],a:"something well-known"},
       {q:"Imagery appeals to the reader's _____.","opts":["senses","logic","memory","schedule"],a:"senses"},
+      {q:"Repetition in literature is used to _____.","opts":["emphasize an idea","confuse readers","add length","remove meaning"],a:"emphasize an idea"},
+      {q:"A flashback interrupts the story to show _____ events.","opts":["past","future","current","imaginary"],a:"past"},
+      {q:"Symbolism uses one thing to represent _____.","opts":["a deeper idea or meaning","nothing","itself","the author"],a:"a deeper idea or meaning"},
+      {q:`"Buzz," "crash," and "sizzle" are examples of _____.`,"opts":["onomatopoeia","alliteration","simile","metaphor"],a:"onomatopoeia"},
+      {q:"A motif is _____.","opts":["a recurring element in a literary work","a one-time detail","the main character","the ending"],a:"a recurring element in a literary work"},
+      {q:"Dramatic irony occurs when the audience knows something the _____ does not.","opts":["character","author","publisher","editor"],a:"character"},
+      {q:"The mood of a story is _____.","opts":["the feeling it creates in the reader","the theme","the plot","the setting"],a:"the feeling it creates in the reader"},
+      {q:"Tone is the _____ attitude toward the subject.","opts":["author's","reader's","character's","publisher's"],a:"author's"},
+      {q:"A foil character is used to _____ the protagonist's traits by contrast.","opts":["highlight","copy","ignore","replace"],a:"highlight"},
     ],
     "Comma Rules":[
       {q:"Use a comma _____ items in a list.","opts":["between","after all","before all","instead of"],a:"between"},
@@ -2331,6 +2482,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Use a comma before a _____ in a compound sentence.","opts":["conjunction","period","noun","verb"],a:"conjunction"},
       {q:`"However I disagree." — The comma goes after _____.`,"opts":["However","I","disagree","No comma needed"],a:"However"},
       {q:"The Oxford comma goes before the last item and the _____ in a list.","opts":["conjunction","period","semicolon","colon"],a:"conjunction"},
+      {q:"Use a comma to set off a direct address in a sentence: 'Hello _____ how are you?'","opts":["comma after 'Hello'","no comma needed","comma after 'how'","comma after 'you'"],a:"comma after 'Hello'"},
+      {q:`"Yes I would love to come." — A comma is needed after _____.`,"opts":["Yes","I","would","come"],a:"Yes"},
+      {q:"Non-restrictive (nonessential) clauses are set off by _____.","opts":["commas","periods","semicolons","colons"],a:"commas"},
+      {q:`Which sentence uses commas correctly?`,"opts":["I enjoy hiking, swimming, and cycling.","I enjoy hiking swimming and cycling.","I, enjoy hiking swimming, and cycling.","I enjoy, hiking, swimming and cycling."],a:"I enjoy hiking, swimming, and cycling."},
+      {q:`"On Monday morning she ran five miles." A comma should go after _____.`,"opts":["morning","Monday","ran","miles"],a:"morning"},
+      {q:"In dates, a comma separates the day from the _____.","opts":["year","month","week","century"],a:"year"},
+      {q:"Which does NOT require a comma?","opts":["An essential/restrictive clause","After an introductory phrase","Before a conjunction in compound sentences","Between list items"],a:"An essential/restrictive clause"},
+      {q:"Coordinate adjectives modifying the same noun are separated by _____.","opts":["commas","semicolons","colons","periods"],a:"commas"},
+      {q:`"My sister Maria is a doctor." Is a comma needed around 'Maria'?`,"opts":["Yes — it's a nonessential appositive","No — it's essential info","Yes, always after names","No, never around names"],a:"Yes — it's a nonessential appositive"},
     ],
     "Persuasive Writing":[
       {q:"Persuasive writing tries to _____.","opts":["convince the reader","inform the reader","entertain the reader","confuse the reader"],a:"convince the reader"},
@@ -2339,6 +2499,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Logical appeal uses _____.","opts":["facts and reasoning","emotions","personal stories","humor"],a:"facts and reasoning"},
       {q:"Ethical appeal builds the writer's _____.","opts":["credibility","humor","vocabulary","speed"],a:"credibility"},
       {q:"A call to action tells the reader to _____.","opts":["do something","stop reading","forget everything","take a nap"],a:"do something"},
+      {q:"The three rhetorical appeals are ethos, pathos, and _____.","opts":["logos","mythos","chronos","kairos"],a:"logos"},
+      {q:"Counterarguments _____ a persuasive essay when addressed effectively.","opts":["strengthen","weaken","destroy","shorten"],a:"strengthen"},
+      {q:"A strong thesis in persuasive writing states your _____ clearly.","opts":["position/claim","favorite color","name","conclusion only"],a:"position/claim"},
+      {q:"Which word signals a counterargument being addressed?","opts":["Although","Therefore","In addition","Furthermore"],a:"Although"},
+      {q:"Facts and statistics are forms of _____ appeal in persuasion.","opts":["logos","pathos","ethos","kairos"],a:"logos"},
+      {q:"Emotional language is a form of _____ appeal.","opts":["pathos","logos","ethos","none"],a:"pathos"},
+      {q:"An expert's testimony is an example of _____ appeal.","opts":["ethos","pathos","logos","random"],a:"ethos"},
+      {q:"A rebuttal in persuasion means _____.","opts":["responding to the opposing view","adding more evidence","restating your claim","writing the conclusion"],a:"responding to the opposing view"},
+      {q:"Persuasive writing should target a specific _____.","opts":["audience","dictionary","bibliography","footnote"],a:"audience"},
     ],
   };
   // Add more themes for levels G-L
@@ -2350,6 +2519,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:`"The experiment yielded results" has a _____ tone.`,"opts":["formal","casual","angry","silly"],a:"formal"},
       {q:"Informal tone sounds like _____.","opts":["everyday conversation","a textbook","a legal document","a dictionary"],a:"everyday conversation"},
       {q:"Diction means _____.","opts":["word choice","punctuation","spelling","grammar"],a:"word choice"},
+      {q:"The mood of a text is the feeling it creates in the _____.","opts":["reader","author","publisher","editor"],a:"reader"},
+      {q:"A somber tone suggests the author feels _____.","opts":["serious or sad","joyful","silly","confused"],a:"serious or sad"},
+      {q:"Which word creates a more negative tone: 'house' or 'hovel'?","opts":["hovel","house","both the same","neither"],a:"hovel"},
+      {q:"Choosing precise words instead of vague ones improves _____.","opts":["clarity and impact","page length","spelling","grammar"],a:"clarity and impact"},
+      {q:"A sarcastic tone means the author is being _____.","opts":["mockingly ironic","sincere","neutral","formal"],a:"mockingly ironic"},
+      {q:"Words with similar meanings but different emotional weight are called _____.","opts":["words with different connotations","synonyms","antonyms","homophones"],a:"words with different connotations"},
+      {q:"An enthusiastic tone uses words that show _____.","opts":["excitement and energy","boredom","sadness","confusion"],a:"excitement and energy"},
+      {q:"To shift from informal to formal writing, you should _____.","opts":["replace slang with precise vocabulary","add more exclamation points","use shorter sentences","remove evidence"],a:"replace slang with precise vocabulary"},
+      {q:"'The smell of fresh bread wafted through the house' creates a _____ mood.","opts":["warm and comforting","frightening","sad","tense"],a:"warm and comforting"},
     ],
     "Textual Analysis":[
       {q:"Textual analysis examines _____.","opts":["how a text creates meaning","just the plot","only characters","the cover"],a:"how a text creates meaning"},
@@ -2358,6 +2536,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"A thesis statement presents the _____ of an analysis.","opts":["main argument","bibliography","title page","dedication"],a:"main argument"},
       {q:"Evidence in textual analysis comes from _____.","opts":["the text itself","outside sources only","your imagination","the author's biography"],a:"the text itself"},
       {q:"Analysis goes beyond summary by explaining _____.","opts":["WHY and HOW","just WHAT","only WHO","just WHERE"],a:"WHY and HOW"},
+      {q:"A close reading focuses on _____ details of the text.","opts":["specific language and structural","general plot","character names only","the cover art"],a:"specific language and structural"},
+      {q:"When analyzing structure, you might consider _____.","opts":["how the order of events affects meaning","the author's age","the page count","the cover design"],a:"how the order of events affects meaning"},
+      {q:"Textual analysis asks: HOW does the author _____ their message?","opts":["convey","ignore","copy","hide"],a:"convey"},
+      {q:"Quoting the text in an analysis _____ your argument.","opts":["supports","weakens","replaces","contradicts"],a:"supports"},
+      {q:"When you paraphrase, you restate the text _____.","opts":["in your own words","word for word","in a shorter version only","without any changes"],a:"in your own words"},
+      {q:"Point of view in a text affects _____.","opts":["what information the reader receives","the font","the page numbers","the title"],a:"what information the reader receives"},
+      {q:"Analyzing the title of a text can reveal _____.","opts":["the author's purpose or theme","the page count","the publisher","random information"],a:"the author's purpose or theme"},
+      {q:"In textual analysis, a 'claim' is supported by _____.","opts":["evidence from the text","the author's biography","outside opinions","pictures"],a:"evidence from the text"},
+      {q:"The difference between analysis and summary is that analysis explains _____.","opts":["significance and meaning","just what happened","character names","the setting"],a:"significance and meaning"},
     ],
     "Bias & Perspective":[
       {q:"Bias is _____.","opts":["a one-sided viewpoint","a fact","a summary","a question"],a:"a one-sided viewpoint"},
@@ -2366,6 +2553,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Perspective is shaped by a person's _____.","opts":["experiences and beliefs","height","hair color","shoe size"],a:"experiences and beliefs"},
       {q:"Media literacy helps you _____.","opts":["evaluate sources critically","watch more TV","read faster","write shorter"],a:"evaluate sources critically"},
       {q:"An objective text is _____.","opts":["free from personal opinions","full of bias","always short","always long"],a:"free from personal opinions"},
+      {q:"Confirmation bias means favoring information that _____ what you already believe.","opts":["confirms","contradicts","ignores","disproves"],a:"confirms"},
+      {q:"A subjective text reflects _____.","opts":["personal opinions and feelings","only facts","no emotions","scientific data only"],a:"personal opinions and feelings"},
+      {q:"Loaded language is designed to _____ the reader.","opts":["emotionally influence","inform neutrally","confuse","entertain"],a:"emotionally influence"},
+      {q:"Primary sources may contain bias because _____.","opts":["they reflect the author's direct perspective","they are always wrong","they were written long ago","they are secondary"],a:"they reflect the author's direct perspective"},
+      {q:"When evaluating a source, checking the _____ helps identify potential bias.","opts":["author's background and purpose","page count","font size","publication date only"],a:"author's background and purpose"},
+      {q:"Stereotyping is a form of bias that _____.","opts":["oversimplifies groups of people","provides accurate data","removes assumptions","supports all individuals"],a:"oversimplifies groups of people"},
+      {q:"Reading multiple perspectives on the same topic helps you _____.","opts":["form a more complete, balanced view","get confused","pick one side only","ignore the topic"],a:"form a more complete, balanced view"},
+      {q:"Propaganda uses _____ to influence people's beliefs.","opts":["biased or misleading information","balanced facts","scientific evidence","multiple perspectives"],a:"biased or misleading information"},
+      {q:"Critical readers ask: 'Who wrote this and _____ did they write it?'","opts":["why","when only","where only","how long ago"],a:"why"},
     ],
     "Complex Sentences":[
       {q:"A complex sentence has one independent clause and at least one _____ clause.","opts":["dependent","independent","simple","compound"],a:"dependent"},
@@ -2374,6 +2570,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Subordinating conjunctions include: because, although, when, if, and _____.","opts":["since","and","but","or"],a:"since"},
       {q:"A dependent clause _____ stand alone as a sentence.","opts":["cannot","can","always","sometimes"],a:"cannot"},
       {q:`"Although she was tired, she finished the race." — "Although she was tired" is a _____ clause.`,"opts":["dependent","independent","simple","run-on"],a:"dependent"},
+      {q:"A subordinating conjunction shows _____ between clauses.","opts":["a relationship (time, cause, condition)","no relationship","equal importance","contradiction only"],a:"a relationship (time, cause, condition)"},
+      {q:`In "When the bell rings, students leave," the word 'When' is a _____.`,"opts":["subordinating conjunction","coordinating conjunction","preposition","pronoun"],a:"subordinating conjunction"},
+      {q:"'Unless,' 'until,' and 'while' are examples of _____.","opts":["subordinating conjunctions","coordinating conjunctions","prepositions","articles"],a:"subordinating conjunctions"},
+      {q:"A compound-complex sentence has at least two independent clauses and _____ dependent clause.","opts":["one","no","three","four"],a:"one"},
+      {q:"When a dependent clause starts a sentence, use a _____ after it.","opts":["comma","period","semicolon","colon"],a:"comma"},
+      {q:`"I will call you when I arrive." — 'when I arrive' is a _____ clause.`,"opts":["dependent","independent","main","coordinate"],a:"dependent"},
+      {q:"Which is a complex sentence?","opts":["She left because she was tired.","She left and I stayed.","She left.","Leaving early."],a:"She left because she was tired."},
+      {q:"A dependent clause expresses an _____ thought.","opts":["incomplete","complete","independent","random"],a:"incomplete"},
+      {q:"The independent clause in a complex sentence can _____ as its own sentence.","opts":["stand alone","not stand alone","be removed","be ignored"],a:"stand alone"},
     ],
     "MLA Basics":[
       {q:"MLA stands for _____.","opts":["Modern Language Association","Math Learning Academy","Multiple Letter Arrangement","Main Lesson Approach"],a:"Modern Language Association"},
@@ -2382,6 +2587,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"MLA in-text citations include the author's _____ and page number.","opts":["last name","first name","middle name","nickname"],a:"last name"},
       {q:"MLA format uses _____ font.","opts":["12-point Times New Roman","Comic Sans","any font","bold Arial"],a:"12-point Times New Roman"},
       {q:"The header in MLA includes your _____ and page number.","opts":["last name","favorite quote","school name","grade"],a:"last name"},
+      {q:"In MLA, a Works Cited entry for a book starts with the _____.","opts":["author's last name","title","year","publisher"],a:"author's last name"},
+      {q:"MLA margins are _____ on all sides.","opts":["1 inch","2 inches","0.5 inches","no margin"],a:"1 inch"},
+      {q:"An in-text citation in MLA looks like _____.","opts":["(Smith 42)","[Smith, 2020]","Smith (42)","42 Smith"],a:"(Smith 42)"},
+      {q:"The Works Cited page is _____ in alphabetical order.","opts":["listed","never organized","organized by date","listed by topic"],a:"listed"},
+      {q:"MLA format is most commonly used in _____ disciplines.","opts":["humanities (English, history)","science and math","business","music"],a:"humanities (English, history)"},
+      {q:"When no author is listed in MLA, use the _____ in citations.","opts":["title","date","publisher","URL"],a:"title"},
+      {q:"MLA 9th edition is the _____ version of MLA guidelines.","opts":["most current","oldest","first","second"],a:"most current"},
+      {q:"In MLA, page numbers go in the _____ right corner of each page.","opts":["upper","lower","left","center"],a:"upper"},
+      {q:"Hanging indentation in a Works Cited entry means _____.","opts":["the second and subsequent lines are indented","the first line is indented","all lines are equal","no indentation"],a:"the second and subsequent lines are indented"},
     ],
     "Expository Writing":[
       {q:"Expository writing _____.","opts":["explains or informs","tells a story","persuades","describes feelings"],a:"explains or informs"},
@@ -2390,6 +2604,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Transition words in expository writing include _____.","opts":["furthermore, additionally, however","once upon a time","the end","dear diary"],a:"furthermore, additionally, however"},
       {q:"The purpose of expository writing is to _____.","opts":["educate the reader","make the reader laugh","scare the reader","bore the reader"],a:"educate the reader"},
       {q:"Expository essays should be written in _____ person.","opts":["third","first","second","no"],a:"third"},
+      {q:"Types of expository writing include _____.","opts":["compare/contrast, cause/effect, problem/solution","fiction, poetry, drama","persuasion, satire, humor","narrative, memoir, autobiography"],a:"compare/contrast, cause/effect, problem/solution"},
+      {q:"In expository writing, each body paragraph should focus on _____.","opts":["one main point","multiple unrelated ideas","only opinions","fictional examples"],a:"one main point"},
+      {q:"A cause-and-effect essay explains _____.","opts":["why something happened and what resulted","a story's plot","how to do something","a comparison between two things"],a:"why something happened and what resulted"},
+      {q:"A compare-and-contrast essay examines _____.","opts":["similarities and differences","only differences","only similarities","unrelated topics"],a:"similarities and differences"},
+      {q:"Expository writing should be _____ and based on research.","opts":["objective","subjective","emotional","biased"],a:"objective"},
+      {q:"A strong expository introduction includes _____.","opts":["a hook, background info, and thesis","a story, dialogue, and moral","a list of opinions","only the thesis"],a:"a hook, background info, and thesis"},
+      {q:"Problem-solution essays describe a _____ and propose a _____.","opts":["problem; solution","character; setting","theme; conflict","plot; resolution"],a:"problem; solution"},
+      {q:"Using headings and subheadings in expository writing helps _____.","opts":["organize and guide the reader","add length","replace evidence","remove the thesis"],a:"organize and guide the reader"},
+      {q:"The concluding paragraph in expository writing should _____.","opts":["restate the thesis and summarize key points","introduce new evidence","tell a new story","repeat the introduction word for word"],a:"restate the thesis and summarize key points"},
     ],
     "Advanced Vocabulary":[
       {q:`"Ubiquitous" means _____.`,"opts":["found everywhere","rare","invisible","ancient"],a:"found everywhere"},
@@ -2398,6 +2621,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:`"Eloquent" means _____.`,"opts":["fluent and persuasive in speaking","quiet","rude","boring"],a:"fluent and persuasive in speaking"},
       {q:`"Ambiguous" means _____.`,"opts":["open to more than one interpretation","clear","simple","obvious"],a:"open to more than one interpretation"},
       {q:`"Benevolent" means _____.`,"opts":["well-meaning and kindly","evil","selfish","lazy"],a:"well-meaning and kindly"},
+      {q:`"Tenacious" means _____.`,"opts":["persistent and determined","weak","forgetful","careless"],a:"persistent and determined"},
+      {q:`"Verbose" means _____.`,"opts":["using more words than necessary","silent","brief","clear"],a:"using more words than necessary"},
+      {q:`"Lucid" means _____.`,"opts":["clearly expressed and easy to understand","confusing","dark","noisy"],a:"clearly expressed and easy to understand"},
+      {q:`"Contemplate" means _____.`,"opts":["think deeply about","ignore","rush","forget"],a:"think deeply about"},
+      {q:`"Meticulous" means _____.`,"opts":["showing great attention to detail","careless","fast","loud"],a:"showing great attention to detail"},
+      {q:`"Superfluous" means _____.`,"opts":["unnecessary and excessive","essential","scarce","perfect"],a:"unnecessary and excessive"},
+      {q:`"Candid" means _____.`,"opts":["truthful and straightforward","dishonest","shy","confused"],a:"truthful and straightforward"},
+      {q:`"Arduous" means _____.`,"opts":["difficult and tiring","easy","short","fun"],a:"difficult and tiring"},
+      {q:`"Gregarious" means _____.`,"opts":["sociable and outgoing","shy","angry","bored"],a:"sociable and outgoing"},
     ],
     "Rhetoric & Appeals":[
       {q:"Ethos appeals to _____.","opts":["credibility/ethics","emotions","logic","humor"],a:"credibility/ethics"},
@@ -2406,6 +2638,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"A rhetorical question does NOT expect a _____.","opts":["real answer","reaction","thought","pause"],a:"real answer"},
       {q:"Repetition in rhetoric is used to _____.","opts":["emphasize a point","waste time","confuse","bore"],a:"emphasize a point"},
       {q:"An appeal to authority uses _____ to support a claim.","opts":["expert opinions","rumors","gossip","wishes"],a:"expert opinions"},
+      {q:"Aristotle's three rhetorical appeals are ethos, pathos, and _____.","opts":["logos","kairos","mythos","chronos"],a:"logos"},
+      {q:"'Nine out of ten dentists recommend...' is an example of _____ appeal.","opts":["logos (statistical/logical)","pathos","ethos","none"],a:"logos (statistical/logical)"},
+      {q:"A tear-jerking story in an ad uses _____ appeal.","opts":["pathos","logos","ethos","kairos"],a:"pathos"},
+      {q:"A doctor's recommendation in a medicine ad uses _____ appeal.","opts":["ethos","pathos","logos","none"],a:"ethos"},
+      {q:"Kairos refers to _____ in rhetoric.","opts":["the right timing and context","the speaker's credibility","emotional appeals","logical evidence"],a:"the right timing and context"},
+      {q:"Rhetoric is the art of _____ communication.","opts":["effective and persuasive","silent","random","decorative"],a:"effective and persuasive"},
+      {q:"'You wouldn't want your family to suffer, would you?' uses _____ appeal.","opts":["pathos","logos","ethos","kairos"],a:"pathos"},
+      {q:"Statistics and data are forms of _____ appeal.","opts":["logos","pathos","ethos","kairos"],a:"logos"},
+      {q:"The rhetorical triangle consists of speaker, audience, and _____.","opts":["message/purpose","setting","font","page number"],a:"message/purpose"},
     ],
     "Poetry Analysis":[
       {q:"A stanza in poetry is like a _____ in prose.","opts":["paragraph","word","letter","period"],a:"paragraph"},
@@ -2413,7 +2654,16 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Free verse poetry has NO regular _____.","opts":["rhyme or meter","words","meaning","author"],a:"rhyme or meter"},
       {q:"A sonnet has _____ lines.","opts":["14","10","20","8"],a:"14"},
       {q:"Meter is the _____ pattern in poetry.","opts":["rhythmic","color","size","font"],a:"rhythmic"},
-      {q:"A haiku has _____ syllables total.","opts":["17","10","20","12"],a:"17"},
+      {q:"A haiku has _____ syllables total (5-7-5).","opts":["17","10","20","12"],a:"17"},
+      {q:"An ABAB rhyme scheme means _____.","opts":["lines 1&3 rhyme and lines 2&4 rhyme","all lines rhyme","no lines rhyme","only the last lines rhyme"],a:"lines 1&3 rhyme and lines 2&4 rhyme"},
+      {q:"Iambic pentameter has _____ iambic feet per line.","opts":["5","10","14","7"],a:"5"},
+      {q:"An iamb is a foot with _____ syllable pattern.","opts":["unstressed-STRESSED (da-DUM)","STRESSED-unstressed","two stressed","two unstressed"],a:"unstressed-STRESSED (da-DUM)"},
+      {q:"An ode is a poem that _____.","opts":["praises or celebrates a subject","tells a story","lists facts","provides instructions"],a:"praises or celebrates a subject"},
+      {q:"Enjambment means a sentence _____ into the next line without a break.","opts":["continues","stops","ends","restarts"],a:"continues"},
+      {q:"The volta in a sonnet is _____.","opts":["a turning point or shift in thought","the final couplet","the opening line","the rhyme scheme"],a:"a turning point or shift in thought"},
+      {q:"Assonance is the repetition of _____ sounds within words.","opts":["vowel","consonant","beginning","ending"],a:"vowel"},
+      {q:"Consonance is the repetition of _____ sounds within words.","opts":["consonant","vowel","rhyming","silent"],a:"consonant"},
+      {q:"The speaker in a poem is _____.","opts":["the voice or persona narrating the poem","always the author","the main character","the editor"],a:"the voice or persona narrating the poem"},
     ],
     "Semicolons & Colons":[
       {q:"A semicolon connects two _____ clauses.","opts":["independent","dependent","short","run-on"],a:"independent"},
@@ -2422,6 +2672,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:`"She loves to read; he prefers to write." — The semicolon joins two _____ ideas.`,"opts":["related","unrelated","opposite","random"],a:"related"},
       {q:"A semicolon is _____ than a comma but _____ than a period.","opts":["stronger; weaker","weaker; stronger","the same","unrelated"],a:"stronger; weaker"},
       {q:"Do NOT use a semicolon before a _____ clause.","opts":["dependent","independent","main","complete"],a:"dependent"},
+      {q:"A colon can also introduce a _____ or explanation.","opts":["quotation or explanation","question","new paragraph","title only"],a:"quotation or explanation"},
+      {q:`"She had one goal: to win the championship." The colon introduces _____.`,"opts":["an explanation/appositive","a list","a question","a new topic"],a:"an explanation/appositive"},
+      {q:"Semicolons can also separate items in a list when items _____.","opts":["contain commas themselves","are short","are nouns","are verbs"],a:"contain commas themselves"},
+      {q:`Which is correct use of a semicolon?`,"opts":["I studied hard; I passed the test.","I studied hard; because I wanted to pass.","I studied; hard to pass.","I; studied hard."],a:"I studied hard; I passed the test."},
+      {q:"A colon is used after a complete _____ before a list.","opts":["independent clause","dependent clause","question","fragment"],a:"independent clause"},
+      {q:`"We visited three cities: Paris, London, and Rome." What punctuation is used?`,"opts":["colon","semicolon","comma","period"],a:"colon"},
+      {q:"Time is written with a _____ (e.g., 3:30 PM).","opts":["colon","semicolon","comma","period"],a:"colon"},
+      {q:"Which sentence correctly uses a semicolon to separate list items?","opts":["We visited Austin, Texas; Denver, Colorado; and Seattle, Washington.","We visited; Austin Texas Denver Colorado Seattle Washington.","We visited Austin Texas; Denver Colorado; Seattle Washington.","We visited; Austin; Denver; Seattle."],a:"We visited Austin, Texas; Denver, Colorado; and Seattle, Washington."},
+      {q:"'Therefore,' 'however,' and 'consequently' used between independent clauses require a _____ before them.","opts":["semicolon","comma","colon","period"],a:"semicolon"},
     ],
     "Research Writing":[
       {q:"A research paper starts with a _____.","opts":["thesis statement","bibliography","conclusion","index"],a:"thesis statement"},
@@ -2430,6 +2689,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Plagiarism is _____.","opts":["using someone's work without credit","good research","a type of citation","a writing style"],a:"using someone's work without credit"},
       {q:"A bibliography lists _____.","opts":["all sources consulted","only books","the author's friends","the page count"],a:"all sources consulted"},
       {q:"Paraphrasing means _____.","opts":["restating in your own words","copying exactly","deleting","ignoring"],a:"restating in your own words"},
+      {q:"A credible source for research is _____.","opts":["peer-reviewed and authored by experts","any website","social media posts","anonymous blogs"],a:"peer-reviewed and authored by experts"},
+      {q:"A direct quotation in research writing must be placed in _____.","opts":["quotation marks","parentheses","brackets","italics"],a:"quotation marks"},
+      {q:"The CRAAP test helps evaluate sources by checking Currency, Relevance, Authority, Accuracy, and _____.","opts":["Purpose","Price","Popularity","Print quality"],a:"Purpose"},
+      {q:"An annotated bibliography includes a citation AND a _____ of each source.","opts":["brief summary and evaluation","picture","graph","full copy"],a:"brief summary and evaluation"},
+      {q:"Tertiary sources include _____.","opts":["encyclopedias and textbooks that summarize other sources","firsthand accounts","original research","personal journals"],a:"encyclopedias and textbooks that summarize other sources"},
+      {q:"When integrating a quote, you should _____ it into your own sentence.","opts":["smoothly embed","randomly drop","copy without context","replace"],a:"smoothly embed"},
+      {q:"A research question should be _____ enough to fully explore in your paper.","opts":["focused and specific","as broad as possible","unanswerable","already answered"],a:"focused and specific"},
+      {q:"Taking notes in your own words while researching helps avoid _____.","opts":["plagiarism","citations","evidence","sources"],a:"plagiarism"},
+      {q:"Peer-reviewed articles are reviewed by _____ before publication.","opts":["experts in the field","the general public","students","the author only"],a:"experts in the field"},
     ],
     "Literary Analysis":[
       {q:"Literary analysis examines _____.","opts":["how an author creates meaning","just the plot","only the ending","the book cover"],a:"how an author creates meaning"},
@@ -2438,6 +2706,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Characterization is how an author _____ characters.","opts":["develops","names","counts","draws"],a:"develops"},
       {q:"Theme differs from subject because theme is a _____ about the subject.","opts":["statement or message","single word","name","date"],a:"statement or message"},
       {q:"Conflict in literature can be internal or _____.","opts":["external","invisible","optional","imaginary"],a:"external"},
+      {q:"Direct characterization is when the author _____ tells you about a character.","opts":["explicitly","never","indirectly","randomly"],a:"explicitly"},
+      {q:"Indirect characterization shows character through _____.","opts":["actions, speech, and thoughts","direct statements","the author's notes","the title"],a:"actions, speech, and thoughts"},
+      {q:"Dramatic irony in literature creates _____ between the audience and characters.","opts":["a knowledge gap","sympathy","conflict","symbolism"],a:"a knowledge gap"},
+      {q:"An antagonist creates _____ for the protagonist.","opts":["conflict","resolution","theme","symbolism"],a:"conflict"},
+      {q:"The denouement is the part of the plot _____ the climax where things resolve.","opts":["after","before","during","replacing"],a:"after"},
+      {q:"Foreshadowing creates _____ by hinting at future events.","opts":["suspense or anticipation","confusion","humor","boredom"],a:"suspense or anticipation"},
+      {q:"A static character _____ throughout the story.","opts":["does not change","changes dramatically","disappears","becomes the villain"],a:"does not change"},
+      {q:"A dynamic character _____ as a result of events in the story.","opts":["changes significantly","stays the same","disappears","replaces the antagonist"],a:"changes significantly"},
+      {q:"The narrative arc includes exposition, rising action, climax, falling action, and _____.","opts":["resolution/denouement","introduction","prologue","epilogue only"],a:"resolution/denouement"},
     ],
     "SAT Vocabulary":[
       {q:`"Arduous" means _____.`,"opts":["difficult and tiring","easy","fun","colorful"],a:"difficult and tiring"},
@@ -2446,6 +2723,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:`"Gregarious" means _____.`,"opts":["sociable","shy","angry","bored"],a:"sociable"},
       {q:`"Meticulous" means _____.`,"opts":["showing great attention to detail","careless","fast","loud"],a:"showing great attention to detail"},
       {q:`"Pragmatic" means _____.`,"opts":["dealing with things practically","idealistic","dreamy","random"],a:"dealing with things practically"},
+      {q:`"Ambivalent" means _____.`,"opts":["having mixed feelings","extremely happy","certain","angry"],a:"having mixed feelings"},
+      {q:`"Benign" means _____.`,"opts":["harmless and gentle","dangerous","strict","loud"],a:"harmless and gentle"},
+      {q:`"Conciliate" means _____.`,"opts":["to make peace or reconcile","to argue","to ignore","to confuse"],a:"to make peace or reconcile"},
+      {q:`"Diffident" means _____.`,"opts":["modest and shy","confident","rude","careless"],a:"modest and shy"},
+      {q:`"Equivocal" means _____.`,"opts":["ambiguous and open to multiple interpretations","clear","simple","definite"],a:"ambiguous and open to multiple interpretations"},
+      {q:`"Frugal" means _____.`,"opts":["careful and economical with money","wasteful","generous","wealthy"],a:"careful and economical with money"},
+      {q:`"Hackneyed" means _____.`,"opts":["overused and lacking originality","fresh","innovative","creative"],a:"overused and lacking originality"},
+      {q:`"Indolent" means _____.`,"opts":["lazy","hardworking","energetic","cheerful"],a:"lazy"},
+      {q:`"Loquacious" means _____.`,"opts":["tending to talk a great deal","quiet","shy","brief"],a:"tending to talk a great deal"},
     ],
     "Analyzing Arguments":[
       {q:"A valid argument has _____.","opts":["logical reasoning and evidence","only emotions","no evidence","personal attacks"],a:"logical reasoning and evidence"},
@@ -2454,6 +2740,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"A straw man fallacy _____ the opponent's argument.","opts":["misrepresents","strengthens","supports","ignores"],a:"misrepresents"},
       {q:"Appeal to popularity assumes something is right because _____.","opts":["many people believe it","it is proven","experts agree","studies show it"],a:"many people believe it"},
       {q:"A red herring _____ from the main argument.","opts":["distracts","supports","proves","strengthens"],a:"distracts"},
+      {q:"The slippery slope fallacy assumes one event will _____ lead to extreme consequences.","opts":["inevitably","never","rarely","randomly"],a:"inevitably"},
+      {q:"False dichotomy presents _____ when more options exist.","opts":["only two choices","many options","no choices","random choices"],a:"only two choices"},
+      {q:"Circular reasoning is when the conclusion _____ the premise.","opts":["restates rather than proves","contradicts","improves","ignores"],a:"restates rather than proves"},
+      {q:"Hasty generalization draws a _____ conclusion from too little evidence.","opts":["broad","narrow","careful","valid"],a:"broad"},
+      {q:"An appeal to emotion is weak when it _____.","opts":["substitutes feelings for logic and evidence","supports a logical claim","adds to valid evidence","reinforces a fact"],a:"substitutes feelings for logic and evidence"},
+      {q:"A valid argument is _____ — the conclusion follows from the premises.","opts":["logically sound","emotionally strong","popular","brief"],a:"logically sound"},
+      {q:"Bandwagon fallacy says you should do something because _____.","opts":["everyone else is doing it","experts recommend it","evidence supports it","logic requires it"],a:"everyone else is doing it"},
+      {q:"A non sequitur is a conclusion that _____ follow from the premise.","opts":["does not logically","does logically","always","sometimes"],a:"does not logically"},
+      {q:"Analyzing an argument requires evaluating both the _____ and the evidence.","opts":["claim/reasoning","author's name","publication date","font size"],a:"claim/reasoning"},
     ],
     "Shakespeare Basics":[
       {q:"Shakespeare wrote in _____ pentameter.","opts":["iambic","trochaic","anapestic","dactylic"],a:"iambic"},
@@ -2462,6 +2757,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Shakespeare's plays were performed at the _____ Theatre.","opts":["Globe","Empire","Palace","Royal"],a:"Globe"},
       {q:`"To be, or not to be" is from _____.`,"opts":["Hamlet","Macbeth","Othello","King Lear"],a:"Hamlet"},
       {q:"Shakespeare wrote approximately _____ plays.","opts":["37","10","50","100"],a:"37"},
+      {q:"Shakespeare wrote his plays in the _____ era.","opts":["Elizabethan","Victorian","Medieval","Renaissance (both Elizabethan/Jacobean)"],a:"Renaissance (both Elizabethan/Jacobean)"},
+      {q:"An aside is when a character speaks to the _____ without other characters hearing.","opts":["audience","king","hero","villain"],a:"audience"},
+      {q:"Shakespeare's tragedies typically end with _____.","opts":["the death of the protagonist","a wedding","a celebration","a happy resolution"],a:"the death of the protagonist"},
+      {q:"Shakespeare's comedies typically end with _____.","opts":["marriage and reconciliation","death","war","betrayal"],a:"marriage and reconciliation"},
+      {q:`"All the world's a stage" is from _____.`,"opts":["As You Like It","Hamlet","Macbeth","Romeo and Juliet"],a:"As You Like It"},
+      {q:"The witches in Macbeth represent _____.","opts":["fate and temptation","comedy","romance","history"],a:"fate and temptation"},
+      {q:"Blank verse in Shakespeare is _____.","opts":["unrhymed iambic pentameter","rhymed verse","free verse","prose"],a:"unrhymed iambic pentameter"},
+      {q:"Shakespeare's sonnets typically follow the _____ form.","opts":["English (Shakespearean) sonnet — three quatrains and a couplet","Italian (Petrarchan) sonnet","free verse","haiku"],a:"English (Shakespearean) sonnet — three quatrains and a couplet"},
+      {q:"A folio is _____.","opts":["a collected edition of Shakespeare's works","a type of stage","a character's speech","a theater company"],a:"a collected edition of Shakespeare's works"},
     ],
     "Essay Structure":[
       {q:"An essay has an introduction, body, and _____.","opts":["conclusion","appendix","glossary","index"],a:"conclusion"},
@@ -2470,6 +2774,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Each body paragraph needs a _____ sentence.","opts":["topic","random","final","first"],a:"topic"},
       {q:"The conclusion should _____ the thesis.","opts":["restate","contradict","ignore","delete"],a:"restate"},
       {q:"Transitions connect _____ between paragraphs.","opts":["ideas","pages","words","letters"],a:"ideas"},
+      {q:"A hook in the introduction is designed to _____.","opts":["grab the reader's attention","state your conclusion","list evidence","name your sources"],a:"grab the reader's attention"},
+      {q:"The thesis statement should appear _____ the introduction.","opts":["near the end of","in the middle of","at the start of","outside of"],a:"near the end of"},
+      {q:"A strong body paragraph has a topic sentence, evidence, analysis, and _____.","opts":["a concluding/transition sentence","the thesis","another introduction","a title"],a:"a concluding/transition sentence"},
+      {q:"How many body paragraphs does a standard 5-paragraph essay have?","opts":["3","2","4","5"],a:"3"},
+      {q:"The conclusion should NOT _____.","opts":["introduce brand new arguments","restate the thesis","summarize key points","leave the reader with final thoughts"],a:"introduce brand new arguments"},
+      {q:"Evidence in a body paragraph should be _____ with analysis.","opts":["followed","replaced","removed","started"],a:"followed"},
+      {q:"A counterargument paragraph _____ and then refutes the opposing view.","opts":["acknowledges","ignores","copies","supports"],a:"acknowledges"},
+      {q:"An outline helps you _____ before writing your essay.","opts":["organize your ideas","find your sources","write your conclusion","choose your font"],a:"organize your ideas"},
+      {q:"The purpose of the introduction is to _____ the reader to the topic.","opts":["introduce","confuse","conclude","distract"],a:"introduce"},
     ],
     "Critical Reading":[
       {q:"Critical reading means _____.","opts":["analyzing and evaluating a text","reading fast","reading aloud","skimming"],a:"analyzing and evaluating a text"},
@@ -2478,6 +2791,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Critical readers consider _____ perspectives.","opts":["multiple","only one","no","random"],a:"multiple"},
       {q:"Evaluating credibility means checking if a source is _____.","opts":["trustworthy","long","short","colorful"],a:"trustworthy"},
       {q:"Critical reading requires _____ engagement with the text.","opts":["active","passive","no","minimal"],a:"active"},
+      {q:"Asking 'What is the author's purpose?' is part of _____ reading.","opts":["critical","passive","surface","lazy"],a:"critical"},
+      {q:"Identifying the author's assumptions helps you evaluate _____.","opts":["the strength of their argument","their writing speed","their vocabulary","their grammar"],a:"the strength of their argument"},
+      {q:"Making inferences while reading requires combining text clues with _____.","opts":["prior knowledge","random guesses","the title","the font"],a:"prior knowledge"},
+      {q:"Evaluating an argument involves checking if the evidence _____ the claim.","opts":["actually supports","contradicts","replaces","is unrelated to"],a:"actually supports"},
+      {q:"Distinguishing between fact and opinion is a key _____ skill.","opts":["critical reading","memorization","spelling","grammar"],a:"critical reading"},
+      {q:"Questioning the text as you read is known as _____ reading.","opts":["active/critical","passive","silent","skimming"],a:"active/critical"},
+      {q:"A critical reader asks: 'What does the author leave _____ from this argument?'","opts":["out / unsaid","in","above","below"],a:"out / unsaid"},
+      {q:"Synthesis in critical reading means combining _____ from multiple texts.","opts":["ideas and insights","only quotes","random sentences","page numbers"],a:"ideas and insights"},
+      {q:"Recognizing an author's bias helps you read _____.","opts":["more objectively","more emotionally","faster","backwards"],a:"more objectively"},
     ],
     "Complex Grammar":[
       {q:"A gerund is a verb form used as a _____.","opts":["noun","verb","adjective","adverb"],a:"noun"},
@@ -2486,6 +2808,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Parallel structure means using the same _____ pattern.","opts":["grammatical","color","size","font"],a:"grammatical"},
       {q:"A dangling modifier has no clear _____ to modify.","opts":["word","sentence","paragraph","book"],a:"word"},
       {q:"Subject-verb agreement means they must match in _____.","opts":["number","color","length","font"],a:"number"},
+      {q:"'Swimming is fun.' — 'Swimming' is a _____.","opts":["gerund (noun)","participle (adjective)","infinitive","preposition"],a:"gerund (noun)"},
+      {q:"'The swimming child' — 'swimming' is a _____.","opts":["participle (adjective)","gerund (noun)","infinitive","conjunction"],a:"participle (adjective)"},
+      {q:"'To swim daily is healthy.' — 'To swim' is an _____.","opts":["infinitive","gerund","participle","preposition"],a:"infinitive"},
+      {q:"Which sentence has faulty parallel structure?","opts":["She likes running, to swim, and dance.","She likes running, swimming, and dancing.","She likes to run, to swim, and to dance.","She ran, swam, and danced."],a:"She likes running, to swim, and dance."},
+      {q:"A misplaced modifier is a modifier placed _____.","opts":["too far from the word it modifies","correctly","at the start","at the end"],a:"too far from the word it modifies"},
+      {q:`"Running to catch the bus, his backpack fell off." — This has a _____ modifier.`,"opts":["dangling","parallel","correct","compound"],a:"dangling"},
+      {q:"Collective nouns like 'team' or 'class' typically take _____ verbs.","opts":["singular","plural","no","compound"],a:"singular"},
+      {q:"An appositive is a noun phrase that _____ another noun.","opts":["renames or explains","replaces","contradicts","modifies like an adjective only"],a:"renames or explains"},
+      {q:"Which is correct? 'Each of the students ___ required to submit an essay.'","opts":["is","are","were","have"],a:"is"},
     ],
     "Advanced Grammar":[
       {q:"The subjunctive mood expresses _____.","opts":["wishes or hypotheticals","facts","commands","questions"],a:"wishes or hypotheticals"},
@@ -2494,6 +2825,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"A relative clause begins with _____.","opts":["who, which, or that","and, but, or","because, since","for, to, by"],a:"who, which, or that"},
       {q:"Active voice: the subject _____ the action.","opts":["performs","receives","ignores","watches"],a:"performs"},
       {q:"Passive voice: the subject _____ the action.","opts":["receives","performs","ignores","creates"],a:"receives"},
+      {q:"The indicative mood states _____.","opts":["facts or asks questions","wishes","commands","hypotheticals"],a:"facts or asks questions"},
+      {q:"The imperative mood gives _____.","opts":["commands or requests","facts","questions","hypotheticals"],a:"commands or requests"},
+      {q:"'She suggested that he _____ early.' — The correct subjunctive form is:","opts":["leave","leaves","left","leaving"],a:"leave"},
+      {q:"A restrictive relative clause uses _____ (without commas).","opts":["'that'","'which'","'who' only","both with commas"],a:"'that'"},
+      {q:"A non-restrictive relative clause uses _____ (with commas).","opts":["'which'","'that'","'what'","'when'"],a:"'which'"},
+      {q:"Converting passive to active voice makes writing _____.","opts":["more direct and vigorous","longer","more formal","more passive"],a:"more direct and vigorous"},
+      {q:"'The cake was eaten by the children.' — This is _____ voice.","opts":["passive","active","imperative","subjunctive"],a:"passive"},
+      {q:"'The children ate the cake.' — This is _____ voice.","opts":["active","passive","imperative","subjunctive"],a:"active"},
+      {q:"The future perfect tense ('will have done') expresses an action _____.","opts":["completed before a future point","happening now","completed in the past","ongoing in the future"],a:"completed before a future point"},
     ],
     "AP Vocabulary":[
       {q:`"Juxtaposition" means _____.`,"opts":["placing things side by side for comparison","separating","hiding","ignoring"],a:"placing things side by side for comparison"},
@@ -2502,6 +2842,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:`"Sardonic" means _____.`,"opts":["grimly mocking","kind","gentle","happy"],a:"grimly mocking"},
       {q:`"Verisimilitude" means _____.`,"opts":["appearance of being true","beauty","complexity","humor"],a:"appearance of being true"},
       {q:`"Anaphora" is the repetition of words at the _____ of successive clauses.`,"opts":["beginning","end","middle","random place"],a:"beginning"},
+      {q:`"Solipsism" means _____.`,"opts":["the view that only one's own mind is certain to exist","generosity","realism","optimism"],a:"the view that only one's own mind is certain to exist"},
+      {q:`"Hubris" means _____.`,"opts":["excessive pride or arrogance","humility","wisdom","bravery"],a:"excessive pride or arrogance"},
+      {q:`"Catharsis" in literature means _____.`,"opts":["emotional release or purification felt by the audience","confusion","boredom","excitement"],a:"emotional release or purification felt by the audience"},
+      {q:`"Denouement" refers to _____.`,"opts":["the resolution and untangling of plot after the climax","the climax","the exposition","the rising action"],a:"the resolution and untangling of plot after the climax"},
+      {q:`"Elegy" is a poem written to _____.`,"opts":["mourn the dead","celebrate a wedding","criticize government","tell an adventure story"],a:"mourn the dead"},
+      {q:`"Polemic" is a piece of writing that _____.`,"opts":["strongly argues one side of a controversial issue","presents balanced views","entertains without argument","informs without opinion"],a:"strongly argues one side of a controversial issue"},
+      {q:`"Hubris" often leads to _____ in classical tragedies.`,"opts":["the hero's downfall","victory","wisdom","harmony"],a:"the hero's downfall"},
+      {q:`"Epithet" is a descriptive _____ attached to a name.`,"opts":["phrase or adjective","verb","preposition","conjunction"],a:"phrase or adjective"},
+      {q:`"Invective" means _____.`,"opts":["insulting or abusive language","praise","neutral description","formal address"],a:"insulting or abusive language"},
     ],
     "Comparative Literature":[
       {q:"Comparative literature studies _____.","opts":["literature across cultures and languages","only English texts","only poetry","only novels"],a:"literature across cultures and languages"},
@@ -2510,6 +2859,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Intertextuality is when texts _____ each other.","opts":["reference","ignore","contradict","copy"],a:"reference"},
       {q:"A universal theme is understood across _____.","opts":["cultures","one country only","one school","one classroom"],a:"cultures"},
       {q:"Genre means _____ of literature.","opts":["category or type","length","age","color"],a:"category or type"},
+      {q:"The Hero's Journey begins with the hero in the _____.","opts":["ordinary world","special world","climax","return"],a:"ordinary world"},
+      {q:"The 'Call to Adventure' stage in the Hero's Journey is when _____.","opts":["the hero is challenged to leave their comfort zone","the hero returns home","the hero defeats the villain","the hero finds a mentor"],a:"the hero is challenged to leave their comfort zone"},
+      {q:"Comparing literature across cultures often reveals _____ themes.","opts":["shared universal","unique and isolated","unrelated","historical"],a:"shared universal"},
+      {q:"A trickster archetype is a character who _____.","opts":["uses cunning and humor to challenge the status quo","follows all rules","is always the villain","never speaks"],a:"uses cunning and humor to challenge the status quo"},
+      {q:"Magical realism blends _____ elements with realistic settings.","opts":["fantastical or magical","historical","scientific","grammatical"],a:"fantastical or magical"},
+      {q:"Gabriel García Márquez is a famous author of _____.","opts":["magical realism","science fiction","romance","mystery"],a:"magical realism"},
+      {q:"Comparative literature often examines how _____ shapes literary themes.","opts":["cultural context","page length","author's age","publication format"],a:"cultural context"},
+      {q:"An epic hero is characterized by _____.","opts":["superhuman strength, bravery, and a long journey","cowardice","small scope of adventure","modern setting"],a:"superhuman strength, bravery, and a long journey"},
+      {q:"Dystopian literature often critiques _____.","opts":["society and political systems","mathematics","grammar rules","cooking techniques"],a:"society and political systems"},
     ],
     "Rhetorical Analysis":[
       {q:"Rhetorical analysis examines HOW an author _____.","opts":["makes an argument","tells a joke","draws a picture","sings a song"],a:"makes an argument"},
@@ -2518,6 +2876,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Kairos refers to the _____ context of an argument.","opts":["timeliness / right moment","color","length","font"],a:"timeliness / right moment"},
       {q:"A rhetorical strategy is a technique used to _____.","opts":["persuade the audience","confuse the audience","bore the audience","ignore the audience"],a:"persuade the audience"},
       {q:"Analyzing rhetoric requires examining both content and _____.","opts":["style/delivery","cover page","bibliography","index"],a:"style/delivery"},
+      {q:"In rhetorical analysis, 'exigence' is _____.","opts":["the urgent problem or situation that prompted the text","the audience","the author","the tone"],a:"the urgent problem or situation that prompted the text"},
+      {q:"Rhetorical analysis asks: HOW does the author achieve their _____ with their audience?","opts":["purpose/effect","grammar","spelling","page count"],a:"purpose/effect"},
+      {q:"Analyzing syntax means examining _____.","opts":["sentence structure and how it creates effect","vocabulary alone","punctuation only","paragraph length"],a:"sentence structure and how it creates effect"},
+      {q:"A rhetorical analysis thesis should name the _____, technique, and purpose.","opts":["author/text","publisher","date","font"],a:"author/text"},
+      {q:"The 'occasion' in SOAPSTone refers to _____.","opts":["the context or event that prompted the text","the author","the theme","the genre"],a:"the context or event that prompted the text"},
+      {q:"When analyzing pathos, look for language that _____.","opts":["evokes emotions in the audience","provides statistics","cites authorities","builds logical chains"],a:"evokes emotions in the audience"},
+      {q:"Style in rhetoric includes diction, syntax, tone, and _____.","opts":["figurative language","page numbers","citations","bibliography"],a:"figurative language"},
+      {q:"An effective rhetorical analysis moves beyond summary to discuss _____.","opts":["the impact and effectiveness of the techniques","what the author said only","the author's biography","the historical period only"],a:"the impact and effectiveness of the techniques"},
+      {q:"Parallel structure in rhetoric creates a sense of _____.","opts":["rhythm and emphasis","confusion","randomness","informality"],a:"rhythm and emphasis"},
     ],
     "College Essay":[
       {q:"A college essay should showcase your _____.","opts":["unique voice and personality","test scores","GPA","class rank"],a:"unique voice and personality"},
@@ -2526,6 +2893,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"A college essay prompt asks you to _____.","opts":["reflect and share your perspective","list achievements","write a research paper","summarize a book"],a:"reflect and share your perspective"},
       {q:"The opening of a college essay should _____.","opts":["grab the reader's attention","be boring","restate the prompt","list your grades"],a:"grab the reader's attention"},
       {q:"Revision is _____ for a strong college essay.","opts":["essential","optional","unnecessary","harmful"],a:"essential"},
+      {q:"A college essay is typically _____ words long.","opts":["250–650","1000–2000","50–100","2000–5000"],a:"250–650"},
+      {q:"The Common App essay asks you to share a story that _____.","opts":["illustrates who you are","summarizes your GPA","lists your clubs","describes your school"],a:"illustrates who you are"},
+      {q:"Successful college essays focus on _____ over general statements.","opts":["a specific, concrete experience","broad achievements","test scores","grades"],a:"a specific, concrete experience"},
+      {q:"A narrative hook in a college essay might start with _____.","opts":["an action scene, question, or striking detail","'My name is...'","'This essay will discuss...'","a summary of achievements"],a:"an action scene, question, or striking detail"},
+      {q:"The tone of a college essay should be _____.","opts":["genuine and thoughtful","overly formal","boastful","apologetic"],a:"genuine and thoughtful"},
+      {q:"Proofreading a college essay is important because _____.","opts":["errors distract from your message","mistakes are fine","grammar doesn't matter","length is all that counts"],a:"errors distract from your message"},
+      {q:"A college essay should reveal _____ about you that isn't clear from the rest of your application.","opts":["something meaningful","your GPA","your test scores","your class rank"],a:"something meaningful"},
+      {q:"The best approach to a college essay topic is to _____.","opts":["write about something personally meaningful to you","pick the most impressive sounding topic","write what you think admissions wants to hear","copy a sample essay"],a:"write about something personally meaningful to you"},
+      {q:"Feedback from trusted readers helps you _____ your college essay.","opts":["improve and refine","make longer","add more achievements","change your voice"],a:"improve and refine"},
     ],
     "Satire & Irony":[
       {q:"Satire uses humor to _____.","opts":["criticize or mock","praise","ignore","hide"],a:"criticize or mock"},
@@ -2534,6 +2910,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Dramatic irony is when the audience knows something the _____ does not.","opts":["character","author","narrator","reader"],a:"character"},
       {q:`"A Modest Proposal" by Jonathan Swift is an example of _____.`,"opts":["satire","romance","mystery","comedy"],a:"satire"},
       {q:"Sarcasm is a form of _____ irony.","opts":["verbal","situational","dramatic","cosmic"],a:"verbal"},
+      {q:"The targets of satire are often _____.","opts":["powerful institutions or social behaviors","ordinary people","children","nature"],a:"powerful institutions or social behaviors"},
+      {q:"Parody imitates a work's style for _____ effect.","opts":["humorous or satirical","dramatic","serious","educational"],a:"humorous or satirical"},
+      {q:"Cosmic irony suggests that _____ is indifferent or cruel to human desires.","opts":["fate or the universe","the author","the villain","the narrator"],a:"fate or the universe"},
+      {q:"In 'Animal Farm,' the pigs represent _____.","opts":["corrupt political leaders","friendly farmers","honest workers","loyal citizens"],a:"corrupt political leaders"},
+      {q:"Satire differs from comedy because satire _____.","opts":["has a critical purpose beyond just making people laugh","only seeks to entertain","avoids politics","uses no humor"],a:"has a critical purpose beyond just making people laugh"},
+      {q:"Swift's 'A Modest Proposal' ironically suggests eating babies to _____.","opts":["expose the cruelty of English policies toward Ireland","literally solve poverty","entertain children","study cooking"],a:"expose the cruelty of English policies toward Ireland"},
+      {q:"Understatement is the opposite of _____.","opts":["hyperbole","simile","metaphor","alliteration"],a:"hyperbole"},
+      {q:"'The Simpsons' and 'South Park' are modern examples of _____ satire.","opts":["social/political","romantic","historical","academic"],a:"social/political"},
+      {q:"Irony creates a gap between _____ and reality.","opts":["expectation/surface meaning","grammar","punctuation","page numbers"],a:"expectation/surface meaning"},
     ],
     "AP Lang Terms":[
       {q:"An antithesis presents _____ ideas in parallel structure.","opts":["contrasting","similar","random","unrelated"],a:"contrasting"},
@@ -2542,6 +2927,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Metonymy replaces a name with something _____ associated.","opts":["closely","loosely","never","rarely"],a:"closely"},
       {q:`"The pen is mightier than the sword" — "pen" is _____ for writing.`,"opts":["metonymy","simile","alliteration","onomatopoeia"],a:"metonymy"},
       {q:"Epistrophe is repetition at the _____ of successive clauses.","opts":["end","beginning","middle","random point"],a:"end"},
+      {q:"Anaphora is repetition at the _____ of successive clauses.","opts":["beginning","end","middle","random point"],a:"beginning"},
+      {q:`"Ask not what your country can do for you — ask what you can do for your country" is an example of _____.`,"opts":["chiasmus","anaphora","epistrophe","synecdoche"],a:"chiasmus"},
+      {q:"Asyndeton is the omission of _____ between words or clauses.","opts":["conjunctions","commas","periods","nouns"],a:"conjunctions"},
+      {q:"Polysyndeton is the use of _____ conjunctions than usual.","opts":["more","fewer","no","different"],a:"more"},
+      {q:"Zeugma uses one word to _____ two or more other words.","opts":["govern or modify","replace","contradict","define"],a:"govern or modify"},
+      {q:"Anadiplosis repeats the _____ word(s) of one clause at the _____ of the next.","opts":["last; beginning","first; end","middle; beginning","first; middle"],a:"last; beginning"},
+      {q:"Litotes is a form of _____ that affirms by negating the opposite.","opts":["understatement","hyperbole","metaphor","simile"],a:"understatement"},
+      {q:"'All hands on deck' — 'hands' is an example of _____.","opts":["synecdoche","metaphor","alliteration","metonymy"],a:"synecdoche"},
+      {q:"Amplification _____ a previous statement for emphasis.","opts":["restates and expands","contradicts","removes","summarizes"],a:"restates and expands"},
     ],
     "Advanced Rhetoric":[
       {q:"Aristotle identified three rhetorical appeals: ethos, pathos, and _____.","opts":["logos","kairos","mythos","chronos"],a:"logos"},
@@ -2550,6 +2944,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Rogerian argument seeks _____ ground.","opts":["common","higher","lower","no"],a:"common"},
       {q:"A concession acknowledges the _____ of the opposing view.","opts":["validity","weakness","irrelevance","humor"],a:"validity"},
       {q:"Effective rhetoric considers the audience's _____.","opts":["values and beliefs","age only","name","height"],a:"values and beliefs"},
+      {q:"The Toulmin model's 'backing' provides _____ for the warrant.","opts":["support and foundation","contradiction","alternative claim","conclusion"],a:"support and foundation"},
+      {q:"Rogerian argument was developed as a method for _____.","opts":["reducing conflict and finding mutual understanding","winning debates","defeating opponents","proving one side is right"],a:"reducing conflict and finding mutual understanding"},
+      {q:"Classical rhetoric follows the structure: introduction, narration, partition, proof, refutation, and _____.","opts":["conclusion (peroration)","bibliography","appendix","abstract"],a:"conclusion (peroration)"},
+      {q:"Dispositio in classical rhetoric refers to _____.","opts":["the arrangement/organization of arguments","the choice of words","the delivery","the content"],a:"the arrangement/organization of arguments"},
+      {q:"Elocutio in classical rhetoric refers to _____.","opts":["style and word choice","arrangement","invention (finding arguments)","delivery"],a:"style and word choice"},
+      {q:"A reductio ad absurdum argument shows that _____.","opts":["a premise leads to an absurd conclusion","evidence is strong","the claim is valid","the audience agrees"],a:"a premise leads to an absurd conclusion"},
+      {q:"Kairos in rhetoric means using _____ to maximum rhetorical effect.","opts":["the right moment/context","emotional appeals","logical evidence","ethos"],a:"the right moment/context"},
+      {q:"A strong rebuttal _____ the counterargument and then presents your counter.","opts":["acknowledges","ignores","copies","rewrites"],a:"acknowledges"},
+      {q:"Rhetoric's 'five canons' include invention, arrangement, style, memory, and _____.","opts":["delivery","logic","evidence","conclusion"],a:"delivery"},
     ],
     "Research Paper":[
       {q:"A research paper requires _____ sources.","opts":["credible","any","no","fictional"],a:"credible"},
@@ -2557,7 +2960,16 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"A literature review surveys _____.","opts":["existing research on a topic","fiction books","newspapers only","magazines only"],a:"existing research on a topic"},
       {q:"Peer-reviewed articles are reviewed by _____.","opts":["experts in the field","the public","students","anyone"],a:"experts in the field"},
       {q:"APA and MLA are types of _____ styles.","opts":["citation","writing","reading","speaking"],a:"citation"},
-      {q:"A counterargument _____ your paper.","opts":["strengthens","weakens","destroys","ignores"],a:"strengthens"},
+      {q:"A counterargument _____ your paper when addressed effectively.","opts":["strengthens","weakens","destroys","ignores"],a:"strengthens"},
+      {q:"APA format is commonly used in _____ fields.","opts":["social sciences and psychology","humanities and literature","business only","mathematics only"],a:"social sciences and psychology"},
+      {q:"A research paper's introduction should include a _____ statement.","opts":["thesis","bibliography","conclusion","counterargument"],a:"thesis"},
+      {q:"Synthesis in a research paper means _____.","opts":["combining information from multiple sources around your argument","copying from one source","listing quotes without analysis","summarizing only one text"],a:"combining information from multiple sources around your argument"},
+      {q:"The IMRAD structure (Introduction, Methods, Results, Discussion) is used in _____ research papers.","opts":["scientific","literary","historical","creative"],a:"scientific"},
+      {q:"Avoiding plagiarism requires _____ all sources.","opts":["citing","ignoring","deleting","copying"],a:"citing"},
+      {q:"A research question should be _____.","opts":["specific and answerable through research","as broad as possible","already answered everywhere","purely opinion-based"],a:"specific and answerable through research"},
+      {q:"The body of a research paper presents _____.","opts":["evidence and analysis supporting the thesis","only summaries","the author's personal opinions only","random facts"],a:"evidence and analysis supporting the thesis"},
+      {q:"Paraphrasing requires _____.","opts":["restating in your own words AND citing the source","only restating in your own words","only citing the source","copying word for word"],a:"restating in your own words AND citing the source"},
+      {q:"A strong conclusion in a research paper _____.","opts":["synthesizes the argument and suggests implications","introduces new evidence","repeats the introduction","lists all sources"],a:"synthesizes the argument and suggests implications"},
     ],
     "Literary Theory":[
       {q:"Feminist criticism examines _____.","opts":["gender roles and power","only female authors","only poetry","only novels"],a:"gender roles and power"},
@@ -2566,6 +2978,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"New Historicism considers the _____ context of literature.","opts":["historical and cultural","grammatical","numerical","visual"],a:"historical and cultural"},
       {q:"Reader-response theory focuses on the _____ interpretation.","opts":["reader's","author's","editor's","publisher's"],a:"reader's"},
       {q:"Formalism focuses on the text's _____ elements.","opts":["structural and literary","historical","biographical","cultural"],a:"structural and literary"},
+      {q:"Postcolonial criticism examines _____.","opts":["the effects of colonialism on literature and culture","grammar rules","mathematical patterns","only European texts"],a:"the effects of colonialism on literature and culture"},
+      {q:"Deconstruction challenges the idea that texts have _____ meaning.","opts":["fixed or stable","no","poetic","grammatical"],a:"fixed or stable"},
+      {q:"The New Criticism approach focuses on _____.","opts":["close reading of the text itself (ignoring outside context)","biography","history","sociology"],a:"close reading of the text itself (ignoring outside context)"},
+      {q:"Queer theory examines _____ in literature.","opts":["sexuality, gender identity, and non-normative experiences","only grammar","only plot","only setting"],a:"sexuality, gender identity, and non-normative experiences"},
+      {q:"Archetypal criticism draws on _____ theory of universal patterns.","opts":["Carl Jung's","Sigmund Freud's","Karl Marx's","Jacques Derrida's"],a:"Carl Jung's"},
+      {q:"Ecocriticism examines the relationship between _____ in literature.","opts":["nature/environment and human culture","class and economics","gender and power","colonization and resistance"],a:"nature/environment and human culture"},
+      {q:"The Death of the Author (Barthes) argues that the _____ controls meaning.","opts":["reader","author","publisher","character"],a:"reader"},
+      {q:"Structuralism analyzes literature by looking at _____.","opts":["underlying patterns and systems (like language structures)","individual emotions","historical context","biographical details"],a:"underlying patterns and systems (like language structures)"},
+      {q:"Biographical criticism interprets literature through the lens of the _____.","opts":["author's life and experiences","reader's emotions","grammatical structure","market value"],a:"author's life and experiences"},
     ],
     "SAT Reading":[
       {q:"SAT Reading passages test your ability to _____.","opts":["comprehend and analyze texts","write essays","do math","draw pictures"],a:"comprehend and analyze texts"},
@@ -2574,6 +2995,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Paired passages require you to _____ two texts.","opts":["compare and analyze","ignore one","only read one","combine into one"],a:"compare and analyze"},
       {q:"Vocabulary in context questions ask for the meaning _____ used in the passage.","opts":["as","always","never","sometimes"],a:"as"},
       {q:"The main purpose question asks WHY the author _____.","opts":["wrote the passage","chose the title","used that font","lived there"],a:"wrote the passage"},
+      {q:"SAT Reading passage types include literature, history/social studies, and _____.","opts":["science","math","art","music"],a:"science"},
+      {q:"When answering SAT Reading questions, you should always _____ your answer in the passage.","opts":["find textual support for","guess from experience","infer from the title","copy from memory"],a:"find textual support for"},
+      {q:"Command of evidence questions on the SAT ask which lines _____ the previous answer.","opts":["best support","contradict","are longest","use the most vocabulary"],a:"best support"},
+      {q:"Informational graphics on the SAT Reading section should be read _____.","opts":["in conjunction with the passage text","instead of the passage","separately from the passage","after answering all questions"],a:"in conjunction with the passage text"},
+      {q:"SAT Reading 'Words in Context' questions ask for the _____ meaning of a word.","opts":["contextual (how it's used in the passage)","dictionary definition always","most common meaning","literal meaning only"],a:"contextual (how it's used in the passage)"},
+      {q:"When comparing paired passages on the SAT, look for _____.","opts":["agreements, disagreements, and different perspectives","only agreements","only differences","just summaries of each"],a:"agreements, disagreements, and different perspectives"},
+      {q:"Process of elimination on SAT Reading means _____.","opts":["ruling out wrong answers to narrow your choices","guessing randomly","skipping hard questions","reading only the questions"],a:"ruling out wrong answers to narrow your choices"},
+      {q:"The SAT Reading section rewards careful _____ of the passage.","opts":["analysis","memorization","copying","skipping"],a:"analysis"},
+      {q:"For 'big picture' questions, read the _____ and first/last sentences of each paragraph.","opts":["introduction and conclusion","middle only","footnotes","title only"],a:"introduction and conclusion"},
     ],
     "College-Level Writing":[
       {q:"College-level writing requires _____ thinking.","opts":["critical","basic","no","simple"],a:"critical"},
@@ -2582,6 +3012,15 @@ function generateELAThemeQuestions(level, theme, mkId) {
       {q:"Synthesis means combining _____ sources.","opts":["multiple","zero","one","fictional"],a:"multiple"},
       {q:"Proper citation avoids _____.","opts":["plagiarism","creativity","research","reading"],a:"plagiarism"},
       {q:"Revision focuses on _____ while proofreading focuses on _____.","opts":["content/structure; grammar/spelling","spelling; content","nothing; everything","grammar; ideas"],a:"content/structure; grammar/spelling"},
+      {q:"Hedging language in academic writing (e.g., 'may,' 'suggests') shows _____.","opts":["appropriate academic caution","weakness","poor word choice","lack of knowledge"],a:"appropriate academic caution"},
+      {q:"Integrating sources in college writing requires _____.","opts":["citation, context, and analysis — not just quotation dropping","only quotation marks","only a bibliography","just paraphrasing"],a:"citation, context, and analysis — not just quotation dropping"},
+      {q:"A 'they say / I say' structure in academic writing means _____.","opts":["presenting an existing view, then responding with your own","only summarizing others","only stating your opinion","avoiding sources"],a:"presenting an existing view, then responding with your own"},
+      {q:"Avoiding first-person in academic writing helps maintain _____.","opts":["objectivity and formality","a personal tone","creative expression","informality"],a:"objectivity and formality"},
+      {q:"The purpose of a literature review in a college paper is to _____.","opts":["survey what scholars have already said about the topic","repeat your thesis","list your sources alphabetically","summarize only one article"],a:"survey what scholars have already said about the topic"},
+      {q:"A college-level argument should move from evidence to _____ to conclusion.","opts":["analysis/interpretation","another quote","more evidence","the bibliography"],a:"analysis/interpretation"},
+      {q:"Transitions between paragraphs show _____.","opts":["logical connections between ideas","page breaks","new topics","unrelated thoughts"],a:"logical connections between ideas"},
+      {q:"College writing values _____ over length.","opts":["clarity, precision, and depth","length and volume","vocabulary complexity alone","number of sources"],a:"clarity, precision, and depth"},
+      {q:"Peer review in college writing means _____.","opts":["getting feedback from classmates to improve your draft","reviewing peers' grades","submitting for a grade","proofreading for spelling only"],a:"getting feedback from classmates to improve your draft"},
     ],
   };
 
@@ -2799,7 +3238,7 @@ function norm(s) { return String(s).trim().toLowerCase().replace(/\s+/g, " "); }
 function isCorrect(userAns, correctAns) { return norm(userAns) === norm(correctAns); }
 
 // ─────────────────────────────────────────────────────────────
-// 4. QUESTION GENERATOR  (~3000 per level, parametric)
+// 4. QUESTION GENERATOR  (varied, high-quality questions per level)
 // ─────────────────────────────────────────────────────────────
 function generateLevelQuestions(level) {
   const pool = [];
@@ -2813,476 +3252,1165 @@ function generateLevelQuestions(level) {
       hint, explanation
     });
   };
+  // Rotate through template arrays to vary phrasing
+  const pick = (arr, i) => arr[Math.abs(i) % arr.length];
 
   if (level === "A") {
-    const emojis = ["🍎","🌟","🐸","🦆","🎈","🐱","🍊","⭐","🌸","🐶"];
-    for (let count = 1; count <= 20; count++) {
-      for (let e = 0; e < emojis.length; e++) {
-        add("Counting 1-20","easy",`Count: ${emojis[e].repeat(count)}`,"input",null,count,`Say one number per ${emojis[e]}.`,`Count ${count} → answer is ${count}.`);
-      }
-      add("Counting 1-20","easy",`What number comes after ${count}?`,"multiple",
-        shuffle([count+1,count>1?count-1:count+2,count+2,count+3>20?19:count+3].map(String)),
-        String(count+1 > 20 ? "beyond scope" : count+1),`Count forward from ${count}.`,`After ${count} comes ${count+1}.`);
-      if (count > 1) add("Counting 1-20","easy",`What number comes before ${count}?`,"multiple",
-        shuffle([count-1,count,count+1,count>2?count-2:count+2].map(String)),
-        String(count-1),`Count backward from ${count}.`,`Before ${count} is ${count-1}.`);
-    }
-    for (let a = 0; a <= 5; a++) {
-      for (let b = 0; b <= 5; b++) {
-        if (a+b <= 10) {
-          add("Simple Addition","easy",`${a} + ${b} = ?`,"input",null,a+b,`Start at ${a}, count up ${b} more.`,`${a} + ${b} = ${a+b}.`);
-          add("Simple Addition","medium",`You have ${a} 🍎 and get ${b} more. How many total?`,"multiple",
-            shuffle([a+b, Math.max(0,a+b-1), a+b+1, a+b+2].filter((v,i,s)=>s.indexOf(v)===i).map(String)),
-            String(a+b),`${a} + ${b} = ?`,`${a} + ${b} = ${a+b}.`);
-        }
-        if (a >= b) {
-          add("Simple Subtraction","easy",`${a} - ${b} = ?`,"input",null,a-b,`Start at ${a}, count back ${b}.`,`${a} - ${b} = ${a-b}.`);
-          if (a>0) add("Simple Subtraction","medium",`There are ${a} birds 🐦. ${b} fly away. How many left?`,"multiple",
-            shuffle([a-b,a+b,Math.max(0,a-b-1),a-b+1].filter((v,i,s)=>s.indexOf(v)===i).map(String)),
-            String(a-b),`${a} - ${b} = ?`,`${a} - ${b} = ${a-b}.`);
-        }
-      }
-    }
     const names=["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen","twenty"];
-    for (let i = 1; i <= 20; i++) {
-      add("Number Recognition","easy",`Which number spells "${names[i]}"?`,"multiple",
-        shuffle([i, i>1?i-1:i+3, i<20?i+1:i-2, i<19?i+2:i-3].filter((v,i2,s)=>v>=0&&v<=20&&s.indexOf(v)===i2).map(String)),
-        String(i),`${names[i]} = ${i}`,`${names[i]} = ${i}.`);
+    const countEmojis = ["🍎","🌟","🐸","🦆","🎈","🐱","🍊","⭐","🌸","🐶"];
+    const countTpls = [
+      (n,e) => `How many ${e} do you see? ${e.repeat(n)}`,
+      (n,e) => `Count the objects: ${e.repeat(n)}`,
+      (n,e) => `${e.repeat(n)} — how many are there?`,
+    ];
+    for (let count = 1; count <= 20; count++) {
+      const e = countEmojis[count % countEmojis.length];
+      add("Counting 1-20","easy", pick(countTpls,count)(count,e), "input", null, count,
+        `Say one number for each ${e}.`, `There are ${count} ${e}.`);
+      const after = Math.min(count+1, 20);
+      add("Counting 1-20","easy", `What number comes after ${count}?`, "multiple",
+        shuffle([...new Set([after, Math.max(1,count-1), Math.min(20,count+2), count])].map(String)),
+        String(after), `Count forward from ${count}.`, `After ${count} comes ${count+1}.`);
+      if (count > 1) add("Counting 1-20","easy", `What number comes before ${count}?`, "multiple",
+        shuffle([...new Set([count-1, count, Math.min(20,count+1), Math.max(1,count-2)])].map(String)),
+        String(count-1), `Count backward from ${count}.`, `Before ${count} is ${count-1}.`);
     }
+
+    const addTpls = [
+      (a,b) => `${a} + ${b} = ?`,
+      (a,b) => `You have ${a} apples and get ${b} more. How many in all?`,
+      (a,b) => `${a} birds sit on a branch. ${b} more land. How many birds?`,
+      (a,b) => `A bowl has ${a} oranges. Someone adds ${b} more. Total?`,
+      (a,b) => `What is the sum of ${a} and ${b}?`,
+    ];
+    for (let a = 0; a <= 5; a++) for (let b = 0; b <= 5; b++) {
+      if (a+b <= 10) {
+        add("Simple Addition","easy", pick(addTpls, a+b*3)(a,b), "input", null, a+b,
+          `Start at ${a}, count up ${b}.`, `${a} + ${b} = ${a+b}.`);
+        if (a+b > 0) add("Simple Addition","medium", pick(addTpls, a*2+b)(a,b), "multiple",
+          shuffle([...new Set([a+b, Math.max(0,a+b-1), a+b+1, a+b+2])].map(String)),
+          String(a+b), `${a} + ${b} = ?`, `${a} + ${b} = ${a+b}.`);
+      }
+    }
+
+    const subTpls = [
+      (a,b) => `${a} - ${b} = ?`,
+      (a,b) => `There are ${a} cookies. You eat ${b}. How many are left?`,
+      (a,b) => `${a} kids play outside. ${b} go inside. How many stay?`,
+      (a,b) => `You have ${a} stickers. You give ${b} away. How many remain?`,
+      (a,b) => `What is ${a} minus ${b}?`,
+    ];
+    for (let a = 0; a <= 10; a++) for (let b = 0; b <= a; b++) {
+      add("Simple Subtraction","easy", pick(subTpls, a+b*2)(a,b), "input", null, a-b,
+        `Start at ${a}, count back ${b}.`, `${a} - ${b} = ${a-b}.`);
+      if (a > 0 && b > 0) add("Simple Subtraction","medium", pick(subTpls, a*3+b)(a,b), "multiple",
+        shuffle([...new Set([a-b, a+b, Math.max(0,a-b-1), a-b+1])].map(String)),
+        String(a-b), `${a} - ${b} = ?`, `${a} - ${b} = ${a-b}.`);
+    }
+
+    for (let i = 1; i <= 20; i++) {
+      add("Number Recognition","easy", `Which number is spelled "${names[i]}"?`, "multiple",
+        shuffle([i, i>1?i-1:i+3, i<20?i+1:i-2, i<19?i+2:i-3].filter((v,_,s)=>v>=0&&v<=20&&s.indexOf(v)===s.indexOf(v)).slice(0,4).map(String)),
+        String(i), `"${names[i]}" = ${i}`, `${names[i]} = ${i}.`);
+      add("Number Recognition","easy", `How do you write ${i} in words?`, "multiple",
+        shuffle([names[i], names[Math.max(0,i-1)], names[Math.min(20,i+1)], names[Math.max(0,i-2)]].filter((v,idx,s)=>s.indexOf(v)===idx)),
+        names[i], `The number ${i} in words.`, `${i} = "${names[i]}".`);
+    }
+
+    const cmpTpls = [
+      (a,b) => `${a} __ ${b}  (pick <, >, or =)`,
+      (a,b) => `Compare ${a} and ${b}: choose <, >, or =`,
+      (a,b) => `Which symbol fits between ${a} and ${b}?`,
+    ];
     for (let a = 1; a <= 10; a++) for (let b = 1; b <= 10; b++) {
       const sym = a<b?"<":a>b?">":"=";
-      add("Comparing Quantities","medium",`${a} __ ${b}  (pick <, >, or =)`,"multiple",["<",">","="],sym,
-        `${a} is ${a<b?"less than":a>b?"greater than":"equal to"} ${b}.`,`${a} ${sym} ${b}.`);
+      add("Comparing Quantities","medium", pick(cmpTpls, a+b)(a,b), "multiple", ["<",">","="], sym,
+        `${a} is ${a<b?"less than":a>b?"greater than":"equal to"} ${b}.`, `${a} ${sym} ${b}.`);
     }
+
     const patColors = ["🔴","🔵","🟡","🟢","🟠","🟣"];
-    for (let i = 0; i < 40; i++) {
-      const c1=patColors[i%6], c2=patColors[(i+1)%6];
-      add("Patterns","easy",`What comes next? ${c1}${c2}${c1}${c2}${c1}__`,"multiple",
-        shuffle([c1,c2,"🟤","⚫"]),c2,`Pattern: ${c1} ${c2} repeating.`,`${c1}${c2} pattern repeats → next is ${c2}.`);
-      add("Patterns","medium",`What comes next? ${c1}${c1}${c2}${c1}${c1}${c2}${c1}${c1}__`,"multiple",
-        shuffle([c1,c2,"🟤","⚫"]),c2,`Pattern: ${c1}${c1}${c2} repeating.`,`Double-${c1} then ${c2} → next is ${c2}.`);
+    for (let i = 0; i < 20; i++) {
+      const c1=patColors[i%6], c2=patColors[(i+2)%6], c3=patColors[(i+4)%6];
+      add("Patterns","easy", `What comes next? ${c1}${c2}${c1}${c2}${c1}__`, "multiple",
+        shuffle([c2,c1,c3,"⚫"]), c2, `Pattern: ${c1}${c2} repeating.`, `${c1}${c2} repeats → next is ${c2}.`);
+      add("Patterns","medium", `What comes next? ${c1}${c2}${c3}${c1}${c2}__`, "multiple",
+        shuffle([c3,c1,c2,"⚫"]), c3, `Pattern: ${c1}${c2}${c3} repeating.`, `Three-part pattern → next is ${c3}.`);
+      add("Patterns","medium", `${c1}${c1}${c2}${c1}${c1}${c2}${c1}${c1}__ What's next?`, "multiple",
+        shuffle([c2,c1,c3,"⚫"]), c2, `Double ${c1} then ${c2}.`, `Pattern: ${c1}${c1}${c2} → next is ${c2}.`);
     }
-    const shapes=[["triangle","3","3 sides"],["square","4","4 equal sides"],["rectangle","4","4 sides"],["circle","0","no sides"],["pentagon","5","5 sides"],["hexagon","6","6 sides"]];
-    shapes.forEach(([name,sides,desc])=>{
-      for (let i=0;i<5;i++) {
-        add("Basic Shapes","easy",`How many sides does a ${name} have?`,"multiple",
-          shuffle(["0","3","4","5","6"].slice(0,4)),sides,`A ${name} has ${desc}.`,`${name} → ${sides} sides.`);
+
+    const shapeData=[["triangle","3","3 sides"],["square","4","4 equal sides"],["rectangle","4","2 long and 2 short sides"],["circle","0","no sides, perfectly round"],["pentagon","5","5 sides"],["hexagon","6","6 sides"]];
+    const shapeTpls = [
+      ([name,sides]) => [`How many sides does a ${name} have?`, sides],
+      ([name,sides]) => [`A ${name} has how many sides?`, sides],
+      ([name,sides,desc]) => [`Which shape has ${sides==="0"?"no":sides} sides and is ${desc}?`, name],
+    ];
+    shapeData.forEach((shape, si) => {
+      for (let ti = 0; ti < 3; ti++) {
+        const [q, ans] = shapeTpls[ti](shape);
+        const numOpts = ["0","3","4","5","6"];
+        const nameOpts = shapeData.map(s=>s[0]);
+        const opts = ti < 2 ? shuffle(numOpts).slice(0,4) : shuffle(nameOpts).slice(0,4);
+        if (!opts.includes(String(ans))) opts[0] = String(ans);
+        add("Basic Shapes","easy", q, "multiple", shuffle(opts), String(ans),
+          `A ${shape[0]} has ${shape[1]} sides.`, `${shape[0]} → ${shape[1]} sides.`);
       }
     });
-    for (let i=1;i<=5;i++) {
-      const ordinals=["first","second","third","fourth","fifth"];
-      const letters=["A","B","C","D","E"];
-      add("Ordinal Numbers","easy",`Which letter is ${ordinals[i-1]}? A, B, C, D, E`,"multiple",
-        ["A","B","C","D","E"],letters[i-1],`Count to position ${i}.`,`${ordinals[i-1]} → ${letters[i-1]}.`);
+
+    const ordinals=["first","second","third","fourth","fifth"];
+    const letters=["A","B","C","D","E"];
+    for (let i=1; i<=5; i++) {
+      add("Ordinal Numbers","easy", `Which letter is ${ordinals[i-1]}? A  B  C  D  E`, "multiple",
+        ["A","B","C","D","E"], letters[i-1], `Count to position ${i}.`, `${ordinals[i-1]} = position ${i} → ${letters[i-1]}.`);
+      add("Ordinal Numbers","easy", `What position is letter ${letters[i-1]} in: A B C D E?`, "multiple",
+        ordinals.slice(0,5), ordinals[i-1], `Count from the left.`, `${letters[i-1]} is ${ordinals[i-1]}.`);
     }
   }
 
   if (level === "B") {
-    for (let t=1;t<=9;t++) for (let o=0;o<=9;o++) {
+    const pvTpls = [
+      (t,o,num) => `In the number ${num}, what is the tens digit?`,
+      (t,o,num) => `${num} has ___ tens. How many?`,
+      (t,o,num) => `What digit is in the tens place of ${num}?`,
+      (t,o,num) => `Break apart ${num}: ___ tens and ${o} ones.`,
+    ];
+    for (let t=1; t<=9; t++) for (let o=0; o<=9; o++) {
       const num = t*10+o;
-      add("Place Value Tens & Ones","easy",`In ${num}, the TENS digit is?`,"input",null,t,`${num} = ${t} tens + ${o} ones.`,`${t} tens.`);
-      add("Place Value Tens & Ones","easy",`In ${num}, the ONES digit is?`,"input",null,o,`${num} = ${t} tens + ${o} ones.`,`${o} ones.`);
-      add("Place Value Tens & Ones","medium",`${t} tens and ${o} ones = ?`,"input",null,num,`Tens × 10 + ones.`,`${t}×10+${o} = ${num}.`);
+      add("Place Value Tens & Ones","easy", pick(pvTpls, t+o)(t,o,num), "input", null, t,
+        `${num} = ${t} tens + ${o} ones.`, `Tens digit = ${t}.`);
+      add("Place Value Tens & Ones","easy", `In ${num}, what is the ones digit?`, "input", null, o,
+        `${num} = ${t} tens + ${o} ones.`, `Ones digit = ${o}.`);
+      add("Place Value Tens & Ones","medium", `${t} tens and ${o} ones = what number?`, "input", null, num,
+        `Tens × 10 + ones.`, `${t}×10 + ${o} = ${num}.`);
     }
-    for (let a=0;a<=10;a++) for (let b=0;b<=10;b++) {
+
+    const addFTpls = [
+      (a,b) => `${a} + ${b} = ?`,
+      (a,b) => `What is the sum of ${a} and ${b}?`,
+      (a,b) => `? + ${b} = ${a+b}`,
+      (a,b) => `${a} + ? = ${a+b}`,
+    ];
+    const addWordB = [
+      (a,b) => `A library has ${a} picture books and ${b} chapter books. How many books total?`,
+      (a,b) => `${a} children play inside and ${b} play outside. How many children in all?`,
+      (a,b) => `You score ${a} points in game 1 and ${b} points in game 2. Total points?`,
+      (a,b) => `There are ${a} red crayons and ${b} blue crayons. How many crayons altogether?`,
+      (a,b) => `${a} frogs sit on a log. ${b} more hop on. How many frogs?`,
+    ];
+    for (let a=0; a<=10; a++) for (let b=0; b<=10; b++) {
       if (a+b<=20) {
-        add("Addition Facts to 20","easy",`${a} + ${b} = ?`,"input",null,a+b,
-          a===9?`Make ten: 9+1=10, then +${b-1}`:b===0?`${a} + 0 = ${a}`:`Start at ${a}, count up ${b}.`,`${a} + ${b} = ${a+b}.`);
-        add("Addition Facts to 20","medium",`? + ${b} = ${a+b}`,"input",null,a,`Think: what + ${b} = ${a+b}?`,`${a} + ${b} = ${a+b}.`);
+        add("Addition Facts to 20","easy", pick(addFTpls, a+b)(a,b), "input", null, a+b,
+          a===9 ? `Make ten: 9+1=10, then add ${b-1} more.` : b===0 ? `${a}+0=${a}` : `Start at ${a}, count up ${b}.`,
+          `${a} + ${b} = ${a+b}.`);
+        if (a > 0 && b > 0) add("Addition Facts to 20","medium", pick(addWordB, a+b)(a,b), "input", null, a+b,
+          `${a} + ${b} = ?`, `${a}+${b}=${a+b}.`);
       }
       if (a>=b) {
-        add("Subtraction Facts to 20","easy",`${a} - ${b} = ?`,"input",null,a-b,`Think: ${b} + ? = ${a}.`,`${a} - ${b} = ${a-b}.`);
-        add("Subtraction Facts to 20","medium",`${a} - ? = ${a-b}`,"input",null,b,`Reverse: ${a-b} + ? = ${a}.`,`${a} - ${b} = ${a-b}.`);
+        add("Subtraction Facts to 20","easy", `${a} - ${b} = ?`, "input", null, a-b,
+          `Think: ${b} + ? = ${a}.`, `${a} - ${b} = ${a-b}.`);
+        add("Subtraction Facts to 20","medium", `${a} - ? = ${a-b}`, "input", null, b,
+          `Reverse: ${a-b} + ? = ${a}.`, `${a} - ${b} = ${a-b}.`);
       }
     }
-    for (let s=2;s<=18;s+=2) add("Skip Counting","easy",`Skip by 2s: ${s}, ${s+2}, ${s+4}, __, ${s+8}`,"input",null,s+6,"Add 2 each time.",`${s+6}.`);
-    for (let s=5;s<=45;s+=5) add("Skip Counting","easy",`Skip by 5s: ${s}, ${s+5}, __, ${s+15}`,"input",null,s+10,"Add 5 each time.",`${s+10}.`);
-    for (let s=10;s<=80;s+=10) add("Skip Counting","easy",`Skip by 10s: ${s}, __, ${s+20}`,"input",null,s+10,"Add 10 each time.",`${s+10}.`);
-    for (let a=10;a<=99;a+=7) for (let b=10;b<=99;b+=11) {
-      add("Comparing Numbers","medium",`${a} vs ${b}: write <, >, or =`,"multiple",["<",">","="],
-        a<b?"<":a>b?">":"=",`Compare tens digits first.`,`${a} ${a<b?"<":a>b?">":"="} ${b}.`);
+
+    for (let s=2; s<=18; s+=2) add("Skip Counting","easy",`Count by 2s: ${s}, ${s+2}, ${s+4}, ___, ${s+8}`,"input",null,s+6,"Add 2 each step.",`${s+6}.`);
+    for (let s=5; s<=45; s+=5) add("Skip Counting","easy",`Count by 5s: ${s}, ${s+5}, ___, ${s+15}`,"input",null,s+10,"Add 5 each step.",`${s+10}.`);
+    for (let s=10; s<=80; s+=10) add("Skip Counting","easy",`Count by 10s: ${s}, ___, ${s+20}`,"input",null,s+10,"Add 10 each step.",`${s+10}.`);
+    add("Skip Counting","medium","Count by 2s: 2, 4, 6, 8, ___","multiple",shuffle(["10","12","9","11"]),"10","Add 2 each time.","Next is 10.");
+    add("Skip Counting","medium","Count by 5s: 5, 10, 15, ___, 25","multiple",shuffle(["20","15","25","18"]),"20","Add 5 each time.","Missing is 20.");
+    add("Skip Counting","medium","Count by 10s: 10, 20, 30, ___, 50","multiple",shuffle(["40","35","45","30"]),"40","Add 10 each time.","Missing is 40.");
+
+    const cmpBTpls = [
+      (a,b) => `${a} vs ${b}: <, >, or =?`,
+      (a,b) => `Which symbol fits: ${a} ___ ${b}?`,
+      (a,b) => `Compare: ${a} and ${b}. Use <, >, or =.`,
+    ];
+    for (let a=10; a<=99; a+=11) for (let b=10; b<=99; b+=13) {
+      add("Comparing Numbers","medium", pick(cmpBTpls, a+b)(a,b), "multiple", ["<",">","="],
+        a<b?"<":a>b?">":"=", `Compare tens digits first.`, `${a} ${a<b?"<":a>b?">":"="} ${b}.`);
     }
-    for (let h=1;h<=12;h++) {
-      add("Time","medium",`Short hand points to ${h}, long hand points to 12. What time is it?`,"multiple",
-        shuffle([`${h}:00`,`${h}:30`,`${h===12?1:h+1}:00`,`${h>1?h-1:12}:30`]),`${h}:00`,
-        "Long hand at 12 = exactly on the hour.",`${h}:00.`);
-      add("Time","medium",`Short hand between ${h} and ${h===12?1:h+1}, long hand at 6. Time?`,"multiple",
-        shuffle([`${h}:30`,`${h}:00`,`${h===12?1:h+1}:00`,`${h>1?h-1:12}:30`]),`${h}:30`,
-        "Long hand at 6 = half past (:30).",`${h}:30.`);
+
+    const timeTpls = [
+      (h) => `Hour hand on ${h}, minute hand on 12. Time?`,
+      (h) => `The clock shows the hour hand at ${h} and minute hand at 12. What time?`,
+    ];
+    const halfTpls = [
+      (h) => `Hour hand between ${h} and ${h===12?1:h+1}, minute hand at 6. Time?`,
+      (h) => `It is half past ${h}. Write the time.`,
+    ];
+    for (let h=1; h<=12; h++) {
+      add("Time","medium", pick(timeTpls, h)(h), "multiple",
+        shuffle([`${h}:00`,`${h}:30`,`${h===12?1:h+1}:00`,`${h>1?h-1:12}:30`]),
+        `${h}:00`, "Minute hand at 12 = on the hour.", `${h}:00.`);
+      add("Time","medium", pick(halfTpls, h)(h), "multiple",
+        shuffle([`${h}:30`,`${h}:00`,`${h===12?1:h+1}:00`,`${h>1?h-1:12}:30`]),
+        `${h}:30`, "Minute hand at 6 = half past (:30).", `${h}:30.`);
     }
-    for (let d=2;d<=8;d++) for (let num=1;num<d;num++) {
-      add("Basic Fractions","easy",`A shape has ${d} equal parts. ${num} part(s) are shaded. Write the fraction.`,"input",null,`${num}/${d}`,`Shaded/Total.`,`${num}/${d}.`);
-      add("Basic Fractions","medium",`Which is larger: 1/${d} or 1/${d+1}?`,"multiple",[`1/${d}`,`1/${d+1}`,"Same"],`1/${d}`,`Larger denominator = smaller pieces.`,`1/${d} > 1/${d+1}.`);
+    add("Time","easy","How many minutes are in one hour?","multiple",["60","30","100","45"],"60","There are 60 minutes per hour.","60 minutes = 1 hour.");
+    add("Time","easy","How many hours are in one day?","multiple",["24","12","48","7"],"24","Day + night together.","24 hours in a day.");
+    add("Time","easy","How many days are in one week?","multiple",["7","5","14","10"],"7","Monday through Sunday.","7 days in a week.");
+
+    const fracTpls = [
+      (num,d) => `A shape has ${d} equal parts. ${num} part${num>1?"s are":" is"} shaded. Write the fraction.`,
+      (num,d) => `A pizza is cut into ${d} equal slices. You eat ${num}. What fraction did you eat?`,
+      (num,d) => `${num} out of ${d} equal parts are colored. Write this as a fraction.`,
+    ];
+    for (let d=2; d<=8; d++) for (let num=1; num<d; num++) {
+      add("Basic Fractions","easy", pick(fracTpls, num+d)(num,d), "input", null, `${num}/${d}`,
+        "Shaded ÷ Total.", `${num}/${d}.`);
+      add("Basic Fractions","medium", `Which fraction is LARGER: 1/${d} or 1/${d+1}?`, "multiple",
+        [`1/${d}`,`1/${d+1}`,"They are equal"], `1/${d}`,
+        "Larger denominator = smaller pieces.", `1/${d} > 1/${d+1}.`);
     }
-    for (let a=1;a<=10;a++) for (let b=1;b<=10;b++) {
-      if (a+b<=20) add("Word Problems","medium",`There are ${a} red balls and ${b} blue balls. How many total?`,"input",null,a+b,`Add them together.`,`${a}+${b}=${a+b}.`);
-      if (a>b) add("Word Problems","medium",`There are ${a} students. ${b} leave. How many remain?`,"input",null,a-b,`Subtract.`,`${a}-${b}=${a-b}.`);
-    }
+
+    const wpB = [
+      [10,4,"A baker bakes 10 muffins, then 4 more. Total muffins?",14,"add"],
+      [15,6,"15 birds are on a wire. 6 fly off. How many remain?",9,"sub"],
+      [8,7,"8 boys and 7 girls play soccer. Players total?",15,"add"],
+      [12,5,"You have $12 and spend $5. How much is left?",7,"sub"],
+      [9,6,"9 cats and 6 dogs are at the shelter. Animals total?",15,"add"],
+      [20,8,"20 balloons at a party. 8 pop. How many are left?",12,"sub"],
+      [6,4,"6 oranges in a bowl, 4 more added. How many now?",10,"add"],
+      [13,7,"13 players on a team. 7 sit out. How many play?",6,"sub"],
+      [5,3,"A shelf has 5 books. 3 more are placed on it. Total?",8,"add"],
+      [11,4,"11 ducks on a pond. 4 swim away. How many left?",7,"sub"],
+    ];
+    wpB.forEach(([a,b,q,ans,op]) => {
+      add("Word Problems","medium", q, "input", null, ans,
+        `${a} ${op==="add"?"+":"-"} ${b} = ?`, `${ans}.`);
+    });
   }
 
   if (level === "C") {
-    for (let h=1;h<=9;h++) for (let t=0;t<=9;t++) for (let o=0;o<=9;o++) {
+    const pv3Tpls = [
+      (h,t,o,num) => `What is the hundreds digit in ${num}?`,
+      (h,t,o,num) => `In ${num}, how many complete hundreds are there?`,
+      (h,t,o,num) => `${num} = ___ hundreds + ${t} tens + ${o} ones.`,
+      (h,t,o,num) => `What digit is in the hundreds place of ${num}?`,
+    ];
+    let pv3Count = 0;
+    for (let h=1; h<=9; h++) for (let t=0; t<=9; t++) for (let o=0; o<=9; o++) {
       const num=h*100+t*10+o;
-      if (pool.filter(q=>q.theme==="Place Value to 1000").length < 250) {
-        add("Place Value to 1000","easy",`What is the hundreds digit in ${num}?`,"input",null,h,`H|T|O = ${h}|${t}|${o}.`,`Hundreds digit = ${h}.`);
-        add("Place Value to 1000","medium",`${h} hundreds + ${t} tens + ${o} ones = ?`,"input",null,num,`${h*100}+${t*10}+${o}.`,`${num}.`);
+      if (pv3Count < 200) {
+        add("Place Value to 1000","easy", pick(pv3Tpls, pv3Count)(h,t,o,num), "input", null, h,
+          `H|T|O = ${h}|${t}|${o}.`, `Hundreds digit = ${h}.`);
+        add("Place Value to 1000","medium", `${h} hundreds + ${t} tens + ${o} ones = ?`, "input", null, num,
+          `${h*100} + ${t*10} + ${o}.`, `${num}.`);
+        add("Place Value to 1000","medium", `What is the value of the tens digit in ${num}?`, "input", null, t*10,
+          `Tens digit × 10.`, `${t} × 10 = ${t*10}.`);
+        pv3Count++;
       }
     }
-    for (let a=11;a<=99;a+=6) for (let b=11;b<=99;b+=8) {
-      add("Addition with Regrouping","medium",`${a} + ${b} = ?`,"input",null,a+b,`Add ones: ${a%10}+${b%10}=${(a%10)+(b%10)>9?`(${(a%10)+(b%10)}, write ${(a%10+b%10)%10} carry 1)`:`${(a%10)+(b%10)}`}. Then tens.`,`${a+b}.`);
+
+    const addRTpls = [
+      (a,b) => `${a} + ${b} = ?`,
+      (a,b) => `What is ${a} + ${b}?`,
+      (a,b) => `A store has ${a} red shirts and ${b} blue shirts. How many shirts total?`,
+      (a,b) => `Day 1: ${a} visitors. Day 2: ${b} visitors. Total visitors?`,
+      (a,b) => `Add ${a} and ${b}.`,
+    ];
+    for (let a=11; a<=99; a+=6) for (let b=11; b<=99; b+=8) {
+      if (pool.filter(q=>q.theme==="Addition with Regrouping").length < 150)
+        add("Addition with Regrouping","medium", pick(addRTpls, a+b)(a,b), "input", null, a+b,
+          `Add ones (${a%10}+${b%10}), carry if needed. Then add tens.`, `${a+b}.`);
     }
-    for (let a=20;a<=99;a+=7) for (let b=10;b<a;b+=9) {
-      add("Subtraction with Borrowing","medium",`${a} - ${b} = ?`,"input",null,a-b,`Borrow from tens column if needed.`,`${a-b}.`);
+
+    const subBTpls = [
+      (a,b) => `${a} - ${b} = ?`,
+      (a,b) => `What is ${a} minus ${b}?`,
+      (a,b) => `A school has ${a} students. ${b} are absent. How many are present?`,
+      (a,b) => `You start with $${a} and spend $${b}. How much do you have left?`,
+    ];
+    for (let a=20; a<=99; a+=7) for (let b=10; b<a; b+=9) {
+      if (pool.filter(q=>q.theme==="Subtraction with Borrowing").length < 150)
+        add("Subtraction with Borrowing","medium", pick(subBTpls, a+b)(a,b), "input", null, a-b,
+          `Borrow from the tens column if needed.`, `${a-b}.`);
     }
-    for (let a=2;a<=5;a++) for (let b=2;b<=12;b++) {
-      add("Intro Multiplication","easy",`${a} × ${b} = ?`,"input",null,a*b,`${a} groups of ${b}: ${Array(a).fill(b).join("+")} = ?`,`${a*b}.`);
-      add("Intro Multiplication","medium",`${a} bags with ${b} apples each. Total apples?`,"input",null,a*b,`${a} × ${b} = ?`,`${a*b} apples.`);
+
+    const mulCTpls = [
+      (a,b) => `${a} × ${b} = ?`,
+      (a,b) => `${a} groups of ${b} equals?`,
+      (a,b) => `${a} bags each have ${b} apples. Total apples?`,
+      (a,b) => `${a} children each have ${b} crayons. How many crayons in all?`,
+      (a,b) => `A rectangle has ${a} rows and ${b} columns. Total squares?`,
+    ];
+    for (let a=2; a<=5; a++) for (let b=2; b<=12; b++) {
+      add("Intro Multiplication","easy", pick(mulCTpls, a+b)(a,b), "input", null, a*b,
+        `${a} groups of ${b}: ${Array(a).fill(b).join("+")} = ?`, `${a*b}.`);
+      add("Intro Multiplication","medium", `? × ${b} = ${a*b}`, "input", null, a,
+        `How many groups of ${b} make ${a*b}?`, `${a} × ${b} = ${a*b}.`);
     }
-    for (let n=1;n<=50;n++) add("Even and Odd","easy",`Is ${n} even or odd?`,"multiple",["Even","Odd"],n%2===0?"Even":"Odd",
-      `Even ends in 0,2,4,6,8. Odd ends in 1,3,5,7,9.`,`${n} ends in ${n%10} → ${n%2===0?"even":"odd"}.`);
+
+    const eoTpls = [
+      (n) => `Is ${n} even or odd?`,
+      (n) => `${n} — even or odd?`,
+      (n) => `Can ${n} objects be split into two equal groups with none left over?`,
+    ];
+    for (let n=1; n<=50; n++) {
+      const isEven = n%2===0;
+      add("Even and Odd","easy", pick(eoTpls, n)(n), "multiple", ["Even","Odd"], isEven?"Even":"Odd",
+        `Even: ends in 0,2,4,6,8. Odd: ends in 1,3,5,7,9.`, `${n} ends in ${n%10} → ${isEven?"even":"odd"}.`);
+    }
+    add("Even and Odd","medium","What is the sum of two even numbers — even or odd?","multiple",["Even","Odd","Can be either"],"Even","Even + Even = Even.","Even (e.g., 4+6=10).");
+    add("Even and Odd","medium","What is the sum of two odd numbers — even or odd?","multiple",["Even","Odd","Can be either"],"Even","Odd + Odd = Even.","Even (e.g., 3+5=8).");
+
     const coinVals=[["penny",1],["nickel",5],["dime",10],["quarter",25]];
-    coinVals.forEach(([name,val])=>{
-      for (let c=1;c<=8;c++) add("Money","easy",`${c} ${name}${c>1?"s":""} = ? cents`,"input",null,c*val,`${name} = ${val}¢.`,`${c}×${val}=${c*val}¢.`);
+    const coinTpls = [
+      (c,name,val) => `${c} ${name}${c>1?"s":""} = how many cents?`,
+      (c,name,val) => `You have ${c} ${name}${c>1?"s":""}. What is the total value in cents?`,
+      (c,name,val) => `Count: ${c} ${name}${c>1?"s":""}. Total value?`,
+    ];
+    coinVals.forEach(([name,val]) => {
+      for (let c=1; c<=8; c++)
+        add("Money","easy", pick(coinTpls, c)(c,name,val), "input", null, c*val,
+          `1 ${name} = ${val}¢.`, `${c}×${val} = ${c*val}¢.`);
     });
-    for (let a=10;a<=99;a+=11) for (let b=5;b<a;b+=13) {
-      add("Money","medium",`You have ${a}¢ and spend ${b}¢. Change?`,"input",null,a-b,`${a} − ${b} = ?`,`${a-b}¢.`);
+    const moneyWordC = [
+      [25,10,"A quarter plus a dime equals how many cents?",35],
+      [10,5,"A dime plus a nickel equals how many cents?",15],
+      [25,5,"A quarter plus a nickel. Total cents?",30],
+      [25,25,"Two quarters. How many cents?",50],
+      [50,25,"You have 50¢ and receive a quarter. Total?",75],
+      [100,75,"You pay $1.00 for something that costs 75¢. Change?",25],
+    ];
+    moneyWordC.forEach(([a,b,q,ans]) => {
+      add("Money","medium", q, "input", null, ans, "Add or subtract coins.", `${ans}¢.`);
+    });
+    for (let a=10; a<=99; a+=11) for (let b=5; b<a; b+=13) {
+      if (pool.filter(q=>q.theme==="Money"&&q.difficulty==="medium").length < 80)
+        add("Money","medium", `You have ${a}¢ and spend ${b}¢. How much change?`, "input", null, a-b,
+          `${a} − ${b} = ?`, `${a-b}¢.`);
     }
-    for (let a=5;a<=95;a+=5) { const r=Math.round(a/10)*10; add("Rounding (C)","easy",`Round ${a} to the nearest 10.`,"input",null,r,`Ones digit is ${a%10}. ${a%10>=5?"≥5 round up":"<5 round down"}.`,`${r}.`); }
-    for (let a=2;a<=9;a++) for (let b=2;b<=a;b++) {
-      add("Fractions","easy",`Write ${b} out of ${a} as a fraction.`,"input",null,`${b}/${a}`,`Numerator/Denominator.`,`${b}/${a}.`);
+
+    const rndCTpls = [
+      (n,r) => `Round ${n} to the nearest 10.`,
+      (n,r) => `What is ${n} rounded to the nearest 10?`,
+      (n,r) => `Estimate ${n} by rounding to the nearest 10.`,
+    ];
+    for (let a=5; a<=95; a+=5) {
+      const r=Math.round(a/10)*10;
+      add("Rounding","easy", pick(rndCTpls, a)(a,r), "input", null, r,
+        `Ones digit is ${a%10}. ${a%10>=5?"≥5 → round up":"<5 → round down"}.`, `${r}.`);
+    }
+
+    for (let a=2; a<=9; a++) for (let b=1; b<=a; b++) {
+      add("Fractions","easy", `Write ${b} out of ${a} equal parts as a fraction.`, "input", null, `${b}/${a}`,
+        "Parts shaded / Total equal parts.", `${b}/${a}.`);
+      if (b < a) add("Fractions","medium", `Which is greater: ${b}/${a} or ${b}/${a+1}?`, "multiple",
+        [`${b}/${a}`, `${b}/${a+1}`, "They are equal"], `${b}/${a}`,
+        "Same numerator — smaller denominator = bigger piece.", `${b}/${a} > ${b}/${a+1}.`);
     }
   }
 
   if (level === "D") {
-    for (let a=1;a<=10;a++) for (let b=1;b<=10;b++) {
-      add("Multiplication Tables","easy",`${a} × ${b} = ?`,"input",null,a*b,`Skip count by ${b}, ${a} times.`,`${a*b}.`);
-      add("Multiplication Tables","medium",`? × ${b} = ${a*b}`,"input",null,a,`${b} × ? = ${a*b}.`,`${a}.`);
-      add("Division Basics","easy",`${a*b} ÷ ${b} = ?`,"input",null,a,`${b} × ? = ${a*b}.`,`${a}.`);
-      add("Division Basics","medium",`Share ${a*b} equally among ${b} people. Each gets?`,"input",null,a,`${a*b} ÷ ${b}.`,`${a}.`);
+    const mulTTpls = [
+      (a,b) => `${a} × ${b} = ?`,
+      (a,b) => `What is ${a} times ${b}?`,
+      (a,b) => `Multiply: ${a} × ${b}`,
+      (a,b) => `${b} added ${a} times equals?`,
+    ];
+    const mulWordD = [
+      (a,b) => `${a} students each have ${b} pencils. How many pencils in all?`,
+      (a,b) => `A carton holds ${b} eggs. How many eggs in ${a} cartons?`,
+      (a,b) => `${a} shelves each hold ${b} books. Total books?`,
+      (a,b) => `${a} bags each contain ${b} marbles. Total marbles?`,
+    ];
+    for (let a=1; a<=10; a++) for (let b=1; b<=10; b++) {
+      add("Multiplication Tables","easy", pick(mulTTpls, a+b)(a,b), "input", null, a*b,
+        `Skip count by ${b}, ${a} times.`, `${a*b}.`);
+      add("Multiplication Tables","medium", `? × ${b} = ${a*b}`, "input", null, a,
+        `${b} × ? = ${a*b}.`, `${a}.`);
+      if (a > 1 && b > 1 && pool.filter(q=>q.theme==="Multiplication Tables"&&q.type==="multiple").length < 80)
+        add("Multiplication Tables","medium", pick(mulWordD, a+b)(a,b), "multiple",
+          shuffle([...new Set([a*b, a*b+b, Math.max(1,a*b-b), a*b+a])].map(String)),
+          String(a*b), `${a} × ${b} = ?`, `${a*b}.`);
     }
-    for (let l=2;l<=15;l++) for (let w=2;w<=10;w++) {
-      if (pool.filter(q=>q.theme==="Area and Perimeter").length < 400) {
-        add("Area and Perimeter","easy",`Rectangle ${l} × ${w}. Find the area.`,"input",null,l*w,"A = L × W.",`${l*w} sq units.`);
-        add("Area and Perimeter","easy",`Rectangle ${l} × ${w}. Find the perimeter.`,"input",null,2*(l+w),"P = 2(L+W).",`2(${l}+${w}) = ${2*(l+w)}.`);
+
+    const divTpls = [
+      (a,b) => `${a*b} ÷ ${b} = ?`,
+      (a,b) => `Divide ${a*b} by ${b}.`,
+      (a,b) => `Share ${a*b} items equally among ${b} people. Each gets?`,
+      (a,b) => `${a*b} cookies split into groups of ${b}. How many groups?`,
+      (a,b) => `${b} friends share ${a*b} stickers equally. How many each?`,
+    ];
+    for (let a=1; a<=10; a++) for (let b=2; b<=10; b++) {
+      add("Division Basics","easy", pick(divTpls, a+b)(a,b), "input", null, a,
+        `${b} × ? = ${a*b}.`, `${a*b} ÷ ${b} = ${a}.`);
+      if (pool.filter(q=>q.theme==="Division Basics"&&q.difficulty==="medium").length < 100)
+        add("Division Basics","medium", `${a*b} ÷ ? = ${a}`, "input", null, b,
+          `What number × ${a} = ${a*b}?`, `${a*b} ÷ ${b} = ${a}.`);
+    }
+
+    const areaTpls = [
+      (l,w) => `Rectangle: length ${l}, width ${w}. Find the area.`,
+      (l,w) => `A room is ${l} m long and ${w} m wide. What is the area?`,
+      (l,w) => `A garden measures ${l} by ${w} feet. Area?`,
+    ];
+    const periTpls = [
+      (l,w) => `Rectangle: length ${l}, width ${w}. Find the perimeter.`,
+      (l,w) => `A fence surrounds a ${l}×${w} yard. How much fencing is needed?`,
+      (l,w) => `A picture frame is ${l} in. by ${w} in. Perimeter?`,
+    ];
+    for (let l=2; l<=15; l++) for (let w=2; w<=10; w++) {
+      if (pool.filter(q=>q.theme==="Area and Perimeter").length < 300) {
+        add("Area and Perimeter","easy", pick(areaTpls, l+w)(l,w), "input", null, l*w,
+          "A = length × width.", `${l}×${w} = ${l*w} sq units.`);
+        add("Area and Perimeter","easy", pick(periTpls, l+w)(l,w), "input", null, 2*(l+w),
+          "P = 2×(length + width).", `2×(${l}+${w}) = ${2*(l+w)}.`);
       }
     }
-    for (let n=5;n<=995;n+=8) {
+    add("Area and Perimeter","medium","A square has side 7. Find its area.","input",null,49,"Area = side × side.","7² = 49 sq units.");
+    add("Area and Perimeter","medium","A square has side 6. Find its perimeter.","input",null,24,"P = 4 × side.","4×6 = 24 units.");
+
+    const rndDTpls = [
+      (n,r) => `Round ${n} to the nearest 10.`,
+      (n,r) => `What is ${n} rounded to the nearest 10?`,
+    ];
+    for (let n=5; n<=995; n+=8) {
       const r10=Math.round(n/10)*10, r100=Math.round(n/100)*100;
-      add("Rounding","easy",`Round ${n} to nearest 10.`,"input",null,r10,`Ones digit (${n%10}) ${n%10>=5?"≥5→up":"<5→down"}.`,`${r10}.`);
-      add("Rounding","medium",`Round ${n} to nearest 100.`,"input",null,r100,`Tens digit (${Math.floor(n/10)%10}) ${Math.floor(n/10)%10>=5?"≥5→up":"<5→down"}.`,`${r100}.`);
+      if (pool.filter(q=>q.theme==="Rounding").length < 150) {
+        add("Rounding","easy", pick(rndDTpls, n)(n, r10), "input", null, r10,
+          `Ones digit (${n%10}): ${n%10>=5?"≥5 → round up":"<5 → round down"}.`, `${r10}.`);
+        add("Rounding","medium", `Round ${n} to the nearest 100.`, "input", null, r100,
+          `Tens digit (${Math.floor(n/10)%10}): ${Math.floor(n/10)%10>=5?"≥5 → round up":"<5 → round down"}.`, `${r100}.`);
+      }
     }
-    for (let d=2;d<=12;d++) for (let num=1;num<d;num++) {
+
+    for (let d=2; d<=12; d++) for (let num=1; num<d; num++) {
       const g=gcd(num,d);
-      add("Fractions","easy",`Write a fraction: ${num} shaded out of ${d} total.`,"input",null,`${num}/${d}`,"Shaded ÷ Total.",`${num}/${d}.`);
-      if (g>1) add("Equivalent Fractions","medium",`Simplify ${num}/${d}.`,"input",null,`${num/g}/${d/g}`,`GCF(${num},${d}) = ${g}. Divide both.`,`${num/g}/${d/g}.`);
-      add("Equivalent Fractions","easy",`Is ${num}/${d} = ${num*2}/${d*2}?`,"multiple",["Yes","No"],"Yes","Multiply both by 2.",`${num}/${d} = ${num*2}/${d*2}. Yes.`);
+      add("Fractions","easy", `Write a fraction: ${num} shaded out of ${d} total.`, "input", null, `${num}/${d}`,
+        "Shaded ÷ Total.", `${num}/${d}.`);
+      if (g>1) add("Equivalent Fractions","medium", `Simplify ${num}/${d}.`, "input", null, `${num/g}/${d/g}`,
+        `GCF(${num},${d}) = ${g}. Divide numerator and denominator by ${g}.`, `${num/g}/${d/g}.`);
+      add("Equivalent Fractions","easy", `Is ${num}/${d} equal to ${num*2}/${d*2}?`, "multiple", ["Yes","No"], "Yes",
+        "Multiply top and bottom by 2 — same value.", `${num}/${d} = ${num*2}/${d*2}. Yes.`);
+      if (num < d-1)
+        add("Fractions","medium", `Which is bigger: ${num}/${d} or ${num+1}/${d}?`, "multiple",
+          [`${num}/${d}`, `${num+1}/${d}`, "They are equal"], `${num+1}/${d}`,
+          "Same denominator: larger numerator = larger fraction.", `${num+1}/${d} > ${num}/${d}.`);
     }
   }
 
   if (level === "E") {
-    for (let a=10;a<=99;a+=11) for (let b=2;b<=9;b++) {
-      add("Multi-Digit Multiplication","medium",`${a} × ${b} = ?`,"input",null,a*b,"Multiply ones, then tens. Carry if needed.",`${a*b}.`);
+    const mulMDTpls = [
+      (a,b) => `${a} × ${b} = ?`,
+      (a,b) => `Multiply ${a} by ${b}.`,
+      (a,b) => `${a} boxes each hold ${b} items. Total items?`,
+      (a,b) => `${b} packs of ${a} cards. How many cards?`,
+    ];
+    for (let a=10; a<=99; a+=11) for (let b=2; b<=9; b++) {
+      if (pool.filter(q=>q.theme==="Multi-Digit Multiplication").length < 200)
+        add("Multi-Digit Multiplication","medium", pick(mulMDTpls, a+b)(a,b), "input", null, a*b,
+          "Multiply ones digit first, then tens. Carry if needed.", `${a*b}.`);
     }
-    for (let a=100;a<=999;a+=37) for (let b=2;b<=9;b++) {
-      if (pool.filter(q=>q.theme==="Multi-Digit Multiplication").length < 300)
-        add("Multi-Digit Multiplication","hard",`${a} × ${b} = ?`,"input",null,a*b,"Work column by column.",`${a*b}.`);
+    for (let a=100; a<=999; a+=37) for (let b=2; b<=9; b++) {
+      if (pool.filter(q=>q.theme==="Multi-Digit Multiplication").length < 350)
+        add("Multi-Digit Multiplication","hard", `${a} × ${b} = ?`, "input", null, a*b,
+          "Work column by column from right to left.", `${a*b}.`);
     }
-    for (let divisor=2;divisor<=9;divisor++) for (let quotient=10;quotient<=99;quotient+=7) {
-      add("Long Division","medium",`${divisor*quotient} ÷ ${divisor} = ?`,"input",null,quotient,`${divisor} × ? = ${divisor*quotient}.`,`${quotient}.`);
+
+    const ldTpls = [
+      (d,q) => `${d*q} ÷ ${d} = ?`,
+      (d,q) => `Divide ${d*q} by ${d}.`,
+      (d,q) => `${d*q} students split into groups of ${d}. How many groups?`,
+      (d,q) => `${d} friends share ${d*q} marbles equally. How many each?`,
+    ];
+    for (let divisor=2; divisor<=9; divisor++) for (let quotient=10; quotient<=99; quotient+=7) {
+      if (pool.filter(q=>q.theme==="Long Division").length < 200)
+        add("Long Division","medium", pick(ldTpls, divisor+quotient)(divisor,quotient), "input", null, quotient,
+          `${divisor} × ? = ${divisor*quotient}.`, `${quotient}.`);
     }
-    for (let n=2;n<=60;n++) {
+
+    const primeTpls = [
+      (n,ip) => `Is ${n} prime or composite?`,
+      (n,ip) => `Does ${n} have factors other than 1 and itself?`,
+      (n,ip) => `Can ${n} be divided evenly by any number besides 1 and ${n}?`,
+    ];
+    for (let n=2; n<=60; n++) {
       const isPrime = n>1 && !Array.from({length:n-2},(_,i)=>i+2).some(f=>n%f===0);
-      add("Prime and Composite","easy",`Is ${n} prime or composite?`,"multiple",["Prime","Composite"],isPrime?"Prime":"Composite",
-        isPrime?`Factors: only 1 and ${n}.`:`Can be divided by numbers other than 1 and ${n}.`,isPrime?`Prime.`:`Composite.`);
+      add("Prime and Composite","easy", pick(primeTpls, n)(n, isPrime), "multiple", ["Prime","Composite"],
+        isPrime?"Prime":"Composite",
+        isPrime ? `Only divisible by 1 and ${n}.` : `Can be divided by other numbers too.`,
+        isPrime ? `${n} is prime.` : `${n} is composite.`);
     }
-    for (let d=2;d<=12;d++) for (let n=1;n<d;n++) {
-      if (pool.filter(q=>q.theme==="Fraction Operations").length < 250) {
-        add("Fraction Operations","easy",`${n}/${d} + ${n}/${d} = ?`,"input",null,`${2*n<d?`${2*n}/${d}`:gcd(2*n,d)>1?`${(2*n)/gcd(2*n,d)}/${d/gcd(2*n,d)}`:`${2*n}/${d}`}`,"Same denominator: add numerators.",`${2*n}/${d}.`);
-        if (n<d-1) add("Fraction Operations","easy",`${n+1}/${d} - ${n}/${d} = ?`,"input",null,`1/${d}`,"Same denominator: subtract numerators.",`1/${d}.`);
+    add("Prime and Composite","medium","Which of these is prime?","multiple",["9","15","17","21"],"17","Try dividing 17 by 2, 3, 5... none work.","17 has no factors besides 1 and 17.");
+    add("Prime and Composite","medium","Which of these is composite?","multiple",["2","3","5","9"],"9","9 = 3 × 3.","9 is divisible by 3.");
+    add("Prime and Composite","medium","How many primes are between 1 and 10?","multiple",["3","4","5","6"],"4","List: 2, 3, 5, 7.","4 primes: 2, 3, 5, 7.");
+    add("Prime and Composite","medium","Is 1 a prime number?","multiple",["Yes","No"],"No","Primes must have exactly 2 distinct factors.","1 has only one factor. It is neither prime nor composite.");
+
+    for (let d=2; d<=12; d++) for (let n=1; n<d; n++) {
+      if (pool.filter(q=>q.theme==="Fraction Operations").length < 200) {
+        const s2=2*n, g2=gcd(s2,d);
+        const sumStr = s2<d ? `${s2}/${d}` : s2===d ? "1" : `${s2/g2}/${d/g2}`;
+        add("Fraction Operations","easy", `${n}/${d} + ${n}/${d} = ?`, "input", null, sumStr,
+          "Same denominator: add numerators.", `${sumStr}.`);
+        if (n<d-1) add("Fraction Operations","easy", `${n+1}/${d} - ${n}/${d} = ?`, "input", null, `1/${d}`,
+          "Same denominator: subtract numerators.", `1/${d}.`);
+        add("Fraction Operations","medium", `${n}/${d} + 1/${d} = ?`, "input", null,
+          (()=>{const s=n+1,g=gcd(s,d);return s<d?`${s}/${d}`:s===d?"1":`${s/g}/${d/g}`;})(),
+          "Add the numerators.", "Simplified result.");
       }
     }
-    for (let d of [10,100]) for (let num=1;num<d;num+=d===10?1:7) {
-      if (pool.filter(q=>q.theme==="Decimals").length < 250)
-        add("Decimals","easy",`Write ${num}/${d} as a decimal.`,"input",null,(num/d).toFixed(d===10?1:2),`${d===10?"Tenths":"Hundredths"}.`,`${(num/d).toFixed(d===10?1:2)}.`);
+
+    const decTpls = [
+      (num,d) => `Write ${num}/${d} as a decimal.`,
+      (num,d) => `Convert the fraction ${num}/${d} to a decimal.`,
+      (num,d) => `${num} divided by ${d} as a decimal?`,
+    ];
+    for (let d of [10,100]) for (let num=1; num<d; num+=d===10?1:7) {
+      if (pool.filter(q=>q.theme==="Decimals").length < 200)
+        add("Decimals","easy", pick(decTpls, num)(num,d), "input", null, (num/d).toFixed(d===10?1:2),
+          `${d===10?"Tenths":"Hundredths"}: divide by ${d}.`, `${(num/d).toFixed(d===10?1:2)}.`);
     }
-    for (let a=1.0;a<=9.9;a+=0.3) {
-      const b=parseFloat((a+1.1).toFixed(1));
-      add("Decimals","medium",`${a.toFixed(1)} + ${b.toFixed(1)} = ?`,"input",null,(a+b).toFixed(1).replace(/\.0$/,""),"Line up decimal points.",`${(a+b).toFixed(1)}.`);
+    for (let a=1.0; a<=9.9; a+=0.4) {
+      const b=parseFloat((a+1.2).toFixed(1));
+      if (pool.filter(q=>q.theme==="Decimals"&&q.difficulty==="medium").length < 80)
+        add("Decimals","medium", `${a.toFixed(1)} + ${b.toFixed(1)} = ?`, "input", null,
+          (a+b).toFixed(1).replace(/\.0$/,""), "Line up the decimal points and add.", `${(a+b).toFixed(1)}.`);
     }
+    add("Decimals","medium","Which is greater: 0.6 or 0.59?","multiple",["0.6","0.59","They are equal"],"0.6","0.6 = 0.60. Compare: 0.60 > 0.59.","0.6.");
+    add("Decimals","medium","Round 4.67 to the nearest tenth.","input",null,"4.7","Hundredths digit 7 ≥ 5, round up.","4.7.");
+    add("Decimals","easy","Round 3.14 to the nearest tenth.","input",null,"3.1","Hundredths digit 4 < 5, round down.","3.1.");
+    add("Decimals","medium","Order least to greatest: 0.5, 0.25, 0.75, 0.1","input",null,"0.1, 0.25, 0.5, 0.75","Compare digits after the decimal.","0.1 < 0.25 < 0.5 < 0.75.");
   }
 
   if (level === "F") {
-    for (let a=1;a<=9;a++) for (let b=1;b<=9;b++) for (let c=1;c<=5;c++) for (let d=1;d<=5;d++) {
-      if (pool.filter(q=>q.theme==="Multiply Fractions").length < 300)
-        add("Multiply Fractions","medium",`${a}/${b} × ${c}/${d} = ?`,"input",null,
-          (()=>{const n2=a*c,d2=b*d,g=gcd(n2,d2);return g>1?`${n2/g}/${d2/g}`:`${n2}/${d2}`})(),
-          "Multiply tops, multiply bottoms. Then simplify.","Result.");
+    const mulFTpls = [
+      (a,b,c,d) => `${a}/${b} × ${c}/${d} = ?`,
+      (a,b,c,d) => `Multiply: ${a}/${b} × ${c}/${d}`,
+      (a,b,c,d) => `A recipe needs ${a}/${b} cup. You make ${c}/${d} of the recipe. How much do you need?`,
+    ];
+    for (let a=1; a<=9; a++) for (let b=1; b<=9; b++) for (let c=1; c<=5; c++) for (let d=1; d<=5; d++) {
+      if (pool.filter(q=>q.theme==="Multiply Fractions").length < 250) {
+        const n2=a*c, d2=b*d, g=gcd(n2,d2);
+        add("Multiply Fractions","medium", pick(mulFTpls, a+b+c+d)(a,b,c,d), "input", null,
+          g>1?`${n2/g}/${d2/g}`:`${n2}/${d2}`,
+          "Multiply tops together, multiply bottoms together. Then simplify.", "Simplified result.");
+      }
     }
-    for (let a=1;a<=9;a++) for (let b=1;b<=9;b++) for (let c=1;c<=5;c++) for (let d=1;d<=5;d++) {
-      if (pool.filter(q=>q.theme==="Divide Fractions").length < 300)
-        add("Divide Fractions","medium",`${a}/${b} ÷ ${c}/${d} = ?`,"input",null,
-          (()=>{const n2=a*d,d2=b*c,g=gcd(n2,d2);return g>1?`${n2/g}/${d2/g}`:`${n2}/${d2}`})(),
-          "Keep-Change-Flip: multiply by the reciprocal.","Result.");
+
+    const divFTpls = [
+      (a,b,c,d) => `${a}/${b} ÷ ${c}/${d} = ?`,
+      (a,b,c,d) => `Divide: ${a}/${b} ÷ ${c}/${d}`,
+      (a,b,c,d) => `How many ${c}/${d}s fit into ${a}/${b}?`,
+    ];
+    for (let a=1; a<=9; a++) for (let b=1; b<=9; b++) for (let c=1; c<=5; c++) for (let d=1; d<=5; d++) {
+      if (pool.filter(q=>q.theme==="Divide Fractions").length < 250) {
+        const n2=a*d, d2=b*c, g=gcd(n2,d2);
+        add("Divide Fractions","medium", pick(divFTpls, a+b+c+d)(a,b,c,d), "input", null,
+          g>1?`${n2/g}/${d2/g}`:`${n2}/${d2}`,
+          "Keep-Change-Flip: multiply by the reciprocal.", "Simplified result.");
+      }
     }
-    const pairs=[[1.5,2.3],[4.7,2.1],[8.25,3.14],[0.6,0.4],[12.5,3.5],[7.1,2.9],[5.55,1.45],[3.75,1.25]];
-    pairs.forEach(([a,b])=>{
-      add("Decimal Operations","easy",`${a} + ${b} = ?`,"input",null,parseFloat((a+b).toFixed(3)).toString(),"Line up decimal points.",`${a+b}.`);
-      add("Decimal Operations","easy",`${a} - ${b} = ?`,"input",null,parseFloat((a-b).toFixed(3)).toString(),"Line up decimal points.",`${a-b}.`);
-      add("Decimal Operations","medium",`${a} × ${b} = ?`,"input",null,parseFloat((a*b).toFixed(4)).toString(),"Count decimal places.",`${parseFloat((a*b).toFixed(4))}.`);
+
+    const pairs=[[1.5,2.3],[4.7,2.1],[8.25,3.14],[0.6,0.4],[12.5,3.5],[7.1,2.9],[5.55,1.45],[3.75,1.25],[9.0,1.5],[6.4,2.6]];
+    const decOpTpls = [
+      (a,b,op) => `${a} ${op} ${b} = ?`,
+      (a,b,op) => op==="+"?`A rope is ${a}m. Another is ${b}m. Total length?`:op==="-"?`You have $${a}. You spend $${b}. How much is left?`:`A ${a} kg bag costs $${b} per kg. Total cost?`,
+    ];
+    pairs.forEach(([a,b],i) => {
+      add("Decimal Operations","easy", pick(decOpTpls, i)(a,b,"+"), "input", null, parseFloat((a+b).toFixed(3)).toString(), "Line up decimal points and add.", `${parseFloat((a+b).toFixed(3))}.`);
+      add("Decimal Operations","easy", pick(decOpTpls, i+1)(a,b,"-"), "input", null, parseFloat((a-b).toFixed(3)).toString(), "Line up decimal points and subtract.", `${parseFloat((a-b).toFixed(3))}.`);
+      add("Decimal Operations","medium", `${a} × ${b} = ?`, "input", null, parseFloat((a*b).toFixed(4)).toString(), "Multiply as whole numbers, then count decimal places.", `${parseFloat((a*b).toFixed(4))}.`);
     });
-    for (let exp=1;exp<=6;exp++) for (let m=1;m<=9;m++) {
-      add("Powers of 10","easy",`${m} × 10^${exp} = ?`,"input",null,m*Math.pow(10,exp),`Move decimal ${exp} places right.`,`${m*Math.pow(10,exp)}.`);
-      add("Powers of 10","medium",`${m*Math.pow(10,exp)} ÷ 10^${exp} = ?`,"input",null,m,`Move decimal ${exp} places left.`,`${m}.`);
+
+    const pow10Tpls = [
+      (m,e) => `${m} × 10^${e} = ?`,
+      (m,e) => `Multiply ${m} by 10 to the power of ${e}.`,
+      (m,e) => `Move the decimal ${e} place${e>1?"s":""} right from ${m}.`,
+    ];
+    for (let exp=1; exp<=6; exp++) for (let m=1; m<=9; m++) {
+      if (pool.filter(q=>q.theme==="Powers of 10").length < 100) {
+        add("Powers of 10","easy", pick(pow10Tpls, exp+m)(m,exp), "input", null, m*Math.pow(10,exp),
+          `Move decimal ${exp} place${exp>1?"s":""} right.`, `${m*Math.pow(10,exp)}.`);
+        add("Powers of 10","medium", `${m*Math.pow(10,exp)} ÷ 10^${exp} = ?`, "input", null, m,
+          `Move decimal ${exp} place${exp>1?"s":""} left.`, `${m}.`);
+      }
     }
-    const opsQ=[["2+3×4",14],["(5+3)×2",16],["20÷4+3×2",11],["3+4²÷2",11],["10-(2+3)",5],["(8-3)×4",20],["6+2×(4-1)",12],["18÷(2+1)+5",11],["4²-3×2",10],["5×(2+3)-4",21]];
-    opsQ.forEach(([expr,ans])=>{
-      for (let i=0;i<5;i++) add("Order of Operations","medium",`${expr} = ?`,"input",null,ans,"PEMDAS: P→E→M/D→A/S.",`${ans}.`);
+
+    const opsQ=[
+      ["2+3×4",14,"Multiply before adding: 2+(3×4)=2+12."],
+      ["(5+3)×2",16,"Parentheses first: 8×2."],
+      ["20÷4+3×2",11,"Divide and multiply first: 5+6."],
+      ["10-(2+3)",5,"Parentheses first: 10-5."],
+      ["(8-3)×4",20,"Parentheses first: 5×4."],
+      ["6+2×(4-1)",12,"Parentheses first: 6+2×3=6+6."],
+      ["18÷(2+1)+5",11,"Parentheses first: 18÷3+5=6+5."],
+      ["4²-3×2",10,"Exponents first: 16-6."],
+      ["5×(2+3)-4",21,"Parentheses first: 5×5-4=25-4."],
+      ["3²+4÷2",11,"Exponents first: 9+2."],
+      ["(12-4)÷(2+2)",2,"Both parentheses: 8÷4."],
+      ["7+3×(5-2)",16,"Parentheses first: 7+3×3=7+9."],
+    ];
+    opsQ.forEach(([expr,ans,exp]) => {
+      add("Order of Operations","medium", `${expr} = ?`, "input", null, ans, "PEMDAS: Parentheses → Exponents → Multiply/Divide → Add/Subtract.", exp);
     });
-    for (let l=1;l<=8;l++) for (let w=1;w<=8;w++) for (let h=1;h<=6;h++) {
-      if (pool.filter(q=>q.theme==="Volume").length < 200)
-        add("Volume","medium",`Rectangular box: ${l}×${w}×${h}. Volume?`,"input",null,l*w*h,"V = L×W×H.",`${l*w*h} cubic units.`);
+
+    const volTpls = [
+      (l,w,h) => `Rectangular box: ${l}×${w}×${h}. Find the volume.`,
+      (l,w,h) => `A fish tank: length ${l}, width ${w}, height ${h}. Volume?`,
+      (l,w,h) => `A box holds items in a ${l}×${w}×${h} space. How many cubic units?`,
+    ];
+    for (let l=1; l<=8; l++) for (let w=1; w<=8; w++) for (let h=1; h<=6; h++) {
+      if (pool.filter(q=>q.theme==="Volume").length < 150)
+        add("Volume","medium", pick(volTpls, l+w+h)(l,w,h), "input", null, l*w*h,
+          "V = length × width × height.", `${l*w*h} cubic units.`);
     }
-    for (let n=-10;n<=10;n++) {
-      add("Negative Numbers","easy",`Which is greater: ${n} or ${n+1}?`,"multiple",[String(n),String(n+1)],String(n+1),"Numbers increase to the right on a number line.",`${n+1} > ${n}.`);
-      if (n!==0) add("Negative Numbers","easy",`What is the opposite of ${n}?`,"input",null,-n,`The opposite has the same distance from 0 but on the other side.`,`Opposite of ${n} is ${-n}.`);
+
+    const negTpls = [
+      (n) => `Which is greater: ${n} or ${n+1}?`,
+      (n) => `On a number line, which is farther right: ${n} or ${n+1}?`,
+    ];
+    for (let n=-10; n<=10; n++) {
+      add("Negative Numbers","easy", pick(negTpls, n+11)(n), "multiple", [String(n), String(n+1)], String(n+1),
+        "Numbers increase going right on a number line.", `${n+1} > ${n}.`);
+      if (n!==0) add("Negative Numbers","easy", `What is the opposite of ${n}?`, "input", null, -n,
+        "Same distance from 0, opposite side.", `Opposite of ${n} is ${-n}.`);
     }
+    add("Negative Numbers","medium","The temperature is -5°C. It drops 3 more degrees. New temperature?","input",null,-8,"−5 + (−3) = ?","−8°C.");
+    add("Negative Numbers","medium","What is -4 + 7?","input",null,3,"Start at -4, move 7 right on the number line.","3.");
+    add("Negative Numbers","medium","What is 3 - 8?","input",null,-5,"3 - 8 goes into negatives.","−5.");
   }
 
   if (level === "G") {
-    for (let a=1;a<=20;a++) for (let b=1;b<=20;b++) {
-      if (pool.filter(q=>q.theme==="Ratios and Rates").length < 300) {
+    const ratioTpls = [
+      (a,b) => `Simplify the ratio ${a}:${b}.`,
+      (a,b) => `A recipe uses ${a} cups of flour and ${b} cups of sugar. Simplest form of flour:sugar?`,
+      (a,b) => `For every ${a} boys there are ${b} girls. Simplest form of the ratio?`,
+      (a,b) => `Reduce the ratio ${a} to ${b}.`,
+    ];
+    for (let a=1; a<=20; a++) for (let b=1; b<=20; b++) {
+      if (pool.filter(q=>q.theme==="Ratios and Rates").length < 200) {
         const g=gcd(a,b);
-        add("Ratios and Rates","easy",`Simplify the ratio ${a}:${b}.`,"input",null,`${a/g}:${b/g}`,`GCF(${a},${b})=${g}. Divide both.`,`${a/g}:${b/g}.`);
+        add("Ratios and Rates","easy", pick(ratioTpls, a+b)(a,b), "input", null, `${a/g}:${b/g}`,
+          `GCF(${a},${b}) = ${g}. Divide both sides.`, `${a/g}:${b/g}.`);
       }
     }
-    for (let dist of [60,90,120,150,200,250]) for (let time of [2,3,4,5]) {
-      add("Ratios and Rates","medium",`${dist} miles in ${time} hours. Speed in mph?`,"input",null,dist/time,`Speed = distance ÷ time.`,`${dist/time} mph.`);
+    const rateTpls = [
+      (d,t) => `A car travels ${d} miles in ${t} hours. Speed in mph?`,
+      (d,t) => `${d} km in ${t} hours. Average speed?`,
+      (d,t) => `A runner covers ${d} meters in ${t} seconds. Speed?`,
+    ];
+    for (let dist of [60,90,120,150,200,250,300]) for (let time of [2,3,4,5,6]) {
+      if (pool.filter(q=>q.theme==="Ratios and Rates"&&q.difficulty==="medium").length < 80)
+        add("Ratios and Rates","medium", pick(rateTpls, dist+time)(dist,time), "input", null, dist/time,
+          "Speed = distance ÷ time.", `${dist/time} units per time.`);
     }
-    for (let p=5;p<=95;p+=5) for (let w of [20,40,50,60,80,100,120,200]) {
-      if (pool.filter(q=>q.theme==="Percent").length < 400) {
+    add("Ratios and Rates","medium","If 4 apples cost $2, how much do 10 apples cost?","input",null,5,"Unit rate: $2÷4=$0.50 per apple. 10×$0.50=?","$5.");
+    add("Ratios and Rates","medium","A car uses 2 gallons per 50 miles. Gallons for 150 miles?","input",null,6,"50 miles = 2 gal → 150 miles = 6 gal.","6 gallons.");
+
+    const pctTpls = [
+      (p,w) => `${p}% of ${w} = ?`,
+      (p,w) => `Find ${p}% of ${w}.`,
+      (p,w) => `A store discounts a $${w} item by ${p}%. How much is the discount?`,
+      (p,w) => `${p}% of ${w} students passed the test. How many students?`,
+    ];
+    for (let p=5; p<=95; p+=5) for (let w of [20,40,50,60,80,100,120,200]) {
+      if (pool.filter(q=>q.theme==="Percent").length < 300) {
         const part=Math.round(p/100*w);
-        add("Percent","easy",`${p}% of ${w} = ?`,"input",null,part,`${p}% = ${p/100}. Multiply by ${w}.`,`${part}.`);
+        add("Percent","easy", pick(pctTpls, p+w)(p,w), "input", null, part,
+          `${p}% = ${p/100}. Multiply: ${p/100} × ${w}.`, `${part}.`);
       }
     }
-    for (let part=5;part<=60;part+=5) for (let whole of [20,25,50,60,80,100]) {
-      if (part<whole && pool.filter(q=>q.theme==="Percent").length < 500)
-        add("Percent","medium",`${part} is what percent of ${whole}?`,"input",null,Math.round(part/whole*100),`(${part}÷${whole})×100.`,`${Math.round(part/whole*100)}%.`);
+    for (let part=5; part<=60; part+=5) for (let whole of [20,25,50,60,80,100]) {
+      if (part<whole && pool.filter(q=>q.theme==="Percent"&&q.difficulty==="medium").length < 120)
+        add("Percent","medium", `${part} is what percent of ${whole}?`, "input", null, Math.round(part/whole*100),
+          `(${part} ÷ ${whole}) × 100.`, `${Math.round(part/whole*100)}%.`);
     }
-    for (let x=-10;x<=10;x++) add("Absolute Value","easy",`|${x}| = ?`,"input",null,Math.abs(x),"Distance from 0.",`${Math.abs(x)}.`);
-    for (let m=1;m<=10;m++) for (let b=1;b<=20;b++) {
-      const x=Math.floor(Math.random()*8)+1, rhs=m*x+b;
-      if (pool.filter(q=>q.theme==="One-Step Equations").length < 200) {
-        add("One-Step Equations","medium",`x + ${b} = ${x+b}. Solve.`,"input",null,x,`Subtract ${b} from both sides.`,`x = ${x}.`);
-        add("One-Step Equations","medium",`${m}x = ${m*x}. Solve.`,"input",null,x,`Divide both sides by ${m}.`,`x = ${x}.`);
+    add("Percent","medium","A jacket costs $80. It's 25% off. Sale price?","input",null,60,"Discount = 25% × $80 = $20. Price = $80 - $20.","$60.");
+    add("Percent","medium","You answer 17 of 20 questions correctly. Percent correct?","input",null,85,"(17÷20)×100.","85%.");
+    add("Percent","medium","Sales tax is 8% on a $50 purchase. Total cost?","input",null,54,"Tax = 8% × $50 = $4. Total = $50 + $4.","$54.");
+
+    for (let x=-10; x<=10; x++) {
+      add("Absolute Value","easy", `|${x}| = ?`, "input", null, Math.abs(x),
+        "Absolute value = distance from 0 on the number line.", `|${x}| = ${Math.abs(x)}.`);
+    }
+    add("Absolute Value","medium","Which is greater: |-8| or |5|?","multiple",["|−8|","|5|","They are equal"],"|−8|","|-8| = 8, |5| = 5.","|-8| = 8 > 5.");
+    add("Absolute Value","medium","Solve: |x| = 6","input",null,"6 or -6","Both 6 and -6 are 6 units from 0.","x = 6 or x = -6.");
+
+    const eq1Tpls = [
+      (b,x) => `x + ${b} = ${x+b}. Solve for x.`,
+      (b,x) => `A number plus ${b} equals ${x+b}. Find the number.`,
+      (m,x) => `${m}x = ${m*x}. Solve.`,
+      (b,x) => `x - ${b} = ${x-b}. Solve.`,
+    ];
+    for (let m=1; m<=10; m++) for (let b=1; b<=20; b++) {
+      const x=Math.floor(Math.random()*8)+1;
+      if (pool.filter(q=>q.theme==="One-Step Equations").length < 150) {
+        add("One-Step Equations","medium", pick(eq1Tpls, m+b)(b,x), "input", null, x,
+          `Subtract ${b} from both sides.`, `x = ${x}.`);
+        add("One-Step Equations","medium", `${m}x = ${m*x}. Solve.`, "input", null, x,
+          `Divide both sides by ${m}.`, `x = ${x}.`);
+        add("One-Step Equations","medium", `x - ${b} = ${x-b}. Solve.`, "input", null, x,
+          `Add ${b} to both sides.`, `x = ${x}.`);
       }
     }
-    for (let i=0;i<50;i++) {
+
+    const statTpls = [
+      (data) => `Quiz scores: ${data.join(", ")}. Find the mean.`,
+      (data) => `Heights (cm): ${data.join(", ")}. Mean?`,
+      (data) => `Temperatures: ${data.join(", ")}°. Mean temperature?`,
+      (data) => `Data set: ${data.join(", ")}. Find the average.`,
+    ];
+    for (let i=0; i<30; i++) {
       const data=Array.from({length:5},()=>Math.floor(Math.random()*20)+1);
       const sorted=[...data].sort((a,b)=>a-b);
       const sum=data.reduce((s,v)=>s+v,0);
-      add("Statistics","medium",`Mean of: ${data.join(", ")}`,"input",null,(sum/5).toFixed(1),`Add all, divide by ${data.length}.`,`${sum}÷5=${(sum/5).toFixed(1)}.`);
-      add("Statistics","medium",`Median of: ${data.join(", ")}`,"input",null,sorted[2],"Sort, find middle value.",`Sorted: ${sorted.join(", ")}. Middle = ${sorted[2]}.`);
-      add("Statistics","easy",`Range of: ${data.join(", ")}`,"input",null,sorted[4]-sorted[0],"Max − Min.",`${sorted[4]}−${sorted[0]}=${sorted[4]-sorted[0]}.`);
+      add("Statistics","medium", pick(statTpls, i)(data), "input", null, (sum/5).toFixed(1),
+        `Sum all values (${sum}), divide by ${data.length}.`, `${sum}÷5=${(sum/5).toFixed(1)}.`);
+      add("Statistics","medium", `Median of: ${data.join(", ")}`, "input", null, sorted[2],
+        "Sort first, then pick the middle value.", `Sorted: ${sorted.join(", ")}. Middle = ${sorted[2]}.`);
+      add("Statistics","easy", `Range of: ${data.join(", ")}`, "input", null, sorted[4]-sorted[0],
+        "Range = max − min.", `${sorted[4]} − ${sorted[0]} = ${sorted[4]-sorted[0]}.`);
     }
+    add("Statistics","medium","The mean of 4 numbers is 10. Three are 8, 12, 10. What is the 4th?","input",null,10,"Sum = 4×10 = 40. 40 - 8 - 12 - 10 = ?","10.");
+    add("Statistics","medium","Data: 3, 7, 7, 9, 14. What is the mode?","input",null,7,"Mode = value that appears most often.","7 appears twice.");
   }
 
   if (level === "H") {
-    for (let k=1;k<=10;k++) for (let x=1;x<=10;x++) {
+    const propTpls = [
+      (k,x) => `y = kx. If k=${k} and x=${x}, find y.`,
+      (k,x) => `A car travels at ${k} mph. How far in ${x} hours?`,
+      (k,x) => `Constant of proportionality is ${k}. When x=${x}, y=?`,
+    ];
+    for (let k=1; k<=10; k++) for (let x=1; x<=10; x++) {
       const y=k*x;
-      add("Proportional Relationships","easy",`y = kx. If k=${k} and x=${x}, find y.`,"input",null,y,`y = ${k} × ${x}.`,`y = ${y}.`);
-      if (x<10) add("Proportional Relationships","medium",`y/x is constant. y=${y}, x=${x}. Find y when x=${x+1}.`,"input",null,k*(x+1),`k = ${y}/${x} = ${k}. y=${k}×${x+1}.`,`${k*(x+1)}.`);
+      if (pool.filter(q=>q.theme==="Proportional Relationships").length < 150) {
+        add("Proportional Relationships","easy", pick(propTpls, k+x)(k,x), "input", null, y,
+          `y = ${k} × ${x}.`, `y = ${y}.`);
+        if (x<10) add("Proportional Relationships","medium",
+          `y/x is constant. y=${y} when x=${x}. Find y when x=${x+1}.`, "input", null, k*(x+1),
+          `k = ${y}/${x} = ${k}. y = ${k} × ${x+1}.`, `${k*(x+1)}.`);
+      }
     }
-    for (let orig=10;orig<=200;orig+=10) for (let chgPct=10;chgPct<=50;chgPct+=10) {
+
+    const pctChgTpls = [
+      (orig,pct) => `A price increases ${pct}% from $${orig}. New price?`,
+      (orig,pct) => `A population of ${orig} grows by ${pct}%. New population?`,
+      (orig,pct) => `$${orig} earns ${pct}% interest. New total?`,
+    ];
+    for (let orig=10; orig<=200; orig+=10) for (let chgPct=10; chgPct<=50; chgPct+=10) {
       const newV=Math.round(orig*(1+chgPct/100));
       const decV=Math.round(orig*(1-chgPct/100));
-      if (pool.filter(q=>q.theme==="Percent Change").length < 200) {
-        add("Percent Change","medium",`Price increases ${chgPct}% from $${orig}. New price?`,"input",null,newV,`${orig}×${1+chgPct/100}.`,`$${newV}.`);
-        add("Percent Change","medium",`$${orig} → $${decV}. Percent decrease?`,"input",null,chgPct,`(${orig}-${decV})/${orig}×100.`,`${chgPct}%.`);
+      if (pool.filter(q=>q.theme==="Percent Change").length < 150) {
+        add("Percent Change","medium", pick(pctChgTpls, orig+chgPct)(orig,chgPct), "input", null, newV,
+          `New = original × (1 + ${chgPct/100}).`, `$${newV}.`);
+        add("Percent Change","medium", `$${orig} decreases to $${decV}. Percent decrease?`, "input", null, chgPct,
+          `(${orig} − ${decV}) ÷ ${orig} × 100.`, `${chgPct}%.`);
       }
     }
-    for (let a=-10;a<=10;a++) for (let b=-10;b<=10;b++) {
-      if (pool.filter(q=>q.theme==="Rational Numbers").length < 300) {
-        add("Rational Numbers","easy",`${a} + (${b}) = ?`,"input",null,a+b,"Use number line: right=+, left=−.",`${a+b}.`);
-        add("Rational Numbers","easy",`${a} × (${b}) = ?`,"input",null,a*b,"Same signs→positive. Diff signs→negative.",`${a*b}.`);
+    add("Percent Change","medium","A shirt was $40, now $30. Percent decrease?","input",null,25,"(40-30)/40 × 100.","25%.");
+    add("Percent Change","medium","A stock rises from $50 to $65. Percent increase?","input",null,30,"(65-50)/50 × 100.","30%.");
+
+    const ratNumTpls = [
+      (a,b) => `${a} + (${b}) = ?`,
+      (a,b) => `What is ${a} + ${b}?`,
+      (a,b) => b<0 ? `Temperature is ${a}°. It drops ${Math.abs(b)}°. New temp?` : `Start at ${a} on a number line, move ${b} right. Result?`,
+    ];
+    for (let a=-10; a<=10; a++) for (let b=-10; b<=10; b++) {
+      if (pool.filter(q=>q.theme==="Rational Numbers").length < 200) {
+        add("Rational Numbers","easy", pick(ratNumTpls, a+b+20)(a,b), "input", null, a+b,
+          "Use number line: right=+, left=−.", `${a+b}.`);
+        add("Rational Numbers","easy", `${a} × (${b}) = ?`, "input", null, a*b,
+          "Same signs → positive. Different signs → negative.", `${a*b}.`);
       }
     }
-    for (let m=1;m<=8;m++) for (let b2=1;b2<=15;b2++) {
+    add("Rational Numbers","medium","(-3) × (-4) = ?","input",null,12,"Negative × Negative = Positive.","12.");
+    add("Rational Numbers","medium","-18 ÷ 3 = ?","input",null,-6,"Negative ÷ Positive = Negative.","-6.");
+    add("Rational Numbers","medium","-2/3 + 1/3 = ?","input",null,"-1/3","Same denominator: −2+1 = −1.","-1/3.");
+
+    for (let m=1; m<=8; m++) for (let b2=1; b2<=15; b2++) {
       const x=Math.floor(Math.random()*9)+1;
-      if (pool.filter(q=>q.theme==="Two-Step Equations").length < 300) {
-        add("Two-Step Equations","medium",`${m}x + ${b2} = ${m*x+b2}. Solve.`,"input",null,x,`Subtract ${b2}: ${m}x=${m*x}. Divide by ${m}.`,`x = ${x}.`);
-        add("Two-Step Equations","medium",`${m}x - ${b2} = ${m*x-b2}. Solve.`,"input",null,x,`Add ${b2}: ${m}x=${m*x}. Divide by ${m}.`,`x = ${x}.`);
+      if (pool.filter(q=>q.theme==="Two-Step Equations").length < 200) {
+        add("Two-Step Equations","medium", `${m}x + ${b2} = ${m*x+b2}. Solve.`, "input", null, x,
+          `Subtract ${b2}: ${m}x=${m*x}. Divide by ${m}.`, `x = ${x}.`);
+        add("Two-Step Equations","medium", `${m}x - ${b2} = ${m*x-b2}. Solve.`, "input", null, x,
+          `Add ${b2}: ${m}x=${m*x}. Divide by ${m}.`, `x = ${x}.`);
+        add("Two-Step Equations","hard", `A number doubled and then reduced by ${b2} gives ${2*x-b2}. Find the number.`, "input", null, x,
+          `2x - ${b2} = ${2*x-b2}. Add ${b2}, then divide by 2.`, `x = ${x}.`);
       }
     }
-    for (let r=1;r<=20;r++) {
-      add("Circles","easy",`Circle, radius=${r}. Circumference? (π≈3.14)`,"input",null,(2*3.14*r).toFixed(2),"C = 2πr.",`${(2*3.14*r).toFixed(2)}.`);
-      add("Circles","easy",`Circle, radius=${r}. Area? (π≈3.14)`,"input",null,(3.14*r*r).toFixed(2),"A = πr².",`${(3.14*r*r).toFixed(2)}.`);
+
+    const circTpls = [
+      (r) => `Circle, radius=${r}. Find the circumference. (π≈3.14)`,
+      (r) => `A circular track has radius ${r} m. One lap distance? (π≈3.14)`,
+    ];
+    const circATpls = [
+      (r) => `Circle, radius=${r}. Find the area. (π≈3.14)`,
+      (r) => `A circular garden: radius=${r} m. Area? (π≈3.14)`,
+    ];
+    for (let r=1; r<=20; r++) {
+      add("Circles","easy", pick(circTpls, r)(r), "input", null, (2*3.14*r).toFixed(2), "C = 2πr.", `2×3.14×${r}=${(2*3.14*r).toFixed(2)}.`);
+      add("Circles","easy", pick(circATpls, r)(r), "input", null, (3.14*r*r).toFixed(2), "A = πr².", `3.14×${r}²=${(3.14*r*r).toFixed(2)}.`);
     }
-    for (let i=0;i<50;i++) {
+    add("Circles","medium","A circle has diameter 10. What is its radius?","input",null,5,"radius = diameter ÷ 2.","5.");
+    add("Circles","medium","A circle has circumference ≈ 31.4. Radius? (π≈3.14)","input",null,5,"r = C ÷ (2π) = 31.4 ÷ 6.28.","5.");
+
+    for (let i=0; i<30; i++) {
       const outcomes=[4,6,8,10,12];
       const total=outcomes[i%outcomes.length];
-      const fav=Math.floor(Math.random()*(total-1))+1;
+      const fav=(i%total)+1;
       const g=gcd(fav,total);
-      add("Probability","medium",`A bag has ${total} marbles; ${fav} are red. P(red)?`,"input",null,`${fav/g}/${total/g}`,`P = favorable/total.`,`${fav}/${total} = ${fav/g}/${total/g}.`);
+      add("Probability","medium", `A bag has ${total} marbles; ${fav} are red. P(red)?`, "input", null, `${fav/g}/${total/g}`,
+        "P = favorable ÷ total.", `${fav}/${total} = ${fav/g}/${total/g}.`);
     }
+    add("Probability","medium","A coin is flipped. P(heads)?","multiple",["1/2","1/4","1","0"],"1/2","1 outcome of 2 total.","1/2.");
+    add("Probability","medium","Roll a 6-sided die. P(even)?","multiple",["1/2","1/3","2/3","1/6"],"1/2","Even: {2,4,6} = 3 out of 6.","1/2.");
+    add("Probability","medium","P(impossible event) = ?","multiple",["0","1","1/2","0.5"],"0","An impossible event never occurs.","0.");
+    add("Probability","medium","P(certain event) = ?","multiple",["0","1","1/2","0.5"],"1","A certain event always occurs.","1.");
   }
 
   if (level === "I") {
-    for (let a=1;a<=8;a++) for (let b=1;b<=15;b++) for (let c=1;c<=5;c++) {
+    for (let a=1; a<=8; a++) for (let b=1; b<=15; b++) {
       const x=Math.floor(Math.random()*7)+2;
-      if (pool.filter(q=>q.theme==="Multi-Step Equations").length < 350) {
-        const lhs=a*x+b, rhs=c*x+lhs-c*x;
-        add("Multi-Step Equations","medium",`${a}x + ${b} = ${a*x+b}. Solve.`,"input",null,x,`Subtract ${b}, divide by ${a}.`,`x = ${x}.`);
-        add("Multi-Step Equations","hard",`${a}(x + ${b}) = ${a*(x+b)}. Solve.`,"input",null,x,`Divide by ${a}: x+${b}=${x+b}.`,`x = ${x}.`);
+      if (pool.filter(q=>q.theme==="Multi-Step Equations").length < 250) {
+        add("Multi-Step Equations","medium", `${a}x + ${b} = ${a*x+b}. Solve.`, "input", null, x,
+          `Subtract ${b}, then divide by ${a}.`, `x = ${x}.`);
+        add("Multi-Step Equations","hard", `${a}(x + ${b}) = ${a*(x+b)}. Solve.`, "input", null, x,
+          `Divide by ${a}: x + ${b} = ${x+b}. Subtract ${b}.`, `x = ${x}.`);
+        if (a > 1) add("Multi-Step Equations","hard", `${a}x + ${b} = ${a*(x-1)+b} + ${a}. Solve.`, "input", null, x,
+          "Simplify right side first, then solve.", `x = ${x}.`);
       }
     }
-    const pts=[[0,0,4,8],[1,2,3,6],[0,1,5,6],[2,3,6,8],[0,-2,3,4],[-1,0,2,3],[1,3,4,9],[0,0,3,-6]];
-    pts.forEach(([x1,y1,x2,y2])=>{
+
+    const pts=[[0,0,4,8],[1,2,3,6],[0,1,5,6],[2,3,6,8],[0,-2,3,4],[-1,0,2,3],[1,3,4,9],[0,0,3,-6],[2,5,6,13]];
+    const slopeTpls = [
+      ([x1,y1,x2,y2]) => `Find the slope between (${x1},${y1}) and (${x2},${y2}).`,
+      ([x1,y1,x2,y2]) => `A line passes through (${x1},${y1}) and (${x2},${y2}). What is its slope?`,
+      ([x1,y1,x2,y2]) => `Rise over run from (${x1},${y1}) to (${x2},${y2})?`,
+    ];
+    pts.forEach(([x1,y1,x2,y2],i) => {
       const rise=y2-y1, run=x2-x1;
       if (run!==0) {
         const g=gcd(Math.abs(rise),Math.abs(run));
-        const slopeStr = run===0 ? "undefined" : rise%run===0 ? String(rise/run) : `${rise/g}/${run/g}`;
-        add("Slope","medium",`Find slope between (${x1},${y1}) and (${x2},${y2}).`,"input",null,slopeStr,`m = (y₂−y₁)/(x₂−x₁) = (${y2}-${y1})/(${x2}-${x1}).`,`m = ${slopeStr}.`);
-        add("Slope-Intercept Form","medium",`A line passes through (${x1},${y1}) with slope ${slopeStr}. y-intercept?`,"input",null,y1-parseFloat(slopeStr)*x1,`y=mx+b → ${y1}=${slopeStr}×${x1}+b.`,`b = ${y1-parseFloat(slopeStr)*x1}.`);
+        const slopeStr = rise%run===0 ? String(rise/run) : `${rise/g}/${run/g}`;
+        add("Slope","medium", pick(slopeTpls, i)([x1,y1,x2,y2]), "input", null, slopeStr,
+          `m = (y₂−y₁)/(x₂−x₁) = (${y2}−${y1})/(${x2}−${x1}).`, `m = ${slopeStr}.`);
+        add("Slope-Intercept Form","medium",
+          `Line through (${x1},${y1}), slope = ${slopeStr}. Find y-intercept.`, "input", null,
+          y1-parseFloat(slopeStr)*x1, `y=mx+b → ${y1}=${slopeStr}×${x1}+b.`, `b = ${y1-parseFloat(slopeStr)*x1}.`);
       }
     });
-    for (let a=1;a<=8;a++) for (let b=0;b<=8;b++) {
-      const x=Math.floor(Math.random()*5)+1, y=Math.floor(Math.random()*5)+1;
-      if (pool.filter(q=>q.theme==="Systems of Equations").length < 200) {
-        add("Systems of Equations","hard",`x + y = ${x+y} and x − y = ${x-y}. Find x.`,"input",null,x,"Add the equations: 2x = ?",`x = ${x}.`);
-        add("Systems of Equations","hard",`x + y = ${x+y} and x − y = ${x-y}. Find y.`,"input",null,y,"Once you have x, substitute back.",`y = ${y}.`);
+    add("Slope","medium","A line through (0,0) and (3,6). Slope?","input",null,2,"m = (6-0)/(3-0).","m = 2.");
+    add("Slope","medium","A horizontal line has slope ___?","input",null,0,"No rise → slope = 0.","0.");
+    add("Slope","medium","A vertical line has slope that is ___?","multiple",["undefined","0","1","-1"],"undefined","Vertical lines have no defined slope.","undefined.");
+
+    for (let x=1; x<=6; x++) for (let y=1; y<=6; y++) {
+      if (pool.filter(q=>q.theme==="Systems of Equations").length < 120) {
+        add("Systems of Equations","hard", `x + y = ${x+y} and x − y = ${x-y}. Find x.`, "input", null, x,
+          "Add equations: 2x = ? Divide by 2.", `x = ${x}.`);
+        add("Systems of Equations","hard", `x + y = ${x+y} and x − y = ${x-y}. Find y.`, "input", null, y,
+          "Once you have x, substitute back.", `y = ${y}.`);
+        add("Systems of Equations","hard", `2x + y = ${2*x+y} and x + y = ${x+y}. Find x.`, "input", null, x,
+          "Subtract second eq from first: x = ?", `x = ${x}.`);
       }
     }
+
     const pythTriples=[[3,4,5],[5,12,13],[8,15,17],[6,8,10],[9,12,15],[7,24,25],[20,21,29]];
-    pythTriples.forEach(([a,b,c])=>{
-      for (let i=0;i<5;i++) {
-        add("Pythagorean Theorem","easy",`Right triangle, legs ${a} and ${b}. Hypotenuse?`,"input",null,c,`a²+b²=c²: ${a}²+${b}²=${a*a+b*b}.`,`c = ${c}.`);
-        add("Pythagorean Theorem","medium",`Hypotenuse ${c}, leg ${a}. Other leg?`,"input",null,b,`b²=c²−a²=${c*c}−${a*a}=${c*c-a*a}.`,`b = ${b}.`);
+    const pythTpls = [
+      ([a,b,c]) => `Right triangle, legs ${a} and ${b}. Hypotenuse?`,
+      ([a,b,c]) => `A ladder ${c} ft long leans against a wall. Its base is ${a} ft away. How high does it reach?`,
+    ];
+    pythTriples.forEach(([a,b,c],i) => {
+      for (let j=0; j<3; j++) {
+        add("Pythagorean Theorem","easy", pick(pythTpls, j)([a,b,c]), "input", null, j===1?b:c,
+          `a²+b²=c²: ${a}²+${b}²=${a*a+b*b}.`, j===1?`b = ${b}.`:`c = ${c}.`);
+        add("Pythagorean Theorem","medium", `Hypotenuse ${c}, one leg ${a}. Find the other leg.`, "input", null, b,
+          `b²=c²−a²=${c*c}−${a*a}=${c*c-a*a}.`, `b = ${b}.`);
       }
     });
-    for (let m=1;m<=5;m++) for (let b2=0;b2<=8;b2++) for (let x=0;x<=10;x++) {
-      if (pool.filter(q=>q.theme==="Functions").length < 150)
-        add("Functions","easy",`f(x) = ${m}x + ${b2}. Find f(${x}).`,"input",null,m*x+b2,`Substitute x = ${x}.`,`${m}(${x})+${b2} = ${m*x+b2}.`);
+    add("Pythagorean Theorem","medium","Is a triangle with sides 5, 5, 7 a right triangle?","multiple",["Yes","No"],"No","5²+5²=50 ≠ 7²=49.","No — not exactly equal.");
+
+    const funcTpls = [
+      (m,b2,x) => `f(x) = ${m}x + ${b2}. Find f(${x}).`,
+      (m,b2,x) => `If f(x) = ${m}x + ${b2}, what is f(${x})?`,
+      (m,b2,x) => `Evaluate f(${x}) where f(x) = ${m}x + ${b2}.`,
+    ];
+    for (let m=1; m<=5; m++) for (let b2=0; b2<=8; b2++) for (let x=0; x<=10; x++) {
+      if (pool.filter(q=>q.theme==="Functions").length < 120)
+        add("Functions","easy", pick(funcTpls, m+b2+x)(m,b2,x), "input", null, m*x+b2,
+          `Substitute x = ${x}.`, `${m}(${x})+${b2} = ${m*x+b2}.`);
     }
-    for (let e=1;e<=6;e++) for (let m2=1;m2<=9;m2++) {
-      if (pool.filter(q=>q.theme==="Scientific Notation").length < 100) {
+    add("Functions","medium","Is {(1,2),(2,4),(3,4)} a function?","multiple",["Yes","No"],"Yes","Each x has exactly one y value.","Yes.");
+    add("Functions","medium","Is {(1,2),(1,3),(2,4)} a function?","multiple",["Yes","No"],"No","x=1 maps to both 2 and 3.","No — one input has two outputs.");
+
+    const sciTpls = [
+      (m,e,big) => `Write ${big.toLocaleString()} in scientific notation.`,
+      (m,e,big) => `Express ${big.toLocaleString()} as m × 10ⁿ where 1 ≤ m < 10.`,
+    ];
+    for (let e=1; e<=6; e++) for (let m2=1; m2<=9; m2++) {
+      if (pool.filter(q=>q.theme==="Scientific Notation").length < 80) {
         const big=m2*Math.pow(10,e);
-        add("Scientific Notation","medium",`Write ${big.toLocaleString()} in scientific notation.`,"input",null,`${m2}×10^${e}`,`Move decimal to get 1≤m<10.`,`${m2}×10^${e}.`);
+        add("Scientific Notation","medium", pick(sciTpls, e+m2)(m2,e,big), "input", null, `${m2}×10^${e}`,
+          "Move decimal until 1 ≤ m < 10.", `${m2}×10^${e}.`);
       }
     }
+    add("Scientific Notation","medium","3.2×10^4 = ?","input",null,32000,"Move decimal 4 places right.","32,000.");
+    add("Scientific Notation","medium","0.00056 in scientific notation?","input",null,"5.6×10^-4","Move decimal right until 1≤m<10.","5.6×10^−4.");
   }
 
   if (level === "J") {
-    for (let m=1;m<=10;m++) for (let b2=1;b2<=20;b2++) {
+    const linTpls = [
+      (m,b2,x,rhs) => `${m}x + ${b2} = ${rhs}. Solve for x.`,
+      (m,b2,x,rhs) => `Solve: ${m}x + ${b2} = ${rhs}`,
+      (m,b2,x,rhs) => `A number times ${m}, plus ${b2}, equals ${rhs}. Find it.`,
+    ];
+    for (let m=1; m<=10; m++) for (let b2=1; b2<=20; b2++) {
       const x=Math.floor(Math.random()*10)+1;
-      add("Linear Equations","medium",`${m}x + ${b2} = ${m*x+b2}. Solve.`,"input",null,x,`Subtract ${b2}, divide by ${m}.`,`x = ${x}.`);
-      add("Linear Equations","medium",`${m}x − ${b2} = ${m*x-b2}. Solve.`,"input",null,x,`Add ${b2}, divide by ${m}.`,`x = ${x}.`);
-      add("Linear Equations","hard",`${m}(x + ${b2}) = ${m*(x+b2)}. Solve.`,"input",null,x,`Divide by ${m}: x+${b2}=${x+b2}.`,`x = ${x}.`);
-    }
-    for (let m=1;m<=8;m++) for (let b2=-10;b2<=10;b2++) {
-      if (pool.filter(q=>q.theme==="Graphing Lines").length < 200) {
-        add("Graphing Lines","easy",`y = ${m}x + ${b2}. Slope?`,"input",null,m,"y=mx+b: m is slope.",`Slope = ${m}.`);
-        add("Graphing Lines","easy",`y = ${m}x + ${b2}. y-intercept?`,"input",null,b2,"y=mx+b: b is y-intercept.",`y-intercept = ${b2}.`);
+      if (pool.filter(q=>q.theme==="Linear Equations").length < 250) {
+        add("Linear Equations","medium", pick(linTpls, m+b2)(m,b2,x,m*x+b2), "input", null, x,
+          `Subtract ${b2}, divide by ${m}.`, `x = ${x}.`);
+        add("Linear Equations","medium", `${m}x − ${b2} = ${m*x-b2}. Solve.`, "input", null, x,
+          `Add ${b2}, divide by ${m}.`, `x = ${x}.`);
+        add("Linear Equations","hard", `${m}(x + ${b2}) = ${m*(x+b2)}. Solve.`, "input", null, x,
+          `Divide by ${m}: x+${b2}=${x+b2}.`, `x = ${x}.`);
       }
     }
-    for (let r1=-5;r1<=5;r1++) for (let r2=-5;r2<=5;r2++) {
-      if (pool.filter(q=>q.theme==="Quadratics").length < 250 && r1<=r2) {
+
+    const graphTpls = [
+      (m,b2) => `y = ${m}x + ${b2}. What is the slope?`,
+      (m,b2) => `For the line y = ${m}x ${b2>=0?`+ ${b2}`:`− ${Math.abs(b2)}`}, identify the slope.`,
+      (m,b2) => `y = ${m}x + ${b2}. What is the y-intercept?`,
+    ];
+    for (let m=1; m<=8; m++) for (let b2=-10; b2<=10; b2++) {
+      if (pool.filter(q=>q.theme==="Graphing Lines").length < 150) {
+        add("Graphing Lines","easy", `y = ${m}x + ${b2}. Slope?`, "input", null, m,
+          "y=mx+b: m is the slope.", `Slope = ${m}.`);
+        add("Graphing Lines","easy", `y = ${m}x + ${b2}. y-intercept?`, "input", null, b2,
+          "y=mx+b: b is the y-intercept.", `y-intercept = ${b2}.`);
+        add("Graphing Lines","medium", `Write the equation of a line: slope=${m}, y-intercept=${b2}.`, "input", null, `y=${m}x+${b2}`,
+          "Use y = mx + b form.", `y=${m}x+${b2}.`);
+      }
+    }
+    add("Graphing Lines","medium","Parallel lines have ___ slopes.","multiple",["equal","different","opposite","undefined"],"equal","Parallel lines never intersect.","Equal slopes.");
+    add("Graphing Lines","medium","A line has slope 2. A perpendicular line has slope ___?","input",null,"-1/2","Perpendicular: m₁×m₂ = −1.","−1/2.");
+
+    const quadTpls = [
+      (b3,c3) => `Solve: x² ${b3>=0?`+ ${b3}`:b3}x ${c3>=0?`+ ${c3}`:c3} = 0.`,
+      (b3,c3) => `Find the roots: x² ${b3>=0?`+ ${b3}`:b3}x ${c3>=0?`+ ${c3}`:c3} = 0.`,
+      (b3,c3) => `Factor and solve: x² ${b3>=0?`+ ${b3}`:b3}x ${c3>=0?`+ ${c3}`:c3} = 0.`,
+    ];
+    for (let r1=-5; r1<=5; r1++) for (let r2=-5; r2<=5; r2++) {
+      if (pool.filter(q=>q.theme==="Quadratics").length < 200 && r1<=r2) {
         const b3=-(r1+r2), c3=r1*r2;
         if (Math.abs(b3)<=10 && Math.abs(c3)<=20)
-          add("Quadratics","hard",`Solve: x² ${b3>=0?`+ ${b3}`:b3}x ${c3>=0?`+ ${c3}`:c3} = 0.`,"input",null,
+          add("Quadratics","hard", pick(quadTpls, r1+r2+10)(b3,c3), "input", null,
             r1===r2?`${r1}`:`${Math.min(r1,r2)} and ${Math.max(r1,r2)}`,
-            `Factor: find two numbers ×to ${c3} and +to ${b3}.`,r1===r2?`x = ${r1}.`:`x = ${r1} or x = ${r2}.`);
+            `Factor: find two numbers ×to ${c3} and +to ${b3}.`,
+            r1===r2?`x = ${r1}.`:`x = ${r1} or x = ${r2}.`);
       }
     }
-    for (let a=1;a<=5;a++) for (let b2=0;b2<=8;b2++) for (let c=0;c<=5;c++) for (let d=0;d<=8;d++) {
-      if (pool.filter(q=>q.theme==="Polynomials").length < 150)
-        add("Polynomials","medium",`(${a}x + ${b2}) + (${c}x + ${d}) = ?`,"input",null,`${a+c}x + ${b2+d}`,"Combine like terms.",`${a+c}x + ${b2+d}.`);
+    add("Quadratics","hard","What is the vertex of y = x² - 4x + 3?","input",null,"(2,-1)","x = -b/(2a) = 2. y = 4-8+3.","(2, -1).");
+    add("Quadratics","medium","The parabola y = x² opens which way?","multiple",["Upward","Downward"],"Upward","Positive leading coefficient.","Upward.");
+
+    const polyTpls = [
+      (a,b2,c,d) => `(${a}x + ${b2}) + (${c}x + ${d}) = ?`,
+      (a,b2,c,d) => `Add the polynomials: (${a}x + ${b2}) + (${c}x + ${d})`,
+    ];
+    for (let a=1; a<=5; a++) for (let b2=0; b2<=8; b2++) for (let c=0; c<=5; c++) for (let d=0; d<=8; d++) {
+      if (pool.filter(q=>q.theme==="Polynomials").length < 100) {
+        add("Polynomials","medium", pick(polyTpls, a+b2+c+d)(a,b2,c,d), "input", null,
+          `${a+c}x + ${b2+d}`, "Combine like terms.", `${a+c}x + ${b2+d}.`);
+        if (a > c) add("Polynomials","medium", `(${a}x + ${b2}) - (${c}x + ${d}) = ?`, "input", null,
+          `${a-c}x + ${b2-d}`.replace("+ -","- "), "Subtract like terms.", `${a-c}x + ${b2-d}.`);
+      }
     }
-    for (let n=2;n<=5;n++) for (let r=-4;r<=4;r++) for (let s=-4;s<=4;s++) {
-      if (pool.filter(q=>q.theme==="Factoring").length < 150 && r!==s && r!==0 && s!==0) {
+
+    for (let r=-4; r<=4; r++) for (let s=-4; s<=4; s++) {
+      if (pool.filter(q=>q.theme==="Factoring").length < 100 && r!==s && r!==0 && s!==0) {
         const b3=r+s, c3=r*s;
         if (Math.abs(b3)<=8 && Math.abs(c3)<=16)
-          add("Factoring","medium",`Factor: x² ${b3>=0?`+ ${b3}x`:b3+"x"} ${c3>=0?`+ ${c3}`:c3}.`,"input",null,`(x${r>=0?"+"+r:r})(x${s>=0?"+"+s:s})`,`Find two #s ×${c3} and +${b3}.`,`(x+${r})(x+${s}).`);
+          add("Factoring","medium", `Factor: x² ${b3>=0?`+ ${b3}x`:b3+"x"} ${c3>=0?`+ ${c3}`:c3}.`, "input", null,
+            `(x${r>=0?"+"+r:r})(x${s>=0?"+"+s:s})`,
+            `Find two numbers that multiply to ${c3} and add to ${b3}.`, `(x+${r})(x+${s}).`);
       }
     }
-    for (let base=2;base<=4;base++) for (let x=0;x<=6;x++) {
-      if (pool.filter(q=>q.theme==="Exponential Functions").length < 100)
-        add("Exponential Functions","medium",`y = ${base}^x. When x = ${x}, y = ?`,"input",null,Math.pow(base,x),`${base}^${x}.`,`${Math.pow(base,x)}.`);
+
+    const expFTpls = [
+      (base,x) => `y = ${base}^x. When x = ${x}, y = ?`,
+      (base,x) => `Evaluate ${base}^${x}.`,
+      (base,x) => `A population starts at 1 and multiplies by ${base} each year. After ${x} years?`,
+    ];
+    for (let base=2; base<=4; base++) for (let x=0; x<=6; x++) {
+      if (pool.filter(q=>q.theme==="Exponential Functions").length < 80)
+        add("Exponential Functions","medium", pick(expFTpls, base+x)(base,x), "input", null, Math.pow(base,x),
+          `${base}^${x}.`, `${Math.pow(base,x)}.`);
     }
+    add("Exponential Functions","medium","Bacteria doubles every hour. Start: 100. After 3 hours?","input",null,800,"100 × 2³ = 100 × 8.","800.");
+    add("Exponential Functions","medium","A car worth $20,000 loses 10% per year. Value after 1 year?","input",null,18000,"$20,000 × 0.9.","$18,000.");
   }
 
   if (level === "K") {
-    const specAngles=[{deg:30,sin:"1/2",cos:"√3/2",tan:"√3/3"},{deg:45,sin:"√2/2",cos:"√2/2",tan:"1"},{deg:60,sin:"√3/2",cos:"1/2",tan:"√3"}];
-    specAngles.forEach(({deg,sin,cos,tan})=>{
-      for (let i=0;i<20;i++) {
-        add("Trig Ratios","medium",`sin(${deg}°) = ?`,"multiple",shuffle([sin,cos,tan,"2/3"]),sin,"SOH-CAH-TOA. Memorize special angles.",`sin(${deg}°) = ${sin}.`);
-        add("Trig Ratios","medium",`cos(${deg}°) = ?`,"multiple",shuffle([sin,cos,tan,"1/3"]),cos,"CAH: adj/hyp.",`cos(${deg}°) = ${cos}.`);
-        add("Trig Ratios","medium",`tan(${deg}°) = ?`,"multiple",shuffle([sin,cos,tan,"2"]),tan,"TOA: opp/adj.",`tan(${deg}°) = ${tan}.`);
+    const specAngles=[{deg:30,sin:"1/2",cos:"√3/2",tan:"1/√3"},{deg:45,sin:"√2/2",cos:"√2/2",tan:"1"},{deg:60,sin:"√3/2",cos:"1/2",tan:"√3"}];
+    const sinTpls = [
+      ({deg}) => `sin(${deg}°) = ?`,
+      ({deg}) => `In a right triangle, the sine of ${deg}° equals?`,
+    ];
+    const cosTpls = [
+      ({deg}) => `cos(${deg}°) = ?`,
+      ({deg}) => `What is the cosine of ${deg}°?`,
+    ];
+    const tanTpls = [
+      ({deg}) => `tan(${deg}°) = ?`,
+      ({deg}) => `The tangent of ${deg}° equals?`,
+    ];
+    specAngles.forEach((angle,ai) => {
+      const {deg,sin,cos,tan} = angle;
+      for (let i=0; i<12; i++) {
+        add("Trig Ratios","medium", pick(sinTpls, i)(angle), "multiple", shuffle([sin,cos,tan,"2/3"]), sin,
+          "SOH: sin = opposite/hypotenuse.", `sin(${deg}°) = ${sin}.`);
+        add("Trig Ratios","medium", pick(cosTpls, i)(angle), "multiple", shuffle([sin,cos,tan,"1/3"]), cos,
+          "CAH: cos = adjacent/hypotenuse.", `cos(${deg}°) = ${cos}.`);
+        add("Trig Ratios","medium", pick(tanTpls, i)(angle), "multiple", shuffle([sin,cos,tan,"2"]), tan,
+          "TOA: tan = opposite/adjacent.", `tan(${deg}°) = ${tan}.`);
       }
     });
+    add("Trig Ratios","hard","Right triangle: opposite=3, hypotenuse=5. sin(θ)?","input",null,"3/5","sin = opp/hyp.","3/5.");
+    add("Trig Ratios","hard","Right triangle: adjacent=4, hypotenuse=5. cos(θ)?","input",null,"4/5","cos = adj/hyp.","4/5.");
+    add("Trig Ratios","hard","Right triangle: opposite=3, adjacent=4. tan(θ)?","input",null,"3/4","tan = opp/adj.","3/4.");
+    add("Trig Ratios","medium","sin²(x) + cos²(x) = ?","input",null,"1","Pythagorean identity.","Always 1.");
+
     const tripleK=[[3,4,5],[5,12,13],[8,15,17],[7,24,25],[9,40,41],[20,21,29]];
-    tripleK.forEach(([a,b,c])=>{
-      for (let i=0;i<5;i++) {
-        add("Special Right Triangles","medium",`Right triangle, legs ${a} & ${b}. Hypotenuse?`,"input",null,c,`a²+b²=c²`,`c = ${c}.`);
-        add("Special Right Triangles","medium",`45-45-90 triangle, leg = ${a}. Hypotenuse?`,"input",null,`${a}√2`,"Hyp = leg × √2.",`${a}√2.`);
-        add("Special Right Triangles","medium",`30-60-90 triangle, short leg = ${a}. Hypotenuse?`,"input",null,2*a,"Hyp = 2 × short leg.",`${2*a}.`);
+    const rtTpls = [
+      ([a,b,c]) => `Right triangle, legs ${a} & ${b}. Hypotenuse?`,
+      ([a,b,c]) => `45-45-90 triangle, leg = ${a}. Hypotenuse?`,
+      ([a,b,c]) => `30-60-90 triangle, short leg = ${a}. Hypotenuse?`,
+      ([a,b,c]) => `30-60-90 triangle, short leg = ${a}. Long leg?`,
+    ];
+    tripleK.forEach(([a,b,c]) => {
+      for (let i=0; i<4; i++) {
+        const [q,ans,hint,exp] = [
+          [`Right triangle, legs ${a} & ${b}. Hypotenuse?`, c, "a²+b²=c²", `c = ${c}.`],
+          [`45-45-90 triangle, leg = ${a}. Hypotenuse?`, `${a}√2`, "Hyp = leg × √2.", `${a}√2.`],
+          [`30-60-90 triangle, short leg = ${a}. Hypotenuse?`, 2*a, "Hyp = 2 × short leg.", `${2*a}.`],
+          [`30-60-90 triangle, short leg = ${a}. Long leg?`, `${a}√3`, "Long leg = short leg × √3.", `${a}√3.`],
+        ][i];
+        add("Special Right Triangles","medium", q, "input", null, ans, hint, exp);
       }
     });
-    for (let r=1;r<=15;r++) {
-      add("Volume and Surface Area","easy",`Sphere r=${r}. Volume? (π≈3.14)`,"input",null,parseFloat((4/3*3.14*r*r*r).toFixed(2)),"V = 4/3πr³.",`${(4/3*3.14*r*r*r).toFixed(2)}.`);
-      add("Volume and Surface Area","medium",`Cylinder r=${r}, h=${r+2}. Volume? (π≈3.14)`,"input",null,parseFloat((3.14*r*r*(r+2)).toFixed(2)),"V = πr²h.",`${(3.14*r*r*(r+2)).toFixed(2)}.`);
+
+    const volTpls = [
+      (r) => `Sphere, r=${r}. Volume? (π≈3.14)`,
+      (r) => `A ball with radius ${r} cm. Volume? (π≈3.14)`,
+    ];
+    for (let r=1; r<=15; r++) {
+      add("Volume and Surface Area","easy", pick(volTpls, r)(r), "input", null,
+        parseFloat((4/3*3.14*r*r*r).toFixed(2)), "V = 4/3 × π × r³.", `${(4/3*3.14*r*r*r).toFixed(2)}.`);
+      add("Volume and Surface Area","medium", `Cylinder: r=${r}, h=${r+2}. Volume? (π≈3.14)`, "input", null,
+        parseFloat((3.14*r*r*(r+2)).toFixed(2)), "V = πr²h.", `${(3.14*r*r*(r+2)).toFixed(2)}.`);
+      add("Volume and Surface Area","hard", `Cone: r=${r}, h=${r+2}. Volume? (π≈3.14)`, "input", null,
+        parseFloat((1/3*3.14*r*r*(r+2)).toFixed(2)), "V = (1/3)πr²h.", `${(1/3*3.14*r*r*(r+2)).toFixed(2)}.`);
     }
+
     const congRules=[["SSS","all 3 sides equal"],["SAS","two sides and the included angle"],["ASA","two angles and the included side"],["AAS","two angles and a non-included side"]];
-    congRules.forEach(([rule,desc])=>{
-      for (let i=0;i<15;i++)
-        add("Triangle Congruence","medium",`Two triangles share ${desc}. Congruence rule?`,"multiple",["SSS","SAS","ASA","AAS"],rule,"Memorize congruence postulates.",`${rule}.`);
+    const congTpls = [
+      ([rule,desc]) => `Two triangles have ${desc}. Congruence rule?`,
+      ([rule,desc]) => `Which postulate proves congruence when ${desc}?`,
+    ];
+    congRules.forEach(rule => {
+      for (let i=0; i<10; i++)
+        add("Triangle Congruence","medium", pick(congTpls, i)(rule), "multiple", ["SSS","SAS","ASA","AAS"],
+          rule[0], "Memorize: SSS, SAS, ASA, AAS.", `${rule[0]}.`);
     });
-    const midPts=[[0,0,4,6],[1,2,5,8],[2,3,8,7],[-2,1,4,5],[3,4,9,10]];
-    midPts.forEach(([x1,y1,x2,y2])=>{
-      add("Coordinate Geometry","medium",`Midpoint of (${x1},${y1}) and (${x2},${y2})?`,"input",null,`(${(x1+x2)/2},${(y1+y2)/2})`,"Average coordinates.",`((${x1}+${x2})/2, (${y1}+${y2})/2).`);
+
+    const midPts=[[0,0,4,6],[1,2,5,8],[2,3,8,7],[-2,1,4,5],[3,4,9,10],[-3,-1,5,7],[0,2,6,8]];
+    midPts.forEach(([x1,y1,x2,y2]) => {
+      add("Coordinate Geometry","medium", `Midpoint of (${x1},${y1}) and (${x2},${y2})?`, "input", null,
+        `(${(x1+x2)/2},${(y1+y2)/2})`, "Average each coordinate.", `(${(x1+x2)/2}, ${(y1+y2)/2}).`);
       const d=Math.sqrt((x2-x1)**2+(y2-y1)**2);
-      add("Coordinate Geometry","medium",`Distance from (${x1},${y1}) to (${x2},${y2})?`,"input",null,parseFloat(d.toFixed(2)),"√((x₂-x₁)²+(y₂-y₁)²).",`${d.toFixed(2)}.`);
+      add("Coordinate Geometry","medium", `Distance from (${x1},${y1}) to (${x2},${y2})?`, "input", null,
+        parseFloat(d.toFixed(2)), "d = √((x₂−x₁)² + (y₂−y₁)²).", `${d.toFixed(2)}.`);
     });
+    add("Coordinate Geometry","medium","Distance from (0,0) to (3,4)?","input",null,5,"d = √(9+16) = √25.","5.");
+    add("Coordinate Geometry","medium","What quadrant is (-3, 5) in?","multiple",["I","II","III","IV"],"II","Negative x, positive y → Quadrant II.","Quadrant II.");
   }
 
   if (level === "L") {
-    for (let base=2;base<=10;base++) for (let exp=1;exp<=6;exp++) {
+    const logTpls = [
+      (base,exp,val) => `log_${base}(${val}) = ?`,
+      (base,exp,val) => `Solve: ${base}^x = ${val}.`,
+      (base,exp,val) => `What exponent gives ${base}^x = ${val}?`,
+      (base,exp,val) => `Evaluate: log base ${base} of ${val}.`,
+    ];
+    for (let base=2; base<=10; base++) for (let exp=1; exp<=6; exp++) {
       const val=Math.pow(base,exp);
-      if (pool.filter(q=>q.theme==="Logarithms").length < 300) {
-        add("Logarithms","medium",`log_${base}(${val}) = ?`,"input",null,exp,`${base}^? = ${val}.`,`${base}^${exp}=${val}, so answer is ${exp}.`);
-        add("Logarithms","medium",`Solve: ${base}^x = ${val}.`,"input",null,exp,`Take log base ${base}.`,`x = ${exp}.`);
+      if (pool.filter(q=>q.theme==="Logarithms").length < 200) {
+        add("Logarithms","medium", pick(logTpls, base+exp)(base,exp,val), "input", null, exp,
+          `${base}^? = ${val}.`, `${base}^${exp} = ${val}, so answer is ${exp}.`);
       }
     }
-    for (let a1=1;a1<=8;a1++) for (let d=1;d<=8;d++) for (let n=3;n<=10;n++) {
-      if (pool.filter(q=>q.theme==="Sequences and Series").length < 300) {
+    add("Logarithms","hard","log₁₀(100) = ?","input",null,2,"10^? = 100.","2.");
+    add("Logarithms","hard","ln(e²) = ?","input",null,2,"ln(eⁿ) = n.","2.");
+    add("Logarithms","hard","log₂(32) = ?","input",null,5,"2^? = 32.","5.");
+
+    const arithTpls = [
+      (a1,d,n,an) => `Arithmetic: a₁=${a1}, d=${d}. Find a_${n}.`,
+      (a1,d,n,an) => `Sequence: ${a1}, ${a1+d}, ${a1+2*d}, ... What is the ${n}th term?`,
+      (a1,d,n,an) => `First term ${a1}, common difference ${d}. Find a_${n}.`,
+    ];
+    for (let a1=1; a1<=8; a1++) for (let d=1; d<=8; d++) for (let n=3; n<=10; n++) {
+      if (pool.filter(q=>q.theme==="Sequences and Series").length < 200) {
         const an=a1+(n-1)*d;
-        add("Sequences and Series","easy",`Arithmetic: a₁=${a1}, d=${d}. Find a_${n}.`,"input",null,an,`a_n = a₁+(n−1)d.`,`${a1}+(${n-1})×${d} = ${an}.`);
+        add("Sequences and Series","easy", pick(arithTpls, a1+d+n)(a1,d,n,an), "input", null, an,
+          "a_n = a₁ + (n−1)d.", `${a1}+(${n-1})×${d} = ${an}.`);
       }
     }
-    for (let a1=1;a1<=5;a1++) for (let r=2;r<=4;r++) for (let n=2;n<=7;n++) {
-      if (pool.filter(q=>q.theme==="Sequences and Series").length < 500)
-        add("Sequences and Series","medium",`Geometric: a₁=${a1}, r=${r}. Find a_${n}.`,"input",null,a1*Math.pow(r,n-1),`a_n = a₁×r^(n−1).`,`${a1}×${r}^${n-1} = ${a1*Math.pow(r,n-1)}.`);
+    for (let a1=1; a1<=5; a1++) for (let r=2; r<=4; r++) for (let n=2; n<=7; n++) {
+      if (pool.filter(q=>q.theme==="Sequences and Series"&&q.difficulty==="medium").length < 120)
+        add("Sequences and Series","medium", `Geometric: a₁=${a1}, r=${r}. Find a_${n}.`, "input", null,
+          a1*Math.pow(r,n-1), "a_n = a₁ × r^(n−1).", `${a1}×${r}^${n-1} = ${a1*Math.pow(r,n-1)}.`);
     }
-    const trigIds=[["sin²(x)+cos²(x)","1"],["1+tan²(x)","sec²(x)"],["cos(2x)","cos²x−sin²x"],["sin(2x)","2sin(x)cos(x)"],["tan(x)","sin(x)/cos(x)"]];
-    trigIds.forEach(([lhs,rhs])=>{
-      for (let i=0;i<20;i++)
-        add("Trig Identities","hard",`Simplify: ${lhs}`,"input",null,rhs,"Pythagorean/double-angle identity.",`${lhs} = ${rhs}.`);
+    add("Sequences and Series","medium","Sum of 1+2+3+...+10?","input",null,55,"S = n(a₁+aₙ)/2 = 10(11)/2.","55.");
+    add("Sequences and Series","hard","Geometric series: 2+6+18+54. Sum?","input",null,80,"Just add or use S=a(rⁿ-1)/(r-1).","80.");
+
+    const trigIds=[
+      ["sin²(x)+cos²(x)","1","Pythagorean identity."],
+      ["1+tan²(x)","sec²(x)","Derived from Pythagorean identity."],
+      ["cos(2x)","cos²x−sin²x","Double-angle formula."],
+      ["sin(2x)","2sin(x)cos(x)","Double-angle formula."],
+      ["tan(x)","sin(x)/cos(x)","Definition of tangent."],
+      ["1+cot²(x)","csc²(x)","Derived from Pythagorean identity."],
+    ];
+    trigIds.forEach(([lhs,rhs,hint]) => {
+      for (let i=0; i<12; i++)
+        add("Trig Identities","hard", `Simplify: ${lhs}`, "input", null, rhs, hint, `${lhs} = ${rhs}.`);
     });
-    for (let n=3;n<=10;n++) for (let k=1;k<n;k++) {
-      if (pool.filter(q=>q.theme==="Combinatorics").length < 200) {
+
+    const combTpls = [
+      (n,k,p,c) => `P(${n},${k}) = n!/(n−k)! = ?`,
+      (n,k,p,c) => `How many ways to arrange ${k} items chosen from ${n}?`,
+      (n,k,p,c) => `C(${n},${k}) = ?`,
+      (n,k,p,c) => `How many ways to choose ${k} from ${n}? (Order doesn't matter)`,
+    ];
+    for (let n=3; n<=10; n++) for (let k=1; k<n; k++) {
+      if (pool.filter(q=>q.theme==="Combinatorics").length < 150) {
         const p=factorial(n)/factorial(n-k);
         const c=factorial(n)/(factorial(k)*factorial(n-k));
-        add("Combinatorics","medium",`P(${n},${k}) = n!/(n−k)! = ?`,"input",null,p,`${n}!/${n-k}!`,`${p}.`);
-        add("Combinatorics","medium",`C(${n},${k}) = ?`,"input",null,c,`${n}!/(${k}!×${n-k}!)`,`${c}.`);
+        add("Combinatorics","medium", pick(combTpls, n+k)(n,k,p,c), "input", null, k%2===0?c:p,
+          k%2===0 ? `C(n,k) = n!/(k!×(n−k)!)` : `P(n,k) = n!/(n−k)!`,
+          k%2===0 ? `${c}.` : `${p}.`);
       }
     }
-    for (let i=0;i<50;i++) {
-      const a=Math.floor(Math.random()*4)+1, b2=Math.floor(Math.random()*5), c=Math.floor(Math.random()*4)+1, d2=Math.floor(Math.random()*5)+1;
-      add("Matrices","medium",`Det of [[${a},${b2}],[${c},${d2}]] = ?`,"input",null,a*d2-b2*c,`det = ad − bc.`,`${a}×${d2} − ${b2}×${c} = ${a*d2-b2*c}.`);
+    add("Combinatorics","medium","How many ways can 5 people line up?","input",null,120,"5! = 5×4×3×2×1.","120.");
+    add("Combinatorics","medium","Choose 2 from 6 people. How many ways?","input",null,15,"C(6,2) = 6!/(2!×4!).","15.");
+
+    for (let i=0; i<40; i++) {
+      const a=Math.floor(Math.random()*4)+1, b2=Math.floor(Math.random()*5),
+            c=Math.floor(Math.random()*4)+1, d2=Math.floor(Math.random()*5)+1;
+      add("Matrices","medium", `Det of [[${a},${b2}],[${c},${d2}]] = ?`, "input", null, a*d2-b2*c,
+        "det = ad − bc.", `${a}×${d2} − ${b2}×${c} = ${a*d2-b2*c}.`);
     }
-    for (let base=2;base<=5;base++) for (let x=0;x<=5;x++) {
-      if (pool.filter(q=>q.theme==="Exponential Equations").length < 100)
-        add("Exponential Equations","medium",`Solve: ${base}^x = ${Math.pow(base,x)}.`,"input",null,x,`log both sides.`,`x = ${x}.`);
+    add("Matrices","medium","If A = [[1,2],[3,4]], what is 2A?","input",null,"[[2,4],[6,8]]","Multiply every element by 2.","[[2,4],[6,8]].");
+    add("Matrices","medium","Can a 2×3 matrix multiply a 3×2 matrix?","multiple",["Yes","No"],"Yes","Columns of first = rows of second.","Yes — result is 2×2.");
+
+    for (let base=2; base<=5; base++) for (let x=0; x<=5; x++) {
+      if (pool.filter(q=>q.theme==="Exponential Equations").length < 80)
+        add("Exponential Equations","medium", `Solve: ${base}^x = ${Math.pow(base,x)}.`, "input", null, x,
+          `Take log base ${base} of both sides.`, `x = ${x}.`);
     }
+    add("Exponential Equations","hard","Solve: 2^x = 32","input",null,5,"2^5 = 32.","x = 5.");
+    add("Exponential Equations","hard","Solve: 3^(x-1) = 27","input",null,4,"27 = 3³, so x-1=3.","x = 4.");
+    add("Exponential Equations","hard","Solve: e^x = 1","input",null,0,"e^0 = 1.","x = 0.");
   }
 
   return shuffle(pool);
