@@ -42,12 +42,13 @@ interface RecentUser {
 
 interface LearningAnalytics {
   totalSessions: number;
+  activeKidsToday?: number;
   avgDurationMins: number;
   avgAccuracyPct: number;
   sessionsByLevel: { level: string; sessions: number; accuracyPct: number; avgMins: number }[];
   stuckQuestions: { id: string; count: number; level: string }[];
   fastProgressLevels: { level: string; sessions: number; accuracyPct: number; avgMins: number }[];
-  dailyActivity: { date: string; sessions: number; avgAccuracy: number }[];
+  dailyActivity: { date: string; sessions: number; uniqueKids?: number; avgAccuracy: number }[];
   accuracyTrend: { week: string; accuracyPct: number }[];
   levelDistribution: { level: string; count: number }[];
 }
@@ -818,33 +819,68 @@ function LearningAnalyticsSection({ data }: { data: LearningAnalytics | null }) 
               <div style={{ fontSize: 12, color: "#6B7280", marginTop: 4 }}>Total Sessions</div>
             </div>
             <div>
-              <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 36, fontWeight: 700, color: DARK_GREEN, lineHeight: 1 }}>
-                {data.avgDurationMins}m
+              <div style={{ fontFamily: "'Fraunces',Georgia,serif", fontSize: 36, fontWeight: 700, color: "#1D4ED8", lineHeight: 1 }}>
+                {data.activeKidsToday ?? 0}
               </div>
-              <div style={{ fontSize: 12, color: "#6B7280", marginTop: 4 }}>Avg Duration</div>
+              <div style={{ fontSize: 12, color: "#6B7280", marginTop: 4 }}>Kids Active Today</div>
             </div>
           </div>
-          <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 8, fontWeight: 600 }}>Daily Sessions — Last 14 Days</div>
-          <div style={{ overflowX: "auto" }}>
-            <svg width={activity.length * (barW + barGap)} height={chartH + 24} style={{ display: "block" }}>
-              {activity.map((d, i) => {
-                const barH = Math.max(Math.round((d.sessions / maxSessions) * chartH), d.sessions > 0 ? 3 : 0);
-                const x = i * (barW + barGap);
-                const y = chartH - barH;
-                const label = d.date.slice(5); // MM-DD
-                return (
-                  <g key={d.date}>
-                    <rect x={x} y={y} width={barW} height={barH} fill={DARK_GREEN} rx={2} />
-                    {d.sessions > 0 && (
-                      <text x={x + barW / 2} y={y - 3} textAnchor="middle" fontSize={9} fill="#374151" fontWeight={600}>{d.sessions}</text>
-                    )}
-                    <text x={x + barW / 2} y={chartH + 14} textAnchor="middle" fontSize={8} fill="#9CA3AF"
-                      transform={`rotate(-40,${x + barW / 2},${chartH + 14})`}>{label}</text>
-                  </g>
-                );
-              })}
-            </svg>
-          </div>
+
+          {/* Daily Active Kids chart */}
+          <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 8, fontWeight: 600 }}>Daily Active Kids — Last 14 Days</div>
+          {activity.length === 0 ? (
+            <div style={{ fontSize: 13, color: "#9CA3AF", fontStyle: "italic" }}>No sessions recorded yet.</div>
+          ) : (
+            <div style={{ overflowX: "auto" }}>
+              <svg width={activity.length * (barW + barGap)} height={chartH + 24} style={{ display: "block" }}>
+                {activity.map((d, i) => {
+                  const kids = d.uniqueKids ?? 0;
+                  const maxKids = Math.max(...activity.map(a => a.uniqueKids ?? 0), 1);
+                  const barH = Math.max(Math.round((kids / maxKids) * chartH), kids > 0 ? 3 : 0);
+                  const x = i * (barW + barGap);
+                  const y = chartH - barH;
+                  const label = d.date.slice(5);
+                  return (
+                    <g key={d.date}>
+                      <rect x={x} y={y} width={barW} height={barH} fill="#1D4ED8" rx={2} />
+                      {kids > 0 && (
+                        <text x={x + barW / 2} y={y - 3} textAnchor="middle" fontSize={9} fill="#374151" fontWeight={600}>{kids}</text>
+                      )}
+                      <text x={x + barW / 2} y={chartH + 14} textAnchor="middle" fontSize={8} fill="#9CA3AF"
+                        transform={`rotate(-40,${x + barW / 2},${chartH + 14})`}>{label}</text>
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
+          )}
+
+          {/* Sessions sub-chart */}
+          {activity.length > 0 && (
+            <>
+              <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 8, fontWeight: 600, marginTop: 16 }}>Daily Sessions — Last 14 Days</div>
+              <div style={{ overflowX: "auto" }}>
+                <svg width={activity.length * (barW + barGap)} height={chartH + 24} style={{ display: "block" }}>
+                  {activity.map((d, i) => {
+                    const barH = Math.max(Math.round((d.sessions / maxSessions) * chartH), d.sessions > 0 ? 3 : 0);
+                    const x = i * (barW + barGap);
+                    const y = chartH - barH;
+                    const label = d.date.slice(5);
+                    return (
+                      <g key={d.date}>
+                        <rect x={x} y={y} width={barW} height={barH} fill={DARK_GREEN} rx={2} />
+                        {d.sessions > 0 && (
+                          <text x={x + barW / 2} y={y - 3} textAnchor="middle" fontSize={9} fill="#374151" fontWeight={600}>{d.sessions}</text>
+                        )}
+                        <text x={x + barW / 2} y={chartH + 14} textAnchor="middle" fontSize={8} fill="#9CA3AF"
+                          transform={`rotate(-40,${x + barW / 2},${chartH + 14})`}>{label}</text>
+                      </g>
+                    );
+                  })}
+                </svg>
+              </div>
+            </>
+          )}
         </Card>
 
         {/* Card 2: Average Grade */}

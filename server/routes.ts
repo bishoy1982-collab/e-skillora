@@ -504,6 +504,27 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
+  // ─── SESSION LOGGING ─────────────────────────────────────────
+
+  app.post("/api/sessions/log", requireAuth, async (req, res) => {
+    try {
+      const userId = (req.session as any).userId;
+      const { childId, durationMins, correctCount, totalCount, level } = req.body;
+      await db.insert(sessions).values({
+        userId,
+        childId: childId || null,
+        topic: level || null,
+        durationMins: durationMins ?? null,
+        correctCount: correctCount ?? null,
+        totalCount: totalCount ?? null,
+      });
+      return res.json({ ok: true });
+    } catch (err: any) {
+      console.error("Session log error:", err);
+      return res.status(500).json({ message: err.message });
+    }
+  });
+
   // ─── STREAK ROUTES ───────────────────────────────────────────
 
   // Update streak when a child completes a practice day
@@ -962,33 +983,60 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     }
   });
 
-  // GET /api/admin/learning-analytics — aggregate learning data from child_streaks / children
+  // GET /api/admin/learning-analytics — aggregate learning data from app_sessions / child_streaks / children
   app.get("/api/admin/learning-analytics", requireAdmin, async (req, res) => {
     try {
-      // Streak + level distribution from DB-backed tables
+      // Total sessions
+      const totalResult = await pool.query(`SELECT COUNT(*) FROM app_sessions`);
+      const totalSessions = Number(totalResult.rows[0].count);
+
+      // Kids active today
+      const todayResult = await pool.query(`
+        SELECT COUNT(DISTINCT child_id) AS count
+        FROM app_sessions
+        WHERE DATE(created_at AT TIME ZONE 'UTC') = CURRENT_DATE
+          AND child_id IS NOT NULL
+      `);
+      const activeKidsToday = Number(todayResult.rows[0].count);
+
+      // Daily unique kids + sessions for last 14 days
+      const dailyResult = await pool.query(`
+        SELECT DATE(created_at AT TIME ZONE 'UTC') AS date,
+               COUNT(*) AS sessions,
+               COUNT(DISTINCT child_id) AS unique_kids
+        FROM app_sessions
+        WHERE created_at >= NOW() - INTERVAL '14 days'
+        GROUP BY DATE(created_at AT TIME ZONE 'UTC')
+        ORDER BY date
+      `);
+
+      // Level distribution from child_streaks
       const streakResult = await pool.query(`
-        SELECT cs.child_id, cs.current_streak, cs.longest_streak, cs.last_practice_date,
-               c.placed_level
+        SELECT cs.child_id, c.placed_level
         FROM child_streaks cs
         LEFT JOIN children c ON c.id = cs.child_id
       `);
-
-      const rows = streakResult.rows;
       const levelMap: Record<string, number> = {};
-      for (const r of rows) {
+      for (const r of streakResult.rows) {
         const lv = r.placed_level ?? "Unknown";
         levelMap[lv] = (levelMap[lv] ?? 0) + 1;
       }
       const levelDistribution = Object.entries(levelMap).map(([level, count]) => ({ level, count }));
 
       return res.json({
-        totalSessions: 0,
+        totalSessions,
+        activeKidsToday,
         avgDurationMins: 0,
         avgAccuracyPct: 0,
         sessionsByLevel: [],
         stuckQuestions: [],
         fastProgressLevels: [],
-        dailyActivity: [],
+        dailyActivity: dailyResult.rows.map((r: any) => ({
+          date: String(r.date).slice(0, 10),
+          sessions: Number(r.sessions),
+          uniqueKids: Number(r.unique_kids),
+          avgAccuracy: 0,
+        })),
         accuracyTrend: [],
         levelDistribution,
       });

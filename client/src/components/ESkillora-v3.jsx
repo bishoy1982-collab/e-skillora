@@ -5173,6 +5173,19 @@ function LearnApp({ studentName, startLevel, onBackToHome, childData }) {
         .then(r => r.json())
         .then(d => { if (d?.currentStreak != null) setStreak(d.currentStreak); })
         .catch(() => {});
+
+      // Log session for admin analytics
+      fetch("/api/sessions/log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          childId,
+          durationMins: sessionMins,
+          correctCount: correct,
+          totalCount: worksheetQ.length,
+          level: progress.currentLevel,
+        }),
+      }).catch(() => {});
     }
 
     // Check if level is complete (60 days done)

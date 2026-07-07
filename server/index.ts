@@ -175,6 +175,11 @@ app.use((req, res, next) => {
     await pool.query(`
       CREATE INDEX IF NOT EXISTS page_events_event_created_idx ON page_events (event, created_at)
     `);
+    // app_sessions new columns
+    await pool.query(`ALTER TABLE app_sessions ADD COLUMN IF NOT EXISTS child_id TEXT`);
+    await pool.query(`ALTER TABLE app_sessions ADD COLUMN IF NOT EXISTS duration_mins INTEGER`);
+    await pool.query(`ALTER TABLE app_sessions ADD COLUMN IF NOT EXISTS correct_count INTEGER`);
+    await pool.query(`ALTER TABLE app_sessions ADD COLUMN IF NOT EXISTS total_count INTEGER`);
   } catch (e) {
     console.error("Migration warning:", e);
   }

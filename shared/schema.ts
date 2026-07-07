@@ -24,10 +24,14 @@ export const users = pgTable("users", {
 export const sessions = pgTable("app_sessions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
+  childId: text("child_id"),
   subject: text("subject"),
   grade: integer("grade"),
   topic: text("topic"),
   aiUsedThisSession: boolean("ai_used_this_session").default(false),
+  durationMins: integer("duration_mins"),
+  correctCount: integer("correct_count"),
+  totalCount: integer("total_count"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
