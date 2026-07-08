@@ -909,6 +909,15 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
     try {
       const allUsers = await db.select().from(users).orderBy(users.createdAt);
       const allChildren = await db.select().from(children);
+      const streakResult = await pool.query(`SELECT child_id, current_streak, longest_streak, last_practice_date FROM child_streaks`);
+      const streakByChildId: Record<string, { currentStreak: number; longestStreak: number; lastPracticeDate: string | null }> = {};
+      for (const r of streakResult.rows) {
+        streakByChildId[r.child_id] = {
+          currentStreak: r.current_streak,
+          longestStreak: r.longest_streak,
+          lastPracticeDate: r.last_practice_date,
+        };
+      }
 
       const childrenByUserId: Record<string, typeof allChildren> = {};
       for (const c of allChildren) {
@@ -932,6 +941,7 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           age: c.age,
           placedLevel: c.placedLevel,
           floorOverrideApplied: c.floorOverrideApplied,
+          ...(streakByChildId[c.id] ?? { currentStreak: null, longestStreak: null, lastPracticeDate: null }),
         })),
       }));
 

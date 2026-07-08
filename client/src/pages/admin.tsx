@@ -229,6 +229,9 @@ interface AdminChild {
   age: number | null;
   placedLevel: string | null;
   floorOverrideApplied: boolean | null;
+  currentStreak: number | null;
+  longestStreak: number | null;
+  lastPracticeDate: string | null;
 }
 
 interface AdminUser {
@@ -731,7 +734,7 @@ function UsersTable({ users, password }: { users: AdminUser[]; password: string 
                           <table style={{ borderCollapse: "collapse", fontSize: 12, width: "auto" }}>
                             <thead>
                               <tr>
-                                {["Child", "Age", "Placed Level", "Floor Override"].map(h => (
+                                {["Child", "Age", "Placed Level", "Last Active", "Streak", "Floor Override"].map(h => (
                                   <th key={h} style={{ textAlign: "left", padding: "4px 16px 4px 0", color: "#6B7280", fontWeight: 600, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.04em" }}>{h}</th>
                                 ))}
                               </tr>
@@ -742,6 +745,18 @@ function UsersTable({ users, password }: { users: AdminUser[]; password: string 
                                   <td style={{ padding: "4px 16px 4px 0", fontWeight: 600, color: "#111827" }}>{c.name}</td>
                                   <td style={{ padding: "4px 16px 4px 0", color: "#374151" }}>{c.age ?? "—"}</td>
                                   <td style={{ padding: "4px 16px 4px 0", color: DARK_GREEN, fontWeight: 700 }}>{c.placedLevel ?? "—"}</td>
+                                  <td style={{ padding: "4px 16px 4px 0" }}>
+                                    {c.lastPracticeDate
+                                      ? <span style={{ color: "#15803D", fontWeight: 700 }}>{c.lastPracticeDate}</span>
+                                      : <span style={{ color: "#B91C1C", fontWeight: 600 }}>Never</span>
+                                    }
+                                  </td>
+                                  <td style={{ padding: "4px 16px 4px 0", color: "#374151" }}>
+                                    {c.currentStreak != null
+                                      ? <span>{c.currentStreak}🔥 (best: {c.longestStreak})</span>
+                                      : <span style={{ color: "#9CA3AF" }}>—</span>
+                                    }
+                                  </td>
                                   <td style={{ padding: "4px 0" }}>
                                     {c.floorOverrideApplied
                                       ? <span style={{ background: "#FEF3C7", color: "#B45309", borderRadius: 4, padding: "2px 8px", fontWeight: 700, fontSize: 11 }}>Yes</span>
