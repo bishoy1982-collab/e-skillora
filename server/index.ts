@@ -10,6 +10,14 @@ const app = express();
 app.set("trust proxy", 1); // Railway / Heroku reverse proxy
 const httpServer = createServer(app);
 
+// 301 redirect: all e-skillora.org traffic → e-skillora.com
+app.use((req, res, next) => {
+  if (req.hostname && req.hostname.endsWith("e-skillora.org")) {
+    return res.redirect(301, `https://e-skillora.com${req.url}`);
+  }
+  next();
+});
+
 declare module "http" {
   interface IncomingMessage {
     rawBody: unknown;
