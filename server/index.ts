@@ -16,9 +16,10 @@ declare module "http" {
   }
 }
 
-// Raw body for Stripe webhooks
+// Raw body for Stripe webhooks; 5mb limit covers large blog post payloads
 app.use(
   express.json({
+    limit: "5mb",
     verify: (req, _res, buf) => {
       req.rawBody = buf;
     },
@@ -174,6 +175,24 @@ app.use((req, res, next) => {
     `);
     await pool.query(`
       CREATE INDEX IF NOT EXISTS page_events_event_created_idx ON page_events (event, created_at)
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS blog_posts (
+        id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+        blg_id INTEGER,
+        title TEXT NOT NULL,
+        slug TEXT NOT NULL UNIQUE,
+        meta_description TEXT,
+        content_html TEXT,
+        content_markdown TEXT,
+        hero_image_url TEXT,
+        json_ld JSONB,
+        faq_json_ld JSONB,
+        language_code TEXT,
+        public_url TEXT,
+        created_at TIMESTAMP,
+        received_at TIMESTAMP DEFAULT NOW()
+      )
     `);
     // app_sessions new columns
     await pool.query(`ALTER TABLE app_sessions ADD COLUMN IF NOT EXISTS child_id TEXT`);

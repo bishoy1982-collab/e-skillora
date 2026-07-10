@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { db, pool } from "./db";
 import { insertUserSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } from "@shared/schema";
-import { users, sessions, waitlistSubmissions, customQuestions, appConfig, children, betaInvites } from "@shared/schema";
+import { users, sessions, waitlistSubmissions, customQuestions, appConfig, children, betaInvites, blogPosts } from "@shared/schema";
 import { sendPasswordResetEmail, sendTrialReminderEmail } from "./email";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
@@ -1084,6 +1084,66 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       console.error("Wipe DB error:", err);
       return res.status(500).json({ message: err.message });
     }
+  });
+
+  // ---------------------------------------------------------------------------
+  // BabyLoveGrowth blog webhook
+  // ---------------------------------------------------------------------------
+  app.post("/api/blog-webhook", async (req: Request, res: Response) => {
+    // Auth check
+    const authHeader = req.headers["authorization"] ?? "";
+    const secret = process.env.BLG_WEBHOOK_SECRET;
+    if (!secret || authHeader !== `Bearer ${secret}`) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const body = req.body;
+    console.log("[blog-webhook] received payload:", JSON.stringify(body, null, 2));
+
+    // Respond 200 immediately so BLG doesn't retry on a slow DB write
+    res.status(200).json({ ok: true });
+
+    // Async upsert — errors logged but never surface to BLG
+    (async () => {
+      try {
+        await db
+          .insert(blogPosts)
+          .values({
+            blgId: body.id,
+            title: body.title,
+            slug: body.slug,
+            metaDescription: body.metaDescription ?? null,
+            contentHtml: body.content_html ?? null,
+            contentMarkdown: body.content_markdown ?? null,
+            heroImageUrl: body.heroImageUrl ?? null,
+            jsonLd: body.jsonLd ?? null,
+            faqJsonLd: body.faqJsonLd ?? null,
+            languageCode: body.languageCode ?? null,
+            publicUrl: body.publicUrl ?? null,
+            createdAt: body.createdAt ? new Date(body.createdAt) : null,
+          })
+          .onConflictDoUpdate({
+            target: blogPosts.slug,
+            set: {
+              blgId: body.id,
+              title: body.title,
+              metaDescription: body.metaDescription ?? null,
+              contentHtml: body.content_html ?? null,
+              contentMarkdown: body.content_markdown ?? null,
+              heroImageUrl: body.heroImageUrl ?? null,
+              jsonLd: body.jsonLd ?? null,
+              faqJsonLd: body.faqJsonLd ?? null,
+              languageCode: body.languageCode ?? null,
+              publicUrl: body.publicUrl ?? null,
+              createdAt: body.createdAt ? new Date(body.createdAt) : null,
+              receivedAt: new Date(),
+            },
+          });
+        console.log(`[blog-webhook] upserted post slug="${body.slug}"`);
+      } catch (err) {
+        console.error("[blog-webhook] DB upsert failed:", err);
+      }
+    })();
   });
 
   await seedFounderAccount();

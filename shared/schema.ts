@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, boolean, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, boolean, unique, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -93,6 +93,23 @@ export const waitlistSubmissions = pgTable("waitlist_submissions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const blogPosts = pgTable("blog_posts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  blgId: integer("blg_id"),
+  title: text("title").notNull(),
+  slug: text("slug").notNull().unique(),
+  metaDescription: text("meta_description"),
+  contentHtml: text("content_html"),
+  contentMarkdown: text("content_markdown"),
+  heroImageUrl: text("hero_image_url"),
+  jsonLd: jsonb("json_ld"),
+  faqJsonLd: jsonb("faq_json_ld"),
+  languageCode: text("language_code"),
+  publicUrl: text("public_url"),
+  createdAt: timestamp("created_at"),
+  receivedAt: timestamp("received_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
   name: true,
@@ -128,3 +145,4 @@ export type CustomQuestion = typeof customQuestions.$inferSelect;
 export type AppConfig = typeof appConfig.$inferSelect;
 export type Child = typeof children.$inferSelect;
 export type BetaInvite = typeof betaInvites.$inferSelect;
+export type BlogPost = typeof blogPosts.$inferSelect;
