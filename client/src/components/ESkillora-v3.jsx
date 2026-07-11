@@ -5603,6 +5603,16 @@ function getStartLevelForAge(age) {
 // ROOT — orchestrates all screens
 // ─────────────────────────────────────────────────────────────
 export default function App() {
+  // Client-side canonical domain guard: localStorage is origin-scoped, so
+  // e-skillora.com and www.e-skillora.com have completely separate storage.
+  // Force www before any localStorage is touched so user data never splits.
+  if (typeof window !== "undefined" && window.location.hostname === "e-skillora.com") {
+    window.location.replace(
+      `https://www.e-skillora.com${window.location.pathname}${window.location.search}${window.location.hash}`
+    );
+    return null;
+  }
+
   const { user: authUser, logout: authLogout } = useAuth();
 
   // Scope localStorage to the authenticated user so different accounts
