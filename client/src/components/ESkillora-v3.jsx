@@ -588,7 +588,7 @@ function OB_Children({ plan, onNext }) {
                     return (
                       <button
                         key={`${av.e}-${i}`}
-                        onClick={()=>{ upd(idx,"avatar",av.e); upd(idx,"avatarBg",av.bg); }}
+                        onClick={()=>{ const k=[...kids]; k[idx]={...k[idx],avatar:av.e,avatarBg:av.bg}; setKids(k); }}
                         style={{
                           width: "100%",
                           aspectRatio: "1 / 1",
