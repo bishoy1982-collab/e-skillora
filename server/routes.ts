@@ -421,7 +421,11 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
           const sub = event.data.object as Stripe.Subscription;
           const user = await storage.getUserByStripeCustomerId(sub.customer as string);
           if (user) {
-            const status = sub.status === "active" ? "active"
+            // If cancelled during trial, mark cancelled immediately — no charge was made
+            // so there's no reason to preserve access until period end
+            const cancelledDuringTrial = sub.cancel_at_period_end && sub.status === "trialing";
+            const status = cancelledDuringTrial ? "cancelled"
+              : sub.status === "active" ? "active"
               : sub.status === "trialing" ? "trial"
               : sub.status === "past_due" ? "past_due"
               : "cancelled";
