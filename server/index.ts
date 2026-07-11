@@ -13,7 +13,7 @@ const httpServer = createServer(app);
 // 301 redirect: all e-skillora.org traffic → e-skillora.com
 app.use((req, res, next) => {
   if (req.hostname && req.hostname.endsWith("e-skillora.org")) {
-    return res.redirect(301, `https://e-skillora.com${req.url}`);
+    return res.redirect(301, `https://www.e-skillora.com${req.url}`);
   }
   next();
 });

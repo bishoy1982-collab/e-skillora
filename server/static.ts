@@ -14,9 +14,9 @@ export function serveStatic(app: Express) {
   app.use("/{*path}", (req: Request, res: Response) => {
     // Normalize: root keeps trailing slash, all other paths strip it
     const urlPath = req.path === "/" ? "/" : req.path.replace(/\/$/, "");
-    const canonical = `https://e-skillora.com${urlPath}`;
+    const canonical = `https://www.e-skillora.com${urlPath}`;
     const html = indexHtml.replace(
-      '<link rel="canonical" href="https://e-skillora.com/">',
+      '<link rel="canonical" href="https://www.e-skillora.com/">',
       `<link rel="canonical" href="${canonical}">`
     );
     res.setHeader("Content-Type", "text/html; charset=utf-8");
