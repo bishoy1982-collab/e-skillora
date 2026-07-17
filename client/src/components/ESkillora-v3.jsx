@@ -4934,15 +4934,27 @@ function LearnApp({ studentName, startLevel, onBackToHome, childData }) {
   // Student progress persisted in localStorage
   const [progress, setProgress] = useState(() => loadState(getProgressKey("math"), defaultProgress));
 
-  const [view, setView] = useState("dashboard"); // dashboard|concept|worksheet|results|assessment
-  const [worksheetQ, setWorksheetQ] = useState([]);
-  const [curQ, setCurQ] = useState(0);
-  const [answers, setAnswers] = useState([]);
+  const getSessionKey = (subj) => `skillora-session-${childKey}-${subj}`;
+
+  // Restore in-progress worksheet session if one exists for the current day
+  const [_sessionInit] = useState(() => {
+    const prog = loadState(getProgressKey("math"), null);
+    const saved = loadState(getSessionKey("math"), null);
+    if (saved && prog && saved.level === prog.currentLevel && saved.dayNumber === prog.dayNumber && saved.worksheetQ?.length > 0) {
+      return saved;
+    }
+    return null;
+  });
+
+  const [view, setView] = useState(_sessionInit ? "worksheet" : "dashboard"); // dashboard|concept|worksheet|results|assessment
+  const [worksheetQ, setWorksheetQ] = useState(_sessionInit ? _sessionInit.worksheetQ : []);
+  const [curQ, setCurQ] = useState(_sessionInit ? _sessionInit.curQ : 0);
+  const [answers, setAnswers] = useState(_sessionInit ? _sessionInit.answers : []);
   const [inputVal, setInputVal] = useState("");
   const [showHint, setShowHint] = useState(false);
   const [wb, setWb] = useState(false);
   const [pendingTheme, setPendingTheme] = useState(null);
-  const [isRetryDay, setIsRetryDay] = useState(false);
+  const [isRetryDay, setIsRetryDay] = useState(_sessionInit ? (_sessionInit.curQ > 0) : false);
 
   // AI Explanation Engine state
   const [wrongAttempts, setWrongAttempts] = useState({}); // questionId → count
@@ -4990,6 +5002,17 @@ function LearnApp({ studentName, startLevel, onBackToHome, childData }) {
   };
 
   const save = (newProg) => { setProgress(newProg); saveState(getProgressKey(subject), newProg); };
+
+  const saveSession = (q, cur, ans) => {
+    saveState(getSessionKey(subject), {
+      level: progress.currentLevel,
+      dayNumber: progress.dayNumber,
+      worksheetQ: q,
+      curQ: cur,
+      answers: ans,
+    });
+  };
+  const clearSession = () => { try { localStorage.removeItem(getSessionKey(subject)); } catch {} };
 
   const handleSubjectChange = (newSubject) => {
     const prog = loadState(getProgressKey(newSubject), null);
@@ -5059,6 +5082,20 @@ function LearnApp({ studentName, startLevel, onBackToHome, childData }) {
   };
 
   const startDay = () => {
+    // Resume an in-progress session if one exists for today
+    const saved = loadState(getSessionKey(subject), null);
+    if (saved && saved.level === progress.currentLevel && saved.dayNumber === progress.dayNumber && saved.worksheetQ?.length > 0) {
+      setWorksheetQ(saved.worksheetQ);
+      setCurQ(saved.curQ);
+      setAnswers(saved.answers);
+      setInputVal(""); setShowHint(false);
+      setWrongAttempts({}); setPendingWrong(null); setAiExplain(null);
+      setIsRetryDay(saved.curQ > 0);
+      sessionStartRef.current = Date.now();
+      setView("worksheet");
+      return;
+    }
+
     const result = buildDailyWorksheet(progress);
     if (result.needsIntro) {
       setPendingTheme(result.theme);
@@ -5086,6 +5123,7 @@ function LearnApp({ studentName, startLevel, onBackToHome, childData }) {
     const result = buildDailyWorksheet(newProg);
     setIsRetryDay((result.retryCount || 0) > 0);
     setWorksheetQ(result.questions || []);
+    clearSession();
     setCurQ(0); setAnswers([]); setInputVal(""); setShowHint(false);
     setWrongAttempts({}); setPendingWrong(null); setAiExplain(null);
     setView("worksheet");
@@ -5114,10 +5152,12 @@ function LearnApp({ studentName, startLevel, onBackToHome, childData }) {
     setShowHint(false);
     if (curQ + 1 >= worksheetQ.length) {
       setAnswers(newA);
+      clearSession(); // worksheet complete — no need to resume
       setView("results");
     } else {
       setAnswers(newA);
       setCurQ(curQ + 1);
+      saveSession(worksheetQ, curQ + 1, newA);
     }
   };
 
@@ -5132,10 +5172,12 @@ function LearnApp({ studentName, startLevel, onBackToHome, childData }) {
     setShowHint(false);
     if (curQ + 1 >= worksheetQ.length) {
       setAnswers(newA);
+      clearSession(); // worksheet complete — no need to resume
       setView("results");
     } else {
       setAnswers(newA);
       setCurQ(curQ + 1);
+      saveSession(worksheetQ, curQ + 1, newA);
     }
   };
 
